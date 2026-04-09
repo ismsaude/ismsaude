@@ -343,9 +343,16 @@ export default function Apa({ paciente }) {
         }, 800); // Aumentei o delay para 800ms para garantir renderização do Portal no celular
     };
 
-    const handleVerPreviewPdf = (apa) => {
-        setApaParaImprimir(apa);
-        setModoVisao('preview');
+    const handleVerPreviewPdf = async (apaResumo) => {
+        try {
+            const { data, error } = await supabase.from('apas').select('*').eq('id', apaResumo.id).single();
+            if (error) throw error;
+            setApaParaImprimir(data);
+            setModoVisao('preview');
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao carregar dados completos para impressão.");
+        }
     };
 
     const handleDuplicarApa = (apa) => {

@@ -267,7 +267,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                 status: 'Ativo',
                 createdAt: new Date().toISOString()
             };
-            if (formData.role === 'Médico' || formData.role === 'Médico Autorizador') {
+            if (['Médico', 'Médico Autorizador', 'Desenvolvedor', 'Administrador'].includes(formData.role)) {
                 userData.crm = formData.crm || '';
                 userData.rqe = formData.rqe || '';
                 userData.cpf = formData.cpf || '';
@@ -355,7 +355,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                         </select>
                     </div>
 
-                    {(formData.role === 'Médico' || formData.role === 'Médico Autorizador') && (
+                    {['Médico', 'Médico Autorizador', 'Desenvolvedor', 'Administrador'].includes(formData.role) && (
                         <div className="space-y-4">
                             <div className="flex gap-4">
                                 <div className="flex-1">
@@ -425,14 +425,14 @@ const UserEditModal = ({ user, onClose, onSave }) => {
     const [saving, setSaving] = useState(false);
 
     const handleSave = async () => {
-        if ((formData.role === 'Médico' || formData.role === 'Médico Autorizador') && !formData.crm) {
+        if (['Médico', 'Médico Autorizador'].includes(formData.role) && !formData.crm) {
             return toast.error("CRM é obrigatório para médicos");
         }
 
         setSaving(true);
         try {
             const dataToSave = { ...formData };
-            if (dataToSave.role !== 'Médico' && dataToSave.role !== 'Médico Autorizador') {
+            if (!['Médico', 'Médico Autorizador', 'Desenvolvedor', 'Administrador'].includes(dataToSave.role)) {
                 dataToSave.crm = '';
                 dataToSave.rqe = '';
                 dataToSave.cpf = '';
@@ -526,7 +526,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                         </select>
                     </div>
 
-                    {(formData.role === 'Médico' || formData.role === 'Médico Autorizador') && (
+                    {['Médico', 'Médico Autorizador', 'Desenvolvedor', 'Administrador'].includes(formData.role) && (
                         <div className="space-y-4">
                             <div className="flex gap-4">
                                 <div className="flex-1">
