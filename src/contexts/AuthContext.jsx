@@ -92,6 +92,8 @@ export const AuthProvider = ({ children }) => {
                 sessionStorage.setItem('login_timestamp', Date.now().toString());
             } else if (event === 'SIGNED_OUT') {
                 sessionStorage.removeItem('login_timestamp');
+                sessionStorage.removeItem('apa_draft_state');
+                sessionStorage.removeItem('@sisgesp_unidade_sessao');
             }
             fetchProfile(session?.user ?? null);
         });
@@ -104,6 +106,8 @@ export const AuthProvider = ({ children }) => {
                 if (elapsedHours >= 12) {
                     supabase.auth.signOut();
                     sessionStorage.removeItem('login_timestamp');
+                    sessionStorage.removeItem('apa_draft_state');
+                    sessionStorage.removeItem('@sisgesp_unidade_sessao');
                 }
             }
         }, 300000);
