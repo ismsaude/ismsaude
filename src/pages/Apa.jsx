@@ -11,6 +11,7 @@ import { Search, Printer, Save, Activity, Plus, ArrowLeft, Loader2, ZoomIn, Zoom
 import toast from 'react-hot-toast';
 import { maskCPF, maskTelefone } from '../utils/masks';
 import UnitPrompt from '../components/UnitPrompt';
+import { SigtapAutocomplete } from '../components/SigtapAutocomplete';
 
 const InlineCalendar = ({ value, onChange, disabled }) => {
     const [currentMonth, setCurrentMonth] = useState(() => {
@@ -112,8 +113,6 @@ export default function Apa({ paciente }) {
 
     const [pacientes, setPacientes] = useState([]);
     const [showPacientes, setShowPacientes] = useState(false);
-    const [sigtapProcedimentos, setSigtapProcedimentos] = useState([]);
-    const [showSigtap, setShowSigtap] = useState(false);
 
     const defaultFormData = {
         nome: '', cpf: '', dataNasc: '', sexo: '', peso: '', altura: '', telefone: '',
@@ -163,16 +162,6 @@ export default function Apa({ paciente }) {
                 setPacientes(data || []);
             } catch (error) { console.error(error); }
         };
-        const loadSigtap = async () => {
-            try {
-                const { data, error } = await supabase.from('sigtap').select('*');
-                if (error) throw error;
-                setSigtapProcedimentos(data || []);
-            } catch (error) {
-                console.warn('Aviso: Tabela sigtap falhou ao carregar. Retornando vazio.', error);
-                setSigtapProcedimentos([]);
-            }
-        };
         const loadSettings = async () => {
              const { data } = await supabase.from('settings').select('data').eq('id', 'general').maybeSingle();
              if (data && data.data) {
@@ -180,7 +169,6 @@ export default function Apa({ paciente }) {
              }
         };
         loadPacientes();
-        loadSigtap();
         loadSettings();
     }, []);
 
@@ -614,14 +602,6 @@ export default function Apa({ paciente }) {
 
     const filteredPacientes = pacientes.filter(p => p.nome?.toLowerCase().includes(searchTerm.toLowerCase()) || p.cpf?.includes(searchTerm)).slice(0, 10);
 
-    const filteredSigtap = sigtapProcedimentos.filter(p => {
-        if (!formData.procedimento) return false;
-        const term = formData.procedimento.toLowerCase();
-        return (p.searchKey && p.searchKey.includes(term)) ||
-            (p.nome && p.nome.toLowerCase().includes(term)) ||
-            (p.codigo && p.codigo.includes(term));
-    }).slice(0, 15);
-
     const comorbidadesList = [
         { key: 'has', label: 'Hipertensão Arterial' }, { key: 'dm', label: 'Diabetes Mellitus' }, { key: 'cardio', label: 'Cardiopatia' },
         { key: 'arritmia', label: 'Arritmia' }, { key: 'icc', label: 'ICC' }, { key: 'iam', label: 'IAM prévio' },
@@ -953,38 +933,12 @@ export default function Apa({ paciente }) {
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 <div className="md:col-span-2 relative">
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PROCEDIMENTO CIRÚRGICO<span className="text-red-500 ml-0.5">*</span></label>
-                                                    <div className="relative">
-                                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                                                        <input
-                                                            disabled={isReadOnly}
-                                                            type="text"
-                                                            name="procedimento"
-                                                            value={formData.procedimento}
-                                                            onChange={e => { handleChange(e); setShowSigtap(true); }}
-                                                            onFocus={() => setShowSigtap(true)}
-                                                            onBlur={() => setTimeout(() => setShowSigtap(false), 200)}
-                                                            className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all uppercase"
-                                                            placeholder="Buscar procedimento por nome ou código..."
-                                                            autoComplete="off"
-                                                        />
-                                                    </div>
-                                                    {showSigtap && formData.procedimento && !isReadOnly && (
-                                                        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar">
-                                                            {filteredSigtap.length > 0 ? filteredSigtap.map(p => (
-                                                                <div key={p.id} onMouseDown={() => {
-                                                                    setFormData(prev => ({ ...prev, procedimento: p.nome }));
-                                                                    setShowSigtap(false);
-                                                                }} className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors">
-                                                                    <div className="text-xs font-bold uppercase text-slate-800">{p.nome}</div>
-                                                                    <div className="text-[10px] font-semibold text-blue-500 uppercase mt-0.5">CÓDIGO: {p.codigo}</div>
-                                                                </div>
-                                                            )) : (
-                                                                <div className="p-3 bg-slate-50 flex flex-col items-center text-center gap-2 border-t border-slate-100">
-                                                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Nenhum procedimento encontrado.</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
+                                                    <SigtapAutocomplete
+                                                        value={formData.procedimento}
+                                                        onSelect={(p) => setFormData(prev => ({ ...prev, procedimento: p.nome }))}
+                                                        disabled={isReadOnly}
+                                                        className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all uppercase"
+                                                    />
                                                 </div>
                                                 <div className="md:col-span-2">
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start mt-2">
