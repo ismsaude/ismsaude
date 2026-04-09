@@ -16,7 +16,7 @@ export const WhiteLabelProvider = ({ children }) => {
 
     const fetchTheme = async () => {
         try {
-            setIsThemeLoading(true);
+            // Removido setIsThemeLoading(true) aqui para evitar desmontar o AppLayout inteiro (o que causava perda de dados nos forms)
             const { data, error } = await supabase.from('settings').select('data').eq('id', 'general').maybeSingle();
             if (data && data.data) {
                 const fetchedTheme = {
