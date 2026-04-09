@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@media print {
+
+    @page {
+        size: A4 portrait;
+        margin: 10mm !important;
+        /* Isso garante margem no topo de TODAS as páginas */
+    }
+
+    body > #root {
+        display: none !important;
+    }
+
+    html, body {
+        background-color: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+
+    .print-master-container {
+        display: block !important;
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+}
+
+@media screen {
+    .print-master-container {
+        display: none !important;
+    }
+}
+
+html.tema-escuro {
+    filter: invert(0.92) hue-rotate(180deg);
+    background-color: #111;
+}
+html.tema-escuro img,
+html.tema-escuro video,
+html.tema-escuro iframe,
+html.tema-escuro .preserve-color {
+    filter: invert(1) hue-rotate(180deg);
+}

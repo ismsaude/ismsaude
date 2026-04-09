@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "santa-casa-de-porto-feliz"
+  },
+  "targets": {
+    "santa-casa-de-porto-feliz": {
+      "hosting": {
+        "app": [
+          "gestaoportofeliz"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
