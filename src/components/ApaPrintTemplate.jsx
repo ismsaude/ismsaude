@@ -168,6 +168,14 @@ export default function ApaPrintTemplate({ data }) {
                     <Field label="Altura (cm)" value={data?.altura} />
                     <Field label="IMC" value={imcDisplay} />
                 </div>
+                {/* SINAIS VITAIS BÁSICOS MOVIDOS PARA CÁ */}
+                <div className="grid grid-cols-5 gap-x-2 gap-y-1.5 mt-1.5 pt-1.5 border-t border-gray-300">
+                    <Field label="PA (mmHg)" value={data?.pa} />
+                    <Field label="FC (bpm)" value={data?.fc} />
+                    <Field label="SpO2 (%)" value={data?.spo2} />
+                    <Field label="FR (irpm)" value={data?.fr} />
+                    <Field label="Temp (°C)" value={data?.temp} />
+                </div>
             </SectionBlock>
 
             {/* 2. PROCEDIMENTO PROPOSTO */}
@@ -272,18 +280,11 @@ export default function ApaPrintTemplate({ data }) {
                 </div>
             </SectionBlock>
 
-            {/* 8. EXAME FÍSICO */}
-            <SectionBlock title="8. Exame Físico">
-                <div className="grid grid-cols-5 gap-x-2 gap-y-1.5 mb-1.5">
-                    <Field label="PA (mmHg)" value={data?.pa} />
-                    <Field label="FC (bpm)" value={data?.fc} />
-                    <Field label="SpO2 (%)" value={data?.spo2} />
-                    <Field label="FR (irpm)" value={data?.fr} />
-                    <Field label="Temp (C)" value={data?.temp} />
-                </div>
+            {/* 8. EXAME FÍSICO (ESPECIFICIDADES) */}
+            <SectionBlock title="8. Exame Físico (Especificidades)">
                 <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-1.5">
-                    <Field label="ACV" value={data?.acv} />
-                    <Field label="AR" value={data?.ar} />
+                    <Field label="Cardiovascular (ACV)" value={data?.acv} />
+                    <Field label="Respiratório (AR)" value={data?.ar} />
                     <Field label="Abdome" value={data?.abdome} />
                 </div>
                 <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
@@ -319,15 +320,27 @@ export default function ApaPrintTemplate({ data }) {
                 </div>
                 <div className="grid grid-cols-3 gap-x-2 gap-y-1.5">
                     <Field label="Mobilidade Cervical" value={data?.va_cervical} />
-                    <Field label="Via Aérea Difícil" value={data?.va_dificil} />
+                    <div className="flex flex-col">
+                        <span className={`${labelClass} mb-0.5`}>Via Aérea Difícil</span>
+                        <div className={`border-b border-gray-300 pb-0.5 min-h-[14px] break-words whitespace-pre-wrap ${valueClass} ${data?.va_dificil === 'Sim' ? 'text-red-700 bg-red-50 border-red-200 px-1 rounded-sm' : data?.va_dificil === 'Possível' ? 'text-orange-700 bg-orange-50 border-orange-200 px-1 rounded-sm' : ''}`}>
+                            {data?.va_dificil || '--'}
+                        </div>
+                    </div>
                     <Field label="Obs. Via Aérea" value={data?.va_obs} />
                 </div>
             </SectionBlock>
 
             {/* 10. ESTADO FÍSICO */}
             <SectionBlock title="10. Estado Físico - Classificação ASA">
-                <div className="grid grid-cols-1 gap-x-2 gap-y-1.5">
-                    <Field label="ASA" value={data?.asa} />
+                <div className="p-1 px-2 border-l-4 border-blue-600 bg-blue-50/50 flex justify-between items-center rounded-r-sm">
+                    <div>
+                        <div className="text-[14px] font-black text-blue-900 tracking-wide uppercase">ASA {data?.asa ? data.asa.replace('ASA ', '') : '--'}</div>
+                    </div>
+                    {data?.asa_e === 'true' || data?.asa_e === true ? (
+                        <div className="px-2 py-0.5 bg-red-100 text-red-700 font-black border border-red-300 text-[9px] rounded-sm uppercase tracking-widest">
+                            Em Emergência (E)
+                        </div>
+                    ) : null}
                 </div>
             </SectionBlock>
 
@@ -415,11 +428,10 @@ export default function ApaPrintTemplate({ data }) {
 
             {/* 16. ASSINATURAS */}
             <div className={sectionClass}>
-                <div className={titleClass}>16. Assinaturas</div>
-                <div className="grid grid-cols-2 gap-12 px-8 mt-2 pb-2">
-
-                    {/* Médico (Esquerda) */}
-                    <div className="text-center">
+                <div className={titleClass}>16. Assinatura Médica</div>
+                <div className="flex justify-center mt-2 pb-2">
+                    {/* Médico (Centro) */}
+                    <div className="text-center w-1/2">
                         <div className="h-10 flex items-end justify-center pb-1">
                             <span className="text-[#002776] text-[16px] leading-none tracking-wide" style={{ fontFamily: "'Lucida Handwriting', 'Brush Script MT', 'Segoe Script', cursive", fontStyle: 'italic' }}>
                                 {data?.anestesistaNome || ''}
@@ -432,24 +444,13 @@ export default function ApaPrintTemplate({ data }) {
                                 (data?.anestesistaSexo === 'Masculino' || data?.anestesistaSexo === 'M') ? `DR. ${data.anestesistaNome}` :
                                     (data?.anestesistaSexo === 'Feminino' || data?.anestesistaSexo === 'F') ? `DRA. ${data.anestesistaNome}` :
                                         `DR(A). ${data.anestesistaNome}`
-                            ) : 'MÉDICO ANESTESIOLOGISTA'}
+                            ) : ''}
                         </p>
                         <p className="text-[7.5px] text-gray-500 uppercase">
-                            {data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : 'CRM --'}
-                            {data?.anestesistaRQE ? ` | RQE ${data.anestesistaRQE}` : ' | RQE ANESTESIOLOGIA'}
+                            {data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : ''}
+                            {data?.anestesistaRQE ? ` | RQE ${data.anestesistaRQE}` : ''}
                         </p>
                         <p className="text-[7.5px] text-gray-500 uppercase">MÉDICO ANESTESIOLOGISTA</p>
-                        <p className="text-[7.5px] text-green-600 font-bold mt-1">✓ ASSINADO ELETRONICAMENTE</p>
-                    </div>
-
-                    {/* Paciente (Direita) */}
-                    <div className="text-center">
-                        {/* Bloco invisível da mesma altura para nivelar as linhas pretas */}
-                        <div className="h-10"></div>
-                        <div className="border-t border-black w-full mb-1"></div>
-                        <p className="font-bold text-[9px] uppercase text-[#002776]">{data?.nome || 'Paciente'}</p>
-                        <p className="text-[7.5px] text-gray-500 uppercase">ASSINATURA DO PACIENTE OU RESPONSÁVEL LEGAL</p>
-                        <p className="text-[7.5px] text-gray-500 uppercase mt-1">DATA: {dataDocumento}</p>
                     </div>
                 </div>
             </div>
