@@ -500,6 +500,14 @@ export default function Apa({ paciente }) {
             apaCompleta.dataProcedimento = null;
         }
 
+        // Prevenção de erro de Sintaxe no Postgres (UUID column com string vazia)
+        if (apaCompleta.pacienteId === '') {
+            apaCompleta.pacienteId = null;
+        }
+        if (apaCompleta.anestesistaId === '') {
+            apaCompleta.anestesistaId = null;
+        }
+
         // Removendo campos "fantasmas" que não têm input na interface atual
         delete apaCompleta.dorso;
         delete apaCompleta.ef_outros;
