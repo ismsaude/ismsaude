@@ -989,14 +989,13 @@ Responda SOMENTE o bloco JSON.`;
                                             <div className="absolute left-0 top-3 bottom-3 w-1 bg-blue-500 rounded-r-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                             
                                             {/* Data */}
-                                            <div className="w-24 pl-2 text-xs font-bold text-slate-500 tracking-wide">
-                                                {apa.dataRegistro ? new Date(apa.dataRegistro).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '') : '--'}
+                                            <div className="w-20 pl-2 text-xs font-bold text-slate-500 tracking-wide">
+                                                {apa.dataRegistro ? new Date(apa.dataRegistro).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '--'}
                                             </div>
                                             
                                             {/* Paciente */}
-                                            <div className="flex-1 min-w-0 pr-4">
+                                            <div className="flex-1 min-w-0 pr-2">
                                                 <div className="text-sm font-black text-slate-800 truncate tracking-tight">{apa.nome}</div>
-                                                <div className="text-[10px] font-bold text-slate-400 mt-0.5 tracking-widest uppercase">{apa.cpf}</div>
                                             </div>
 
                                             {/* Procedimento */}
@@ -1024,12 +1023,29 @@ Responda SOMENTE o bloco JSON.`;
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="w-[190px] flex items-center justify-end gap-1.5 opacity-100 transition-opacity duration-200 pr-4">
-                                                {apa.exames_url && <button onClick={() => window.open(apa.exames_url, '_blank')} className="p-2 text-indigo-600 hover:bg-indigo-100 bg-indigo-50 border border-indigo-100 rounded-xl transition-all active:scale-95" title="Ver Exame Original"><FileText size={16} strokeWidth={2.5}/></button>}
-                                                <button onClick={() => handleVerPreviewPdf(apa)} className="p-2 text-blue-600 hover:bg-blue-100 bg-blue-50 rounded-xl transition-all active:scale-95" title="Visualizar PDF na tela"><Eye size={16} strokeWidth={2.5}/></button>
-                                                {hasPermission('Criar/Editar APA') && <button onClick={() => handleVisualizarPdf(apa)} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 bg-slate-50 border border-slate-100 rounded-xl transition-all active:scale-95" title="Imprimir / Salvar PDF"><Printer size={16} strokeWidth={2.5}/></button>}
-                                                {hasPermission('Criar/Editar APA') && <button onClick={() => handleDuplicarApa(apa)} className="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all active:scale-95" title="Duplicar"><Copy size={16} strokeWidth={2.5}/></button>}
-                                                {hasPermission('Excluir AIH/APA') && <button onClick={() => handleExcluirApa(apa.id)} className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-95" title="Excluir"><Trash2 size={16} strokeWidth={2.5}/></button>}
+                                            <div className="md:w-[190px] flex items-center justify-end opacity-100 transition-opacity duration-200 pr-2 md:pr-4 ml-auto">
+                                                {/* Mobile Dropdown */}
+                                                <details className="relative md:hidden group z-10">
+                                                    <summary className="list-none p-1.5 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none cursor-pointer text-xs font-bold flex items-center gap-1 shadow-sm selection:bg-transparent">
+                                                        Ações
+                                                    </summary>
+                                                    <div className="absolute right-0 top-[calc(100%+4px)] w-36 bg-white rounded-xl shadow-xl border border-slate-200 flex flex-col p-1.5 gap-1">
+                                                        {apa.exames_url && <button onClick={() => window.open(apa.exames_url, '_blank')} className="w-full flex items-center gap-2 p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg text-left text-xs font-bold"><FileText size={14}/> Exame</button>}
+                                                        <button onClick={() => handleVerPreviewPdf(apa)} className="w-full flex items-center gap-2 p-2 text-blue-600 hover:bg-blue-50 rounded-lg text-left text-xs font-bold"><Eye size={14}/> Preview</button>
+                                                        {hasPermission('Criar/Editar APA') && <button onClick={() => handleVisualizarPdf(apa)} className="w-full flex items-center gap-2 p-2 text-slate-600 hover:bg-slate-50 rounded-lg text-left text-xs font-bold"><Printer size={14}/> Imprimir</button>}
+                                                        {hasPermission('Criar/Editar APA') && <button onClick={() => handleDuplicarApa(apa)} className="w-full flex items-center gap-2 p-2 text-amber-600 hover:bg-amber-50 rounded-lg text-left text-xs font-bold"><Copy size={14}/> Duplicar</button>}
+                                                        {hasPermission('Excluir AIH/APA') && <button onClick={() => handleExcluirApa(apa.id)} className="w-full flex items-center gap-2 p-2 text-rose-600 hover:bg-rose-50 rounded-lg text-left text-xs font-bold"><Trash2 size={14}/> Excluir</button>}
+                                                    </div>
+                                                </details>
+
+                                                {/* Desktop Actions */}
+                                                <div className="hidden md:flex gap-1.5">
+                                                    {apa.exames_url && <button onClick={() => window.open(apa.exames_url, '_blank')} className="p-2 text-indigo-600 hover:bg-indigo-100 bg-indigo-50 border border-indigo-100 rounded-xl transition-all active:scale-95" title="Ver Exame Original"><FileText size={16} strokeWidth={2.5}/></button>}
+                                                    <button onClick={() => handleVerPreviewPdf(apa)} className="p-2 text-blue-600 hover:bg-blue-100 bg-blue-50 rounded-xl transition-all active:scale-95" title="Visualizar PDF na tela"><Eye size={16} strokeWidth={2.5}/></button>
+                                                    {hasPermission('Criar/Editar APA') && <button onClick={() => handleVisualizarPdf(apa)} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 bg-slate-50 border border-slate-100 rounded-xl transition-all active:scale-95" title="Imprimir / Salvar PDF"><Printer size={16} strokeWidth={2.5}/></button>}
+                                                    {hasPermission('Criar/Editar APA') && <button onClick={() => handleDuplicarApa(apa)} className="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all active:scale-95" title="Duplicar"><Copy size={16} strokeWidth={2.5}/></button>}
+                                                    {hasPermission('Excluir AIH/APA') && <button onClick={() => handleExcluirApa(apa.id)} className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-95" title="Excluir"><Trash2 size={16} strokeWidth={2.5}/></button>}
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
