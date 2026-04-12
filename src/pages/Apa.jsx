@@ -493,14 +493,17 @@ export default function Apa({ paciente }) {
         };
 
         // Prevenção de erro de Sintaxe no Postgres (Date column com string vazia)
-        if (!apaCompleta.dataNasc) apaCompleta.dataNasc = null;
-        if (!apaCompleta.dataProcedimento) apaCompleta.dataProcedimento = null;
+        if (!apaCompleta.dataNasc || String(apaCompleta.dataNasc).trim() === '') {
+            apaCompleta.dataNasc = null;
+        }
+        if (!apaCompleta.dataProcedimento || String(apaCompleta.dataProcedimento).trim() === '') {
+            apaCompleta.dataProcedimento = null;
+        }
 
         // Removendo campos "fantasmas" que não têm input na interface atual
         delete apaCompleta.dorso;
         delete apaCompleta.ef_outros;
         delete apaCompleta.hist_fam;
-        delete apaCompleta.anestesistaSexo;
         
         let anexarExamesExtras = [];
         if (apaCompleta.ex_coagulo) anexarExamesExtras.push(`Coagulograma: ${apaCompleta.ex_coagulo}`);
@@ -653,7 +656,7 @@ Chaves obrigatórias (se não achar algo no texto, retorne string vazia ""):
 
 Responda SOMENTE o bloco JSON.`;
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
