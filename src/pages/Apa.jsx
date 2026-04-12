@@ -526,6 +526,8 @@ export default function Apa({ paciente }) {
         delete apaCompleta.id;
         delete apaCompleta.dataRegistro;
         delete apaCompleta.dataAtualizacao;
+        delete apaCompleta.dataAvaliacao;
+        delete apaCompleta.createdAt;
         delete apaCompleta.idadeInfo;
         delete apaCompleta.imc;
 
