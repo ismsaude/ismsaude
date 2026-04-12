@@ -617,8 +617,8 @@ const RenderSection = ({ title, category, placeholder, inputValue, items, onInpu
 // --- DOCTOR EDITABLE LIST COMPONENT ---
 const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEdit }) => {
     const [editingIndex, setEditingIndex] = useState(null);
-    const [editValue, setEditValue] = useState({ nome: '', crm: '', cpf: '', especialidade: '' });
-    const [newValue, setNewValue] = useState({ nome: '', crm: '', cpf: '', especialidade: '' });
+    const [editValue, setEditValue] = useState({ nome: '', crm: '', cpf: '', especialidade: '', sexo: '', rqe: '' });
+    const [newValue, setNewValue] = useState({ nome: '', crm: '', cpf: '', especialidade: '', sexo: '', rqe: '' });
 
     const handleAdd = () => {
         if (!newValue.nome) {
@@ -626,15 +626,15 @@ const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEd
             return;
         }
         onAdd('cirurgioes', { id: Date.now().toString(), ...newValue });
-        setNewValue({ nome: '', crm: '', cpf: '', especialidade: '' });
+        setNewValue({ nome: '', crm: '', cpf: '', especialidade: '', sexo: '', rqe: '' });
     };
 
     const startEdit = (index, item) => {
         setEditingIndex(index);
         if (typeof item === 'string') {
-            setEditValue({ nome: item, crm: '', cpf: '', especialidade: '' });
+            setEditValue({ nome: item, crm: '', cpf: '', especialidade: '', sexo: '', rqe: '' });
         } else {
-            setEditValue({ nome: item.nome || '', crm: item.crm || '', cpf: item.cpf || '', especialidade: item.especialidade || '' });
+            setEditValue({ nome: item.nome || '', crm: item.crm || '', cpf: item.cpf || '', especialidade: item.especialidade || '', sexo: item.sexo || '', rqe: item.rqe || '' });
         }
     };
 
@@ -647,7 +647,7 @@ const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEd
 
         await onEdit('cirurgioes', index, updated);
         setEditingIndex(null);
-        setEditValue({ nome: '', crm: '', cpf: '', especialidade: '' });
+        setEditValue({ nome: '', crm: '', cpf: '', especialidade: '', sexo: '', rqe: '' });
     };
 
     const cancelEdit = () => {
@@ -656,8 +656,8 @@ const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEd
 
     return (
         <div className="flex flex-col bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-sm overflow-hidden md:col-span-2 lg:col-span-3">
-            <div className="p-4 border-b border-white/50 bg-white/40 flex flex-col md:flex-row gap-2 md:items-end">
-                <div className="flex-1">
+            <div className="p-4 border-b border-white/50 bg-white/40 flex flex-col md:flex-row gap-2 md:items-end flex-wrap">
+                <div className="flex-1 min-w-[200px]">
                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">
                         Nome da Equipe / Médico
                     </label>
@@ -687,6 +687,15 @@ const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEd
                         className="w-full h-8 px-2.5 bg-white/50 border border-white/60 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-400"
                     />
                 </div>
+                <div className="w-full md:w-[150px]">
+                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">RQE</label>
+                    <input
+                        value={newValue.rqe}
+                        onChange={(e) => setNewValue({ ...newValue, rqe: e.target.value })}
+                        placeholder="Ex: 144064"
+                        className="w-full h-8 px-2.5 bg-white/50 border border-white/60 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all uppercase placeholder:normal-case placeholder:text-slate-400"
+                    />
+                </div>
                 <div className="w-full md:w-[200px]">
                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Especialidade Principal</label>
                     <select
@@ -694,10 +703,22 @@ const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEd
                         onChange={(e) => setNewValue({ ...newValue, especialidade: e.target.value })}
                         className="w-full h-8 px-2.5 bg-white/50 border border-white/60 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all uppercase"
                     >
-                        <option value="">Nenhuma / Opcional</option>
+                        <option value="">Nenhuma</option>
                         {especialidades?.map((esp, i) => (
                             <option key={i} value={esp}>{esp}</option>
                         ))}
+                    </select>
+                </div>
+                <div className="w-full md:w-[150px]">
+                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Sexo</label>
+                    <select
+                        value={newValue.sexo}
+                        onChange={(e) => setNewValue({ ...newValue, sexo: e.target.value })}
+                        className="w-full h-8 px-2.5 bg-white/50 border border-white/60 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all uppercase"
+                    >
+                        <option value="">Nenhum</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Feminino">Feminino</option>
                     </select>
                 </div>
                 <button
@@ -716,8 +737,9 @@ const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEd
                         <tr className="border-b border-white/50 text-[9px] font-black text-slate-500 uppercase tracking-widest">
                             <th className="py-2 px-3">Nome / Equipe</th>
                             <th className="py-2 px-3">Especialidade</th>
-                            <th className="py-2 px-3">CRM</th>
+                            <th className="py-2 px-3">CRM / RQE</th>
                             <th className="py-2 px-3">CPF</th>
+                            <th className="py-2 px-3">Sexo</th>
                             <th className="py-2 px-3 text-center">Ações</th>
                         </tr>
                     </thead>
@@ -727,13 +749,15 @@ const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEd
                             const nome = isString ? item : item.nome;
                             const especialidade = isString ? '---' : (item.especialidade || '---');
                             const crm = isString ? '---' : (item.crm || '---');
+                            const rqe = isString ? '' : (item.rqe || '');
                             const cpf = isString ? '---' : (item.cpf || '---');
+                            const sexoC = isString ? '---' : (item.sexo || '---');
 
                             return (
                                 <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
                                     {editingIndex === index ? (
-                                        <td colSpan={4} className="px-5 py-2 animate-in fade-in duration-200">
-                                            <div className="flex gap-2">
+                                        <td colSpan={5} className="px-5 py-2 animate-in fade-in duration-200">
+                                            <div className="flex gap-2 flex-wrap">
                                                 <input
                                                     value={editValue.nome}
                                                     onChange={(e) => setEditValue({ ...editValue, nome: e.target.value })}
@@ -752,8 +776,14 @@ const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEd
                                                 <input
                                                     value={editValue.crm}
                                                     onChange={(e) => setEditValue({ ...editValue, crm: e.target.value })}
-                                                    className="w-24 h-8 px-2 bg-white border border-blue-400 rounded text-xs font-bold text-slate-800 uppercase outline-none focus:border-blue-500 shadow-sm"
+                                                    className="w-20 h-8 px-2 bg-white border border-blue-400 rounded text-xs font-bold text-slate-800 uppercase outline-none focus:border-blue-500 shadow-sm"
                                                     placeholder="CRM"
+                                                />
+                                                <input
+                                                    value={editValue.rqe}
+                                                    onChange={(e) => setEditValue({ ...editValue, rqe: e.target.value })}
+                                                    className="w-20 h-8 px-2 bg-white border border-blue-400 rounded text-xs font-bold text-slate-800 uppercase outline-none focus:border-blue-500 shadow-sm"
+                                                    placeholder="RQE"
                                                 />
                                                 <input
                                                     value={editValue.cpf}
@@ -762,6 +792,15 @@ const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEd
                                                     placeholder="CPF"
                                                     maxLength="14"
                                                 />
+                                                <select
+                                                    value={editValue.sexo}
+                                                    onChange={(e) => setEditValue({ ...editValue, sexo: e.target.value })}
+                                                    className="w-24 h-8 px-2 bg-white border border-blue-400 rounded text-xs font-bold text-slate-800 uppercase outline-none focus:border-blue-500 shadow-sm"
+                                                >
+                                                    <option value="">Nenhum</option>
+                                                    <option value="Masculino">Masculino</option>
+                                                    <option value="Feminino">Feminino</option>
+                                                </select>
                                                 <button onClick={() => saveEdit(index)} className="px-2 text-emerald-600 border border-emerald-200 hover:bg-emerald-50 rounded-md font-bold text-[10px] uppercase shadow-sm"><Check size={14} /></button>
                                                 <button onClick={cancelEdit} className="px-2 text-rose-600 border border-rose-200 hover:bg-rose-50 rounded-md font-bold text-[10px] uppercase shadow-sm"><X size={14} /></button>
                                             </div>
@@ -770,8 +809,9 @@ const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEd
                                         <>
                                             <td className="px-3 py-1.5 text-xs font-bold text-slate-800 uppercase">{nome}</td>
                                             <td className="px-3 py-1.5 text-[10px] font-semibold text-slate-600 uppercase bg-blue-50/50 rounded">{especialidade}</td>
-                                            <td className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 uppercase">{crm}</td>
+                                            <td className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 uppercase">{crm} {rqe ? `| RQE ${rqe}` : ''}</td>
                                             <td className="px-3 py-1.5 text-[10px] font-semibold text-slate-500">{cpf}</td>
+                                            <td className="px-3 py-1.5 text-[10px] font-semibold text-slate-500">{sexoC}</td>
                                             <td className="px-3 py-1.5 text-center">
                                                 <div className="flex items-center justify-center gap-1.5">
                                                     <button onClick={() => startEdit(index, item)} className="p-1.5 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-md transition-all shadow-sm">
