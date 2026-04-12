@@ -7,6 +7,23 @@ export default function ApaPrintTemplate({ data }) {
     const { theme } = useWhiteLabel();
     if (!data) return null;
 
+    const getDoctorPrefix = (nome, sexo) => {
+        if (sexo === 'Masculino' || sexo === 'M') return 'DR.';
+        if (sexo === 'Feminino' || sexo === 'F') return 'DRA.';
+        if (!nome) return 'DR(A).';
+        
+        try {
+            const pNome = nome.trim().toUpperCase().split(' ')[0];
+            const nomesFem = ['ALINE', 'CRISTIANE', 'SIMONE', 'TATIANE', 'LILIAN', 'CARMEN', 'HELEN', 'EVELYN', 'IVONE', 'JAQUELINE', 'KAREN', 'RAQUEL', 'ROSE', 'SUELI', 'THAIS', 'THAIZ', 'ISIS', 'LAIS', 'LAÍS', 'BEATRIZ', 'ALICE'];
+            const nomesMasc = ['MARCOS', 'ANDRE', 'ANDRÉ', 'DANIEL', 'GABRIEL', 'LUCAS', 'MATHEUS', 'MATEUS', 'RAFAEL', 'FELIPE', 'GUILHERME', 'ARTHUR', 'HEITOR', 'BERNARDO', 'DAVI', 'MIGUEL', 'THIAGO', 'TIAGO', 'IGOR', 'VITOR', 'DENIS', 'WILLIAN', 'ALLAN', 'ALAN', 'ALEX', 'CAUE', 'CAUÊ', 'GIOVANI', 'GIOVANNI', 'JEFERSON', 'JONATAS', 'JONATHAN', 'LUIZ', 'LUIS', 'MICHEL', 'WAGNER', 'ALESSANDRO', 'ANDERSON'];
+            
+            if (nomesFem.includes(pNome) || pNome.endsWith('A')) return 'DRA.';
+            if (nomesMasc.includes(pNome) || pNome.endsWith('O') || pNome.endsWith('S') || pNome.endsWith('R') || pNome.endsWith('L') || pNome.endsWith('M') || pNome.endsWith('N') || pNome.endsWith('E') || pNome.endsWith('D')) return 'DR.';
+        } catch(e) {}
+        
+        return 'DR.'; // Default fallback para masculino ao invés de ficar o estético DR(A)
+    };
+
     const formatarDataRegistro = (campoData) => {
         if (!campoData) return new Date().toLocaleDateString('pt-BR');
 
@@ -160,11 +177,7 @@ export default function ApaPrintTemplate({ data }) {
                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wide mt-1">
                         {/* Linha 1: Título Inteligente + Nome */}
                         <div>
-                            {data?.anestesistaNome ? (
-                                (data?.anestesistaSexo === 'Masculino' || data?.anestesistaSexo === 'M') ? `DR. ${data.anestesistaNome}` :
-                                    (data?.anestesistaSexo === 'Feminino' || data?.anestesistaSexo === 'F') ? `DRA. ${data.anestesistaNome}` :
-                                        `DR(A). ${data.anestesistaNome}`
-                            ) : ''}
+                            {data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}
                         </div>
                         {/* Linha 2: CRM quebrado para a linha de baixo */}
                         <div>
@@ -409,20 +422,37 @@ export default function ApaPrintTemplate({ data }) {
 
             {/* 12. JEJUM */}
             <SectionBlock title="12. Jejum Pré-Operatório">
-                <table className="w-full text-left border border-gray-300 mb-1.5 text-[8px]">
-                    <thead>
-                        <tr className="bg-gray-100">
-                            <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase">Tipo de Ingesta</th>
-                            <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase">Tempo de Jejum Mínimo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td className="p-1 border border-gray-300">Líquidos Claros (Água, Chá)</td><td className="p-1 border border-gray-300 text-center font-bold">2 horas</td></tr>
-                        <tr><td className="p-1 border border-gray-300">Leite Materno</td><td className="p-1 border border-gray-300 text-center font-bold">4 horas</td></tr>
-                        <tr><td className="p-1 border border-gray-300">Fórmula Láctea / Leite não humano / Refeição leve</td><td className="p-1 border border-gray-300 text-center font-bold">6 horas</td></tr>
-                        <tr><td className="p-1 border border-gray-300">Refeição completa (com gordura/carne)</td><td className="p-1 border border-gray-300 text-center font-bold">8 horas</td></tr>
-                    </tbody>
-                </table>
+                {data?.jejum_orientacao === 'Protocolo Absoluto (8h)' ? (
+                    <table className="w-full text-left border border-gray-300 mb-1.5 text-[8px]">
+                        <thead>
+                            <tr className="bg-gray-100">
+                                <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase">Tipo de Ingesta</th>
+                                <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase text-center w-40">Tempo de Jejum Mínimo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td className="p-1 border border-gray-300 font-bold">Alimentos Sólidos e Líquidos (Jejum absoluto)</td>
+                                <td className="p-1 border border-gray-300 text-center font-black text-rose-700">8 horas</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                ) : (
+                    <table className="w-full text-left border border-gray-300 mb-1.5 text-[8px]">
+                        <thead>
+                            <tr className="bg-gray-100">
+                                <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase">Tipo de Ingesta</th>
+                                <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase">Tempo de Jejum Mínimo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td className="p-1 border border-gray-300">Líquidos Claros (Água, Chá)</td><td className="p-1 border border-gray-300 text-center font-bold">2 horas</td></tr>
+                            <tr><td className="p-1 border border-gray-300">Leite Materno</td><td className="p-1 border border-gray-300 text-center font-bold">4 horas</td></tr>
+                            <tr><td className="p-1 border border-gray-300">Fórmula Láctea / Leite não humano / Refeição leve</td><td className="p-1 border border-gray-300 text-center font-bold">6 horas</td></tr>
+                            <tr><td className="p-1 border border-gray-300">Refeição completa (com gordura/carne)</td><td className="p-1 border border-gray-300 text-center font-bold">8 horas</td></tr>
+                        </tbody>
+                    </table>
+                )}
                 <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
                     <Field label="Orientação Específica de Jejum" value={data?.jejum_orientacao} />
                     <Field label="Profilaxia de Aspiração" value={data?.profilaxia_asp} />
@@ -473,11 +503,7 @@ export default function ApaPrintTemplate({ data }) {
                         <div className="border-t border-black w-full mb-1"></div>
                         <p className="font-bold text-[9px] uppercase text-[#002776]">
                             {/* Título Inteligente + Nome também na assinatura */}
-                            {data?.anestesistaNome ? (
-                                (data?.anestesistaSexo === 'Masculino' || data?.anestesistaSexo === 'M') ? `DR. ${data.anestesistaNome}` :
-                                    (data?.anestesistaSexo === 'Feminino' || data?.anestesistaSexo === 'F') ? `DRA. ${data.anestesistaNome}` :
-                                        `DR(A). ${data.anestesistaNome}`
-                            ) : ''}
+                            {data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}
                         </p>
                         <p className="text-[7.5px] text-gray-500 uppercase">
                             {data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : ''}
