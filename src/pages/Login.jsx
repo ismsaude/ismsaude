@@ -56,18 +56,18 @@ const Login = () => {
                 backgroundPosition: 'center'
             }}
         >
-            <div className="w-full md:w-1/2 lg:w-1/3 min-h-full bg-white/10 backdrop-blur-md border-l border-white/20 shadow-2xl p-10 flex flex-col justify-center animate-in fade-in slide-in-from-right duration-700 relative z-10">
-                <div className="text-center mb-10">
+            <div className="w-full md:w-1/2 lg:w-1/3 min-h-full bg-white/70 backdrop-blur-md border-l border-white/40 shadow-2xl p-10 flex flex-col justify-center animate-in fade-in slide-in-from-right duration-700 relative z-10">
+                <div className="text-center mb-12">
                     {theme.logoUrl && (
-                        <div className="flex justify-center mb-4">
-                            <img src={theme.logoUrl} alt="Logo" className="h-16 w-auto object-contain drop-shadow-sm" />
+                        <div className="flex justify-center mb-8">
+                            <img src={theme.logoUrl} alt="Logo" className="h-[4.5rem] w-auto object-contain drop-shadow-md" />
                         </div>
                     )}
-                    <h1 className="text-2xl font-extrabold text-slate-900 uppercase tracking-tighter leading-tight drop-shadow-sm mt-2">
-                        Bem vindo
+                    <h1 className="text-3xl font-extrabold text-slate-900 uppercase tracking-tighter leading-tight drop-shadow-md mt-4">
+                        BEM-VINDO
                     </h1>
-                    <p className="text-[10px] font-semibold text-slate-800 uppercase tracking-widest mt-2 leading-relaxed px-4">
-                        Sistema de Gestão de Agendamento da <br /> {theme.nomeInstituicao}
+                    <p className="text-xs font-extrabold text-slate-900 uppercase tracking-widest mt-5 leading-relaxed px-4 drop-shadow-sm">
+                        Plataforma de Saúde Inteligente da <br /> ISM Health Solutions
                     </p>
                 </div>
 
@@ -98,11 +98,11 @@ const Login = () => {
                         </div>
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end pt-3 pb-3">
                         <button
                             type="button"
                             onClick={handleForgotPassword}
-                            className="text-[10px] font-bold text-blue-700 uppercase hover:text-blue-800 transition-colors"
+                            className="text-[10px] font-bold text-blue-800 uppercase hover:text-blue-900 transition-colors drop-shadow-sm"
                         >
                             Esqueci minha senha
                         </button>

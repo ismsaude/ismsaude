@@ -964,36 +964,60 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
 
     const handleUpdate = async (id, data) => {
         try {
-            // Se for atualização (tem ID)
+            const dataToSave = { ...data };
+
             if (id) {
-                const { error } = await supabase.from('surgeries').update(data).eq('id', id);
-                if (error) throw error;
+                // Tenta atualizar
+                let { error } = await supabase.from('surgeries').update(dataToSave).eq('id', id);
+                
+                // Fallback resiliente: se a coluna 'arquivoUrl' ou 'arquivos' não existir no BD
+                if (error && error.code === 'PGRST204' && (error.message.includes('arquivoUrl') || error.message.includes('arquivos'))) {
+                    console.warn("Retentando atualização sem campos de arquivos (Colunas ausentes)...");
+                    delete dataToSave.arquivoUrl;
+                    delete dataToSave.arquivos;
+                    const fallback = await supabase.from('surgeries').update(dataToSave).eq('id', id);
+                    if (fallback.error) throw fallback.error;
+                } else if (error) {
+                    throw error;
+                }
 
                 // Busca o nome do paciente cruzando com o estado atual para o Log
                 const target = surgeries.find(s => s.id === id) || { paciente: 'Desconhecido' };
-                const patName = target.nomePaciente || target.paciente || data.nomePaciente || data.paciente || 'Desconhecido';
+                const patName = target.nomePaciente || target.paciente || dataToSave.nomePaciente || dataToSave.paciente || 'Desconhecido';
 
                 // Cria um resumo das alterações para o Log
-                const alteracoes = Object.entries(data).map(([key, val]) => `${key}: ${val === null ? 'Vazio' : val}`).join(' | ');
+                const alteracoes = Object.entries(dataToSave).map(([key, val]) => `${key}: ${val === null ? 'Vazio' : val}`).join(' | ');
                 await logAction('Edição de Prontuário', `Paciente: ${patName} -> Alterações: [ ${alteracoes} ]`);
 
-                setSurgeries(prev => prev.map(s => s.id === id ? { ...s, ...data } : s));
+                setSurgeries(prev => prev.map(s => s.id === id ? { ...s, ...dataToSave } : s));
                 toast.success('Prontuário atualizado com sucesso!');
             } else {
                 // Se for Inserção de Novo Paciente
-                const payloadData = { ...data, unidade: unidadeAtual };
-                const { error } = await supabase.from('surgeries').insert([payloadData]);
-                if (error) throw error;
+                let payloadData = { ...dataToSave, unidade: unidadeAtual };
+                let { error } = await supabase.from('surgeries').insert([payloadData]);
 
-                const patName = data.nomePaciente || data.paciente || 'Desconhecido';
+                // Fallback resiliente
+                if (error && error.code === 'PGRST204' && (error.message.includes('arquivoUrl') || error.message.includes('arquivos'))) {
+                    console.warn("Retentando inserção sem campos de arquivos (Colunas ausentes)...");
+                    delete payloadData.arquivoUrl;
+                    delete payloadData.arquivos;
+                    const fallback = await supabase.from('surgeries').insert([payloadData]);
+                    if (fallback.error) throw fallback.error;
+                } else if (error) {
+                    throw error;
+                }
+
+                const patName = payloadData.nomePaciente || payloadData.paciente || 'Desconhecido';
                 await logAction('Novo Paciente na Fila', `Paciente: ${patName} foi inserido no sistema.`);
 
                 toast.success('Novo prontuário criado!');
+                // Auto reload para puxar o ID
+                setTimeout(() => window.location.reload(), 1500);
             }
             setEditingSurgery(null);
         } catch (error) {
             console.error(error);
-            toast.error('Erro ao salvar prontuário.');
+            toast.error(`Erro ao salvar: ${error.message || ''}`);
         }
     };
 

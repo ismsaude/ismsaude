@@ -46,19 +46,20 @@ export default function ApaPrintTemplate({ data }) {
         } catch { return '--'; }
     };
 
-    const getImcStatus = (imc) => {
-        if (!imc) return '';
+    const getImcData = (imc) => {
+        if (!imc) return { label: '', color: '' };
         const v = parseFloat(imc);
-        if (v < 18.5) return ' (Abaixo do peso)';
-        if (v < 25) return ' (Normal)';
-        if (v < 30) return ' (Sobrepeso)';
-        if (v < 35) return ' (Obesidade I)';
-        if (v < 40) return ' (Obesidade II)';
-        return ' (Obesidade III)';
+        if (v < 18.5) return { label: ' (Abaixo do peso)', color: 'text-amber-700 bg-amber-50 px-1 border-amber-200 rounded-sm' };
+        if (v < 25) return { label: ' (Normal)', color: 'text-emerald-700 bg-emerald-50 px-1 border-emerald-200 rounded-sm' };
+        if (v < 30) return { label: ' (Sobrepeso)', color: 'text-orange-700 bg-orange-50 px-1 border-orange-200 rounded-sm' };
+        if (v < 35) return { label: ' (Obesidade I)', color: 'text-rose-600 bg-rose-50 px-1 border-rose-200 rounded-sm' };
+        if (v < 40) return { label: ' (Obesidade II)', color: 'text-rose-700 bg-rose-100 px-1 border-rose-300 rounded-sm' };
+        return { label: ' (Obesidade III)', color: 'text-red-900 bg-red-200 px-1 border-red-400 rounded-sm' };
     };
 
     const imcLocal = data?.imc || (data?.peso && data?.altura ? (parseFloat(data?.peso.toString().replace(',', '.')) / Math.pow(parseFloat(data?.altura.toString().replace(',', '.')) / 100, 2)).toFixed(1) : null);
-    const imcDisplay = imcLocal ? `${imcLocal}${getImcStatus(imcLocal)}` : '';
+    const imcInfo = getImcData(imcLocal);
+    const imcDisplay = imcLocal ? `${imcLocal}${imcInfo.label}` : '';
 
     const dataDocumento = formatarDataRegistro(data?.createdAt || data?.dataCriacao || data?.dataRegistro || data?.data);
 
@@ -78,10 +79,10 @@ export default function ApaPrintTemplate({ data }) {
     const labelClass = "text-[7.5px] text-gray-500 uppercase font-semibold leading-none";
     const valueClass = "text-[9.5px] font-bold text-[#002776] uppercase leading-snug";
 
-    const Field = ({ label, value, className = "" }) => (
+    const Field = ({ label, value, className = "", valueClassName = "" }) => (
         <div className={`flex flex-col ${className}`}>
             <span className={`${labelClass} mb-0.5`}>{label}</span>
-            <div className={`border-b border-gray-300 pb-0.5 min-h-[14px] break-words whitespace-pre-wrap ${valueClass}`}>
+            <div className={`border-b border-gray-300 pb-0.5 min-h-[14px] break-words whitespace-pre-wrap ${valueClass} ${valueClassName}`}>
                 {value || '--'}
             </div>
         </div>
@@ -120,10 +121,39 @@ export default function ApaPrintTemplate({ data }) {
         }
     };
 
-    return (
-        <div className="w-full bg-white text-black p-0 mx-auto font-sans leading-tight" id="apaContent">
+    // Processamento de exames empacotados em ex_outros
+    let displayCoagulo = data?.ex_coagulo || '';
+    let displayEco = data?.ex_eco || '';
+    let displayHepato = data?.ex_hepato || '';
+    let displayOutrosEsp = data?.ex_outros_esp || '';
+    let displayOutrosExames = data?.ex_outros || '';
 
-            {/* HEADER */}
+    if (displayOutrosExames.includes('[Coagulograma:') || displayOutrosExames.includes('[Ecocardiograma:') || displayOutrosExames.includes('[Func. Hepática:') || displayOutrosExames.includes('[Outros Específicos:')) {
+        const matches = displayOutrosExames.match(/\[(.*?)\]/g);
+        if (matches) {
+            const lastPack = matches[matches.length - 1];
+            const content = lastPack.replace('[', '').replace(']', '');
+            content.split(' | ').forEach(item => {
+                if (item.startsWith('Coagulograma: ')) displayCoagulo = item.replace('Coagulograma: ', '');
+                if (item.startsWith('Ecocardiograma: ')) displayEco = item.replace('Ecocardiograma: ', '');
+                if (item.startsWith('Func. Hepática: ')) displayHepato = item.replace('Func. Hepática: ', '');
+                if (item.startsWith('Outros Específicos: ')) displayOutrosEsp = item.replace('Outros Específicos: ', '');
+            });
+            displayOutrosExames = displayOutrosExames.replace(lastPack, '').trim();
+        }
+    }
+
+    return (
+        <div className="w-full max-w-[210mm] mx-auto bg-white text-slate-800 text-[10px] leading-tight font-sans tracking-tight" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+            <style type="text/css" media="print">
+                {`
+                    @page { size: A4 portrait; margin: 10mm; }
+                    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                `}
+            </style>
+            
+            {/* CABEÇALHO */}
             <div className="flex justify-between items-end border-b-2 border-gray-800 pb-1.5 mb-2 print:break-inside-avoid">
                 <div className="flex flex-col justify-end w-1/3">
                     {theme.logoUrl && <img src={theme.logoUrl} alt="Logo" className="h-[32px] w-[auto] object-contain object-left mb-1" onError={(e) => e.target.style.display = 'none'} />}
@@ -139,6 +169,7 @@ export default function ApaPrintTemplate({ data }) {
                         {/* Linha 2: CRM quebrado para a linha de baixo */}
                         <div>
                             {data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : ''}
+                            {data?.anestesistaRQE ? ` | RQE ${data.anestesistaRQE}` : ''}
                         </div>
                     </div>
                 </div>
@@ -166,7 +197,7 @@ export default function ApaPrintTemplate({ data }) {
                     <Field label="Sexo" value={data?.sexo} />
                     <Field label="Peso (kg)" value={data?.peso} />
                     <Field label="Altura (cm)" value={data?.altura} />
-                    <Field label="IMC" value={imcDisplay} />
+                    <Field label="IMC" value={imcDisplay} valueClassName={imcInfo.color} />
                 </div>
                 {/* SINAIS VITAIS BÁSICOS MOVIDOS PARA CÁ */}
                 <div className="grid grid-cols-5 gap-x-2 gap-y-1.5 mt-1.5 pt-1.5 border-t border-gray-300">
@@ -250,7 +281,7 @@ export default function ApaPrintTemplate({ data }) {
                                     <td className="p-0.5 text-[8.5px] text-[#002776] font-bold uppercase">{m?.nome || '--'}</td>
                                     <td className="p-0.5 text-[8.5px] text-[#002776] font-bold uppercase">{m?.dose || '--'}</td>
                                     <td className="p-0.5 text-[8.5px] text-[#002776] font-bold uppercase">{m?.frequencia || '--'}</td>
-                                    <td className="p-0.5 text-[8.5px] text-[#002776] font-bold uppercase">{m?.conduta || '--'}</td>
+                                    <td className={`p-0.5 text-[8.5px] font-bold uppercase ${m?.conduta?.toLowerCase().includes('manter') ? 'text-green-600' : m?.conduta?.toLowerCase().includes('suspender') ? 'text-red-600' : 'text-[#002776]'}`}>{m?.conduta || '--'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -282,14 +313,10 @@ export default function ApaPrintTemplate({ data }) {
 
             {/* 8. EXAME FÍSICO (ESPECIFICIDADES) */}
             <SectionBlock title="8. Exame Físico (Especificidades)">
-                <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-1.5">
+                <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-0.5">
                     <Field label="Cardiovascular (ACV)" value={data?.acv} />
                     <Field label="Respiratório (AR)" value={data?.ar} />
                     <Field label="Abdome" value={data?.abdome} />
-                </div>
-                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
-                    <Field label="Dorso / Coluna" value={data?.dorso} />
-                    <Field label="Outros Achados" value={data?.ef_outros} />
                 </div>
             </SectionBlock>
 
@@ -353,21 +380,29 @@ export default function ApaPrintTemplate({ data }) {
                     <Field label="Leucócitos" value={data?.ex_leuco} />
                 </div>
                 <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
+                    <Field label="Coagulograma" value={displayCoagulo} />
                     <Field label="TAP/INR" value={data?.ex_inr} />
                     <Field label="TTPa" value={data?.ex_ttpa} />
                     <Field label="Glicemia" value={data?.ex_glic} />
-                    <Field label="HbA1c" value={data?.ex_hba1c} />
                 </div>
-                <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1.5">
+                <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
+                    <Field label="HbA1c" value={data?.ex_hba1c} />
                     <Field label="Ureia" value={data?.ex_ureia} />
                     <Field label="Creatinina" value={data?.ex_creat} />
-                    <Field label="Na+" value={data?.ex_na} />
-                    <Field label="K+" value={data?.ex_k} />
+                    <Field label="Sódio (Na+)" value={data?.ex_na} />
                 </div>
-                <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-1.5">
+                <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
+                    <Field label="Potássio (K+)" value={data?.ex_k} />
+                    <Field label="Ecocardiograma" value={displayEco} />
+                    <Field label="Função Hepática" value={displayHepato} />
+                    <Field label="Outros (TSH / Urina...)" value={displayOutrosEsp} />
+                </div>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1 mb-1.5">
                     <Field label="ECG" value={data?.ex_ecg} />
                     <Field label="RX Tórax" value={data?.ex_rx} />
-                    <Field label="Outros Exames" value={data?.ex_outros} />
+                </div>
+                <div className="mb-1.5">
+                    <Field label="Outros Exames" value={displayOutrosExames} />
                 </div>
                 <Field label="Observações sobre Exames" value={data?.ex_obs} />
             </SectionBlock>
@@ -432,10 +467,8 @@ export default function ApaPrintTemplate({ data }) {
                 <div className="flex justify-center mt-2 pb-2">
                     {/* Médico (Centro) */}
                     <div className="text-center w-1/2">
-                        <div className="h-10 flex items-end justify-center pb-1">
-                            <span className="text-[#002776] text-[16px] leading-none tracking-wide" style={{ fontFamily: "'Lucida Handwriting', 'Brush Script MT', 'Segoe Script', cursive", fontStyle: 'italic' }}>
-                                {data?.anestesistaNome || ''}
-                            </span>
+                        <div className="h-20 flex items-end justify-center pb-1">
+                            {/* Assinatura removida conforme solicitação */}
                         </div>
                         <div className="border-t border-black w-full mb-1"></div>
                         <p className="font-bold text-[9px] uppercase text-[#002776]">

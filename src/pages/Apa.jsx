@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { usePermission } from '../contexts/PermissionContext';
@@ -7,7 +7,7 @@ import { useUnit } from '../contexts/UnitContext';
 import ApaPrintTemplate from '../components/ApaPrintTemplate';
 import { supabase } from '../services/supabase';
 import { logAction } from '../utils/logger';
-import { Search, Printer, Save, Activity, Plus, ArrowLeft, Loader2, ZoomIn, ZoomOut, Eye, Trash2, ChevronRight, ChevronDown, User, Stethoscope, FileText, ActivitySquare, CheckSquare, AlertTriangle, Copy } from 'lucide-react';
+import { Search, Printer, Save, Activity, Plus, ArrowLeft, Loader2, ZoomIn, ZoomOut, Eye, Trash2, ChevronRight, ChevronDown, User, Stethoscope, FileText, ActivitySquare, CheckSquare, AlertTriangle, Copy, Sparkles, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { maskCPF, maskTelefone } from '../utils/masks';
 import UnitPrompt from '../components/UnitPrompt';
@@ -101,6 +101,13 @@ export default function Apa({ paciente }) {
     const [modoVisao, setModoVisao] = useState(draftState?.modoVisao || 'lista');
     const [activeTab, setActiveTab] = useState(draftState?.activeTab || 'dados');
     const [searchTerm, setSearchTerm] = useState(draftState?.searchTerm || '');
+    const [isSaving, setIsSaving] = useState(false);
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [aiValidationData, setAiValidationData] = useState(null);
+    const [aiValidationFileUrl, setAiValidationFileUrl] = useState(null);
+    const [pendingExameFile, setPendingExameFile] = useState(null);
+    const [exameFileToUpload, setExameFileToUpload] = useState(null);
+    const fileInputRef = useRef(null);
     
     const [apaParaImprimir, setApaParaImprimir] = useState(null);
     const [listaApas, setListaApas] = useState([]);
@@ -127,7 +134,7 @@ export default function Apa({ paciente }) {
         va_abertura: '', va_dtm: '', va_dem: '', va_cervical: '', va_protese: 'Não', va_cormack: '', va_dificil: '', va_obs: '',
         asa: '',
         ex_hb: '', ex_ht: '', ex_plaq: '', ex_leuco: '', ex_inr: '', ex_ttpa: '', ex_glic: '', ex_hba1c: '',
-        ex_ureia: '', ex_creat: '', ex_na: '', ex_k: '', ex_coagulo: '', ex_eco: '', ex_hepato: '', ex_outros_esp: '', ex_ecg: '', ex_rx: '', ex_outros: '', ex_obs: '',
+        ex_ureia: '', ex_creat: '', ex_na: '', ex_k: '', ex_coagulo: '', ex_eco: '', ex_hepato: '', ex_outros_esp: '', ex_ecg: '', ex_rx: '', ex_outros: '', ex_obs: '', exames_url: '',
         jejum_orientacao: '', profilaxia_asp: 'Não indicada',
         plan_tecnica: '', plan_via_aerea: '', plan_monitor: 'Básica (ECG, SpO2, PANI, Capno)', plan_acesso: 'Periférico 1 via',
         plan_hemoderivados: 'Não', plan_destino: '', plan_obs: '',
@@ -247,7 +254,7 @@ export default function Apa({ paciente }) {
         try {
             const { data, error } = await supabase
                 .from('apas')
-                .select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade')
+                .select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url')
                 .or(`unidade.eq.${unidadeAtual},unidade.is.null`)
                 .order('createdAt', { ascending: false })
                 .limit(6000);
@@ -255,7 +262,7 @@ export default function Apa({ paciente }) {
             if (error) {
                 if (error.code === '42703' || error.message?.includes('does not exist')) {
                     toast.error("Por favor, crie a coluna 'unidade' na tabela apas!");
-                    const fallback = await supabase.from('apas').select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade').order('createdAt', { ascending: false }).limit(6000);
+                    const fallback = await supabase.from('apas').select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url').order('createdAt', { ascending: false }).limit(6000);
                     setListaApas(fallback.data || []);
                 } else {
                     throw error;
@@ -355,28 +362,46 @@ export default function Apa({ paciente }) {
         }
     };
 
-    const handleDuplicarApa = (apa) => {
-        const fData = { ...defaultFormData, ...apa, id: undefined, dataRegistro: undefined, dataAtualizacao: undefined };
-        Object.keys(fData).forEach(key => { if (fData[key] === null) fData[key] = ''; });
-        
-        fData.dataProcedimento = new Date().toISOString().split('T')[0];
-        delete fData.alergias; delete fData.medicamentos; delete fData.negaAlergia; delete fData.negaMed; delete fData.mallampati; delete fData.parecerFinal;
-        if (apa.comorbidadesList && Array.isArray(apa.comorbidadesList)) { apa.comorbidadesList.forEach(k => { fData[k] = true; }); }
-        setFormData(prev => ({ ...prev, ...fData }));
-        let loadedAlergias = []; try { loadedAlergias = typeof apa.alergias === 'string' ? JSON.parse(apa.alergias) : apa.alergias; } catch(e) {}
-        let loadedMedicamentos = []; try { loadedMedicamentos = typeof apa.medicamentos === 'string' ? JSON.parse(apa.medicamentos) : apa.medicamentos; } catch(e) {}
-        setNegaAlergia(apa.negaAlergia !== undefined ? apa.negaAlergia : false);
-        setAlergias((loadedAlergias && loadedAlergias.length > 0) ? loadedAlergias : [{ substancia: '', reacao: '' }]);
-        setNegaMed(apa.negaMed !== undefined ? apa.negaMed : false);
-        setMedicamentos((loadedMedicamentos && loadedMedicamentos.length > 0) ? loadedMedicamentos : [{ nome: '', dose: '', frequencia: '', conduta: '' }]);
-        setMallampati(apa.mallampati || '');
-        setParecer(apa.parecerFinal || '');
-        setSearchTerm(apa.nome || '');
-        setApaIdParaCarregar(null);
-        setIsReadOnly(false);
-        setModoVisao('formulario');
-        setActiveTab('dados');
-        toast.success("APA Duplicada! Ajuste o que for necessário e clique em Salvar.", { duration: 4500 });
+    const handleDuplicarApa = async (apaBase) => {
+        const loadingToast = toast.loading("Carregando prontuário completo...");
+        try {
+            const { data: apaCompleta, error } = await supabase.from('apas').select('*').eq('id', apaBase.id).single();
+            if (error) throw error;
+            
+            const fData = { ...defaultFormData, ...apaCompleta, id: undefined, dataRegistro: undefined, dataAtualizacao: undefined, exames_url: undefined };
+            Object.keys(fData).forEach(key => { if (fData[key] === null) fData[key] = ''; });
+            
+            fData.dataProcedimento = new Date().toISOString().split('T')[0];
+            delete fData.alergias; delete fData.medicamentos; delete fData.negaAlergia; delete fData.negaMed; delete fData.mallampati; delete fData.parecerFinal;
+            if (apaCompleta.comorbidadesList && Array.isArray(apaCompleta.comorbidadesList)) { apaCompleta.comorbidadesList.forEach(k => { fData[k] = true; }); }
+            setFormData(prev => ({ ...prev, ...fData }));
+            
+            let loadedAlergias = []; try { loadedAlergias = typeof apaCompleta.alergias === 'string' ? JSON.parse(apaCompleta.alergias) : apaCompleta.alergias; } catch(e) {}
+            let loadedMedicamentos = []; try { loadedMedicamentos = typeof apaCompleta.medicamentos === 'string' ? JSON.parse(apaCompleta.medicamentos) : apaCompleta.medicamentos; } catch(e) {}
+            
+            setNegaAlergia(apaCompleta.negaAlergia !== undefined ? apaCompleta.negaAlergia : false);
+            setAlergias((loadedAlergias && loadedAlergias.length > 0) ? loadedAlergias : [{ substancia: '', reacao: '' }]);
+            
+            setNegaMed(apaCompleta.negaMed !== undefined ? apaCompleta.negaMed : false);
+            setMedicamentos((loadedMedicamentos && loadedMedicamentos.length > 0) ? loadedMedicamentos : [{ nome: '', dose: '', frequencia: '', conduta: '' }]);
+            
+            setMallampati(apaCompleta.mallampati || '');
+            setParecer(apaCompleta.parecerFinal || '');
+            setSearchTerm(apaCompleta.nome || '');
+            
+            setApaIdParaCarregar(null);
+            setIsReadOnly(false);
+            setModoVisao('formulario');
+            setActiveTab('dados');
+            
+            toast.dismiss(loadingToast);
+            toast.success("APA Duplicada! Ajuste o que for necessário e clique em Salvar.", { duration: 4500 });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (error) {
+            console.error(error);
+            toast.dismiss(loadingToast);
+            toast.error("Erro ao carregar os dados para duplicação.");
+        }
     };
 
     const handleExcluirApa = async (id) => {
@@ -392,6 +417,8 @@ export default function Apa({ paciente }) {
     };
 
     const handleSalvarApa = async () => {
+        if (isSaving) return;
+
         if (!unidadeAtual) return toast.error("Ação Bloqueada: Selecione o Local de Atendimento antes de salvar.");
         if (!formData.nome) return toast.error("Selecione um paciente antes de salvar.");
         if (!formData.dataNasc) return toast.error("A Data de Nascimento é obrigatória.");
@@ -418,6 +445,8 @@ export default function Apa({ paciente }) {
         if (!formData.plan_tecnica) return toast.error("Obrigatório: Selecione a Técnica Anestésica Prevista.");
         if (!formData.plan_destino) return toast.error("Obrigatório: Informe o Destino Pós-Op Previsto.");
         if (!parecer) return toast.error("Obrigatório: Assinale o Parecer Anestésico final (Apto/Restrição/Inapto).");
+
+        setIsSaving(true);
 
         // 1. DADOS DE SEGURANÇA BÁSICOS (Login Auth)
         let nomeMedico = user?.nome || user?.displayName || user?.name || '';
@@ -463,6 +492,10 @@ export default function Apa({ paciente }) {
             unidade: unidadeAtual // <-- NOVO: Salva a unidade em que foi criada
         };
 
+        // Prevenção de erro de Sintaxe no Postgres (Date column com string vazia)
+        if (!apaCompleta.dataNasc) apaCompleta.dataNasc = null;
+        if (!apaCompleta.dataProcedimento) apaCompleta.dataProcedimento = null;
+
         // Removendo campos "fantasmas" que não têm input na interface atual
         delete apaCompleta.dorso;
         delete apaCompleta.ef_outros;
@@ -499,6 +532,29 @@ export default function Apa({ paciente }) {
         console.log("Médico sendo salvo:", nomeMedico, "- CRM:", crmMedico);
 
         try {
+            let finalExamesUrl = formData.exames_url || null;
+
+            if (exameFileToUpload) {
+                const toastId = toast.loading("Fazendo upload do PDF do exame...");
+                const fileExt = exameFileToUpload.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+                
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('exames')
+                    .upload(fileName, exameFileToUpload);
+                    
+                if (uploadError) {
+                    toast.error("Falha ao fazer upload do PDF, mas a APA será salva.", { id: toastId });
+                    console.error("Erro no upload:", uploadError);
+                } else {
+                    const { data: { publicUrl } } = supabase.storage.from('exames').getPublicUrl(uploadData.path);
+                    finalExamesUrl = publicUrl;
+                    toast.success("Upload de exame concluído!", { id: toastId });
+                }
+            }
+
+            apaCompleta.exames_url = finalExamesUrl;
+
             if (apaIdParaCarregar) {
                 // Atualiza APA existente
                 const { error } = await supabase.from('apas').update({ ...apaCompleta, dataAtualizacao: new Date().toISOString() }).eq('id', apaIdParaCarregar);
@@ -523,6 +579,8 @@ export default function Apa({ paciente }) {
         } catch (err) {
             console.error(err);
             toast.error("Erro BD: " + (err?.message || err?.details || JSON.stringify(err)));
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -539,6 +597,86 @@ export default function Apa({ paciente }) {
             negaAlergia, alergias,
             negaMed, medicamentos
         });
+    };
+
+    const handleAiUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 8 * 1024 * 1024) {
+            toast.error("O arquivo deve ter no máximo 8MB");
+            return;
+        }
+
+        setIsAiLoading(true);
+        let loadingToast = toast.loading("Lendo exame com IA...");
+
+        try {
+            const base64String = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.toString().split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+
+            const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+            if (!apiKey) throw new Error("Chave VITE_GEMINI_API_KEY não configurada no .env");
+
+            const mimeType = file.type === "application/pdf" ? "application/pdf" : (file.type.startsWith("image/") ? file.type : "application/pdf");
+            
+            const fileUrl = URL.createObjectURL(file);
+            setAiValidationFileUrl({ url: fileUrl, type: mimeType });
+            setPendingExameFile(file);
+
+            const prompt = `Você é um assistente médico especialista.
+Leia este exame e extraia os seguintes valores pontuais.
+Retorne EXATAMENTE UM JSON válido, sem \`\`\`json, apenas chaves e valores literais.
+Chaves obrigatórias (se não achar algo no texto, retorne string vazia ""):
+"ex_hb": (Hemoglobina - apenas numero)
+"ex_ht": (Hematócrito - apenas numero)
+"ex_plaq": (Plaquetas - multiplique por mil p/ ser exato se for abreviado. Ex: 246 => 246.000)
+"ex_leuco": (Leucócitos - apenas numero)
+"ex_inr": (TAP / INR)
+"ex_ttpa": (TTPA / RNI)
+"ex_glic": (Glicemia de jejum)
+"ex_hba1c": (HbA1c)
+"ex_ureia": (Ureia)
+"ex_creat": (Creatinina)
+"ex_na": (Sódio)
+"ex_k": (Potássio)
+"ex_ecg": (Eletrocardiograma - laudo ex: Ritmo Sinusal)
+"ex_rx": (Raio-X Tórax - conclusão)
+"ex_eco": (Ecocardiograma - conclusão)
+"ex_hepato": (Função Hepática TGO/TGP - sumarizado)
+"ex_coagulo": (Coagulograma - apenas se tiver algo digno de nota, ou vazio)
+"ex_outros_esp": (Outros exames achados ex: TSH)
+
+Responda SOMENTE o bloco JSON.`;
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType, data: base64String } }] }]
+                })
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+
+            let resultText = data.candidates[0].content.parts[0].text;
+            resultText = resultText.replace(/```json/gi, '').replace(/```/g, '').trim();
+            
+            const extracted = JSON.parse(resultText);
+            setAiValidationData(extracted);
+            toast.success("Leitura concluída! Confirme os dados lidos.", { id: loadingToast });
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro na IA: " + error.message, { id: loadingToast });
+        } finally {
+            setIsAiLoading(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
     };
 
     const handleChange = (e) => {
@@ -693,8 +831,9 @@ export default function Apa({ paciente }) {
                                 </button>
                             )}
                             {!isReadOnly && (
-                                <button onClick={handleSalvarApa} className="text-sm flex items-center gap-1.5 bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 font-medium shadow-sm transition-colors">
-                                    <Save size={16} /> Salvar e Imprimir
+                                <button disabled={isSaving} onClick={handleSalvarApa} className="text-sm flex items-center gap-1.5 bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                    {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                    {isSaving ? "Salvando..." : "Salvar e Imprimir"}
                                 </button>
                             )}
                         </div>
@@ -710,6 +849,11 @@ export default function Apa({ paciente }) {
                             <button onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 transition-all">
                                 <Printer size={16} /> Imprimir / Salvar
                             </button>
+                            {apaParaImprimir?.exames_url && (
+                                <button onClick={() => window.open(apaParaImprimir.exames_url, '_blank')} className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ml-2">
+                                    <FileText size={16} /> Ver Exame Original
+                                </button>
+                            )}
                         </div>
                         <div className="w-full overflow-x-auto pb-8 custom-scrollbar">
                             <div className="bg-white shadow-[0_20px_60px_rgb(0,0,0,0.1)] mb-8 mx-auto print:shadow-none print:m-0 border border-slate-200 shrink-0" style={{ width: '210mm', minHeight: '297mm', padding: '15mm' }}>
@@ -821,7 +965,7 @@ export default function Apa({ paciente }) {
                                         <div className="flex-1">Paciente</div>
                                         <div className="flex-1 hidden md:block">Procedimento</div>
                                         <div className="w-28 text-center">Parecer</div>
-                                        <div className="w-[160px] text-right pr-4">Ações</div>
+                                        <div className="w-[190px] text-right pr-4">Ações</div>
                                     </div>
                                     
                                     {/* List Items */}
@@ -859,7 +1003,8 @@ export default function Apa({ paciente }) {
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="w-[160px] flex items-center justify-end gap-1.5 opacity-100 transition-opacity duration-200 pr-4">
+                                            <div className="w-[190px] flex items-center justify-end gap-1.5 opacity-100 transition-opacity duration-200 pr-4">
+                                                {apa.exames_url && <button onClick={() => window.open(apa.exames_url, '_blank')} className="p-2 text-indigo-600 hover:bg-indigo-100 bg-indigo-50 border border-indigo-100 rounded-xl transition-all active:scale-95" title="Ver Exame Original"><FileText size={16} strokeWidth={2.5}/></button>}
                                                 <button onClick={() => handleVerPreviewPdf(apa)} className="p-2 text-blue-600 hover:bg-blue-100 bg-blue-50 rounded-xl transition-all active:scale-95" title="Visualizar PDF na tela"><Eye size={16} strokeWidth={2.5}/></button>
                                                 {hasPermission('Criar/Editar APA') && <button onClick={() => handleVisualizarPdf(apa)} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 bg-slate-50 border border-slate-100 rounded-xl transition-all active:scale-95" title="Imprimir / Salvar PDF"><Printer size={16} strokeWidth={2.5}/></button>}
                                                 {hasPermission('Criar/Editar APA') && <button onClick={() => handleDuplicarApa(apa)} className="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all active:scale-95" title="Duplicar"><Copy size={16} strokeWidth={2.5}/></button>}
@@ -907,7 +1052,7 @@ export default function Apa({ paciente }) {
                                                     {showPacientes && searchTerm && (
                                                         <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-48 overflow-auto">
                                                             {filteredPacientes.map(p => (
-                                                                <div key={p.id} onMouseDown={() => { setFormData(f => ({ ...f, nome: p.nome, cpf: p.cpf, dataNasc: p.dataNascimento || p.nascimento, sexo: p.sexo, peso: p.peso, altura: p.altura, telefone: p.telefone1 || p.telefone })); setSearchTerm(p.nome); setShowPacientes(false); }} className="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-50">
+                                                                <div key={p.id} onMouseDown={() => { setFormData(f => ({ ...f, nome: p.nome || '', cpf: p.cpf || '', dataNasc: p.dataNascimento || p.nascimento || '', sexo: p.sexo || '', peso: p.peso || '', altura: p.altura || '', telefone: p.telefone1 || p.telefone || '' })); setSearchTerm(p.nome); setShowPacientes(false); }} className="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-50">
                                                                     <div className="font-semibold text-sm">{p.nome}</div><div className="text-xs text-slate-500">{p.cpf}</div>
                                                                 </div>
                                                             ))}
@@ -917,7 +1062,16 @@ export default function Apa({ paciente }) {
                                                 <div className="md:col-span-4"><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CPF</label><input disabled={isReadOnly} type="text" name="cpf" value={formData.cpf} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
                                                 <div className="md:col-span-3"><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">NASCIMENTO<span className="text-red-500 ml-0.5">*</span></label><input disabled={isReadOnly} type="date" name="dataNasc" value={formData.dataNasc} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
                                                 <div className="md:col-span-2"><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">IDADE</label><div className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium">{calcularIdade(formData.dataNasc)}</div></div>
-                                                <div className="md:col-span-3"><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">SEXO<span className="text-red-500 ml-0.5">*</span></label><select disabled={isReadOnly} name="sexo" value={formData.sexo} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all"><option value="">--</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select></div>
+                                                <div className="md:col-span-3">
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">SEXO<span className="text-red-500 ml-0.5">*</span></label>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {[{val: 'Masculino', label: 'Masc'}, {val: 'Feminino', label: 'Fem'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, sexo: opt.val})} className={`flex-1 h-[30px] flex items-center justify-center px-1 whitespace-nowrap text-xs font-bold rounded-lg border transition-all ${formData.sexo === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                                 <div className="md:col-span-4 flex items-end gap-2">
                                                     <div className="flex-1 w-full"><label className="block text-[9px] font-black text-slate-500 uppercase tracking-tight whitespace-nowrap mb-1">PESO (kg)<span className="text-red-500 ml-0.5">*</span></label><input disabled={isReadOnly} type="number" name="peso" value={formData.peso} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
                                                     <div className="flex-1 w-full"><label className="block text-[9px] font-black text-slate-500 uppercase tracking-tight whitespace-nowrap mb-1">ALTURA (cm)<span className="text-red-500 ml-0.5">*</span></label><input disabled={isReadOnly} type="number" name="altura" value={formData.altura} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
@@ -951,9 +1105,27 @@ export default function Apa({ paciente }) {
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start mt-2">
                                                         <div className="col-span-1 md:col-span-2 space-y-4">
                                                             <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CIRURGIÃO / EQUIPE</label><select disabled={isReadOnly} name="profissional" value={formData.profissional} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 uppercase"><option value="">SELECIONE...</option>{settings.cirurgioes?.map((m, idx) => { const label = typeof m === 'string' ? m : m.nome; const display = label ? label.toUpperCase() : ''; return <option key={idx} value={label}>{display}</option>; })}</select></div>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CARÁTER<span className="text-red-500 ml-0.5">*</span></label><select disabled={isReadOnly} name="carater" value={formData.carater} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500"><option value="Eletivo">Eletivo</option><option value="Urgência">Urgência</option><option value="Emergência">Emergência</option></select></div>
-                                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">POSIÇÃO</label><select disabled={isReadOnly} name="posicao" value={formData.posicao} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500"><option value="">--</option><option value="DD">DD</option><option value="DV">DV</option><option value="DLE">DLE</option><option value="DLD">DLD</option><option value="Sentado">Sentado</option><option value="Litotomia">Litotomia</option></select></div>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                <div className="flex flex-col">
+                                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CARÁTER<span className="text-red-500 ml-0.5">*</span></label>
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {[{val: 'Eletivo', label: 'Eletivo'}, {val: 'Urgência', label: 'Urgência'}, {val: 'Emergência', label: 'Emergência'}].map(opt => (
+                                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, carater: opt.val})} className={`flex-1 h-[32px] flex items-center justify-center px-1 whitespace-nowrap text-[10px] md:text-[11px] font-bold rounded-lg border transition-all ${formData.carater === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                                {opt.label}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">POSIÇÃO</label>
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {[{val: 'DD', label: 'DD'}, {val: 'DV', label: 'DV'}, {val: 'DLE', label: 'DLE'}, {val: 'DLD', label: 'DLD'}, {val: 'Sentado', label: 'Sent'}, {val: 'Litotomia', label: 'Litot'}].map(opt => (
+                                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, posicao: opt.val})} className={`flex-[1_1_30%] h-[32px] flex items-center justify-center px-0.5 whitespace-nowrap text-[9px] font-bold rounded-lg border transition-all ${formData.posicao === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                                {opt.label}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -1059,13 +1231,56 @@ export default function Apa({ paciente }) {
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CIRURGIAS PRÉVIAS</label><textarea disabled={isReadOnly} name="cirurgias" value={formData.cirurgias} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea></div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ANESTESIAS PRÉVIAS / COMPLICAÇÕES</label><textarea disabled={isReadOnly} name="anestesias_previas" value={formData.anestesias_previas} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea></div>
                                             </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TABAGISMO</label><select disabled={isReadOnly} name="tabagismo" value={formData.tabagismo} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"><option value="Não">Não</option><option value="Sim, ativo">Sim, ativo</option><option value="Ex-tabagista">Ex-tabagista</option></select></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CARGA TABÁGICA</label><input disabled={isReadOnly} type="text" name="carga_tabagica" value={formData.carga_tabagica} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PAROU HÁ</label><input disabled={isReadOnly} type="text" name="parou_fumo" value={formData.parou_fumo} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ETILISMO</label><select disabled={isReadOnly} name="etilismo" value={formData.etilismo} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"><option value="Não">Não</option><option value="Social">Social</option><option value="Diário">Diário</option></select></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DROGAS ILÍCITAS</label><select disabled={isReadOnly} name="drogas" value={formData.drogas} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"><option value="Nega">Nega</option><option value="Maconha">Maconha</option><option value="Cocaína/Crack">Cocaína/Crack</option><option value="Outras">Outras</option></select></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CAPACIDADE FUNCIONAL (METS)</label><select disabled={isReadOnly} name="mets" value={formData.mets} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"><option value="">--</option><option value=">10 METS">&gt;10 METS (Excelente)</option><option value="4-7 METS">4-7 METS</option><option value="<4 METS">&lt;4 METS (Ruim)</option></select></div>
+                                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                                                <div className="md:col-span-4">
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">TABAGISMO</label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {[{val: 'Não', label: 'Não'}, {val: 'Sim, ativo', label: 'Sim, ativo'}, {val: 'Ex-tabagista', label: 'Ex-tabagista'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, tabagismo: opt.val})} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-[11px] md:text-xs font-bold rounded-lg border transition-all ${formData.tabagismo === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">CARGA TABÁGICA</label>
+                                                    <input disabled={isReadOnly} type="text" name="carga_tabagica" value={formData.carga_tabagica} onChange={handleChange} className="w-full h-[40px] px-3 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white" />
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">PAROU HÁ</label>
+                                                    <input disabled={isReadOnly} type="text" name="parou_fumo" value={formData.parou_fumo} onChange={handleChange} className="w-full h-[40px] px-3 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white" />
+                                                </div>
+                                                <div className="md:col-span-4">
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">ETILISMO</label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {[{val: 'Não', label: 'Não'}, {val: 'Social', label: 'Social'}, {val: 'Diário', label: 'Diário'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, etilismo: opt.val})} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-[11px] md:text-xs font-bold rounded-lg border transition-all ${formData.etilismo === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="md:col-span-6">
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">DROGAS ILÍCITAS</label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {[{val: 'Nega', label: 'Nega'}, {val: 'Maconha', label: 'Maconha'}, {val: 'Cocaína/Crack', label: 'Cocaína/Crack'}, {val: 'Outras', label: 'Outras'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, drogas: opt.val})} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-[11px] md:text-xs font-bold rounded-lg border transition-all ${formData.drogas === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="md:col-span-6">
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">CAPACIDADE FUNCIONAL (METS)</label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {[{val: '>10 METS', label: '>10 METS', sub: '(Excelente)'}, {val: '4-7 METS', label: '4-7 METS'}, {val: '<4 METS', label: '<4 METS', sub: '(Ruim)'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, mets: opt.val})} className={`flex-1 h-[40px] flex flex-col items-center justify-center px-1 whitespace-nowrap text-[11px] md:text-xs font-bold rounded-lg border transition-all ${formData.mets === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                <span>{opt.label}</span>
+                                                                {opt.sub && <span className="text-[8.5px] font-semibold opacity-75 md:mt-0.5">{opt.sub}</span>}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </section>
                                     </div>
@@ -1116,13 +1331,55 @@ export default function Apa({ paciente }) {
                                                     ))}
                                                 </div>
                                             </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 xl:gap-6">
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ABERTURA BUCAL</label><select disabled={isReadOnly} name="va_abertura" value={formData.va_abertura} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 transition-all"><option value="">--</option><option value="Adequada (> 3cm)">Adequada (&gt; 3cm)</option><option value="Limitada (< 3cm)">Limitada (&lt; 3cm)</option></select></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DIST. TIREOMENTUAL</label><select disabled={isReadOnly} name="va_dtm" value={formData.va_dtm} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 transition-all"><option value="">--</option><option value="Adequada (> 6cm)">Adequada (&gt; 6cm)</option><option value="Limitada (< 6cm)">Limitada (&lt; 6cm)</option></select></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DIST. ESTERNOMENTO</label><select disabled={isReadOnly} name="va_dem" value={formData.va_dem} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 transition-all"><option value="">--</option><option value="Adequada (> 12.5cm)">Adequada (&gt; 12.5cm)</option><option value="Limitada (< 12.5cm)">Limitada (&lt; 12.5cm)</option></select></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">MOBILIDADE CERVICAL</label><select disabled={isReadOnly} name="va_cervical" value={formData.va_cervical} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 transition-all"><option value="">--</option><option value="Normal">Normal</option><option value="Limitada">Limitada</option></select></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PRÓTESE DENTÁRIA</label><select disabled={isReadOnly} name="va_protese" value={formData.va_protese} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 transition-all"><option value="Não">Não</option><option value="Fixa">Fixa</option><option value="Móvel">Móvel</option></select></div>
-                                                <div><label className={`block text-[9px] font-black uppercase tracking-wide mb-1 ${formData.va_dificil === 'Sim' ? 'text-rose-600' : formData.va_dificil === 'Possível' ? 'text-amber-600' : 'text-slate-500'}`}>VA DIFÍCIL PREVISTA <span className="text-rose-500 text-[10px]">*</span></label><select disabled={isReadOnly} name="va_dificil" value={formData.va_dificil} onChange={handleChange} className={`w-full px-3 py-1.5 text-xs font-semibold border rounded-lg outline-none transition-all ${formData.va_dificil === 'Sim' ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-sm focus:ring-1 focus:ring-rose-400' : formData.va_dificil === 'Possível' ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-sm focus:ring-1 focus:ring-amber-400' : 'bg-slate-50 border-slate-200 focus:border-blue-500'}`}><option value="">--</option><option value="Não">Não</option><option value="Sim">Sim</option><option value="Possível">Possível</option></select></div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-6">
+                                                <div>
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ABERTURA BUCAL</label>
+                                                    <div className="flex gap-1">
+                                                        {[{val: 'Adequada (> 3cm)', label: '> 3cm'}, {val: 'Limitada (< 3cm)', label: '< 3cm'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_abertura: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_abertura === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DIST. TIREOMENTUAL</label>
+                                                    <div className="flex gap-1">
+                                                        {[{val: 'Adequada (> 6cm)', label: '> 6cm'}, {val: 'Limitada (< 6cm)', label: '< 6cm'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dtm: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_dtm === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DIST. ESTERNOMENTO</label>
+                                                    <div className="flex gap-1">
+                                                        {[{val: 'Adequada (> 12.5cm)', label: '> 12.5cm'}, {val: 'Limitada (< 12.5cm)', label: '< 12.5cm'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dem: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_dem === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">MOBILIDADE CERVICAL</label>
+                                                    <div className="flex gap-1">
+                                                        {[{val: 'Normal', label: 'Normal'}, {val: 'Limitada', label: 'Limitada'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_cervical: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_cervical === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PRÓTESE DENTÁRIA</label>
+                                                    <div className="flex gap-1">
+                                                        {[{val: 'Não', label: 'Não'}, {val: 'Fixa', label: 'Fixa'}, {val: 'Móvel', label: 'Móvel'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_protese: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_protese === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className={`block text-[9px] font-black uppercase tracking-wide mb-1 ${formData.va_dificil === 'Sim' ? 'text-rose-600' : formData.va_dificil === 'Possível' ? 'text-amber-600' : 'text-slate-500'}`}>VA DIFÍCIL PREVISTA <span className="text-rose-500 text-[10px]">*</span></label>
+                                                    <div className="flex gap-1">
+                                                        {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim', color: 'rose'}, {val: 'Possível', label: 'Possível', color: 'amber'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dificil: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_dificil === opt.val ? (opt.color === 'rose' ? 'bg-rose-50 border-rose-400 text-rose-700 shadow-sm' : opt.color === 'amber' ? 'bg-amber-50 border-amber-400 text-amber-700 shadow-sm' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm') : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div className="mt-4">
                                                 <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">OBSERVAÇÕES VIA AÉREA</label>
@@ -1140,20 +1397,57 @@ export default function Apa({ paciente }) {
                                             <div className="grid grid-cols-1 gap-3">
                                                 <div>
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CLASSIFICAÇÃO ASA</label>
-                                                    <select disabled={isReadOnly} name="asa" value={formData.asa} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg">
-                                                        <option value="">--</option><option value="ASA I">ASA I - Saudável</option><option value="ASA II">ASA II - Doença sist. leve</option><option value="ASA III">ASA III - Doença sist. grave</option><option value="ASA IV">ASA IV - Risco à vida</option>
-                                                    </select>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {[{val: 'ASA I', label: 'ASA I', sub: 'Saudável'}, {val: 'ASA II', label: 'ASA II', sub: 'Doença sist. leve'}, {val: 'ASA III', label: 'ASA III', sub: 'Doença sist. grave'}, {val: 'ASA IV', label: 'ASA IV', sub: 'Risco à vida'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, asa: opt.val})} className={`flex-1 min-w-[120px] h-[40px] flex flex-col items-center justify-center px-2 whitespace-nowrap text-[11px] font-bold rounded-lg border transition-all ${formData.asa === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                <span>{opt.label}</span>
+                                                                <span className="text-[8px] font-semibold opacity-75">{opt.sub}</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </section>
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">11. Exames Complementares</h3>
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 border-b border-slate-100 pb-2">
+                                                <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight">11. Exames Complementares</h3>
+                                                
+                                                <div className="mt-2 md:mt-0 flex items-center">
+                                                    <input 
+                                                        type="file" 
+                                                        accept="application/pdf,image/*" 
+                                                        className="hidden" 
+                                                        ref={fileInputRef} 
+                                                        onChange={handleAiUpload} 
+                                                        disabled={isAiLoading || isReadOnly}
+                                                    />
+                                                    <button 
+                                                        type="button" 
+                                                        disabled={isAiLoading || isReadOnly}
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[10px] sm:text-xs font-bold rounded-lg border border-indigo-200 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {isAiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} className="text-indigo-500" />}
+                                                        LEITURA DE EXAME COM IA
+                                                    </button>
+                                                    {formData.exames_url && (
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => window.open(formData.exames_url, '_blank')}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 text-[10px] sm:text-xs font-bold rounded-lg border border-sky-200 transition-all shadow-sm active:scale-95 ml-2"
+                                                        >
+                                                            <FileText size={14} className="text-sky-500" />
+                                                            VER ORIGINAL
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HB</label><input disabled={isReadOnly} type="text" name="ex_hb" value={formData.ex_hb} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HT</label><input disabled={isReadOnly} type="text" name="ex_ht" value={formData.ex_ht} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PLAQUETAS</label><input disabled={isReadOnly} type="text" name="ex_plaq" value={formData.ex_plaq} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">LEUCÓCITOS</label><input disabled={isReadOnly} type="text" name="ex_leuco" value={formData.ex_leuco} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">COAGULOGRAMA</label><input disabled={isReadOnly} type="text" name="ex_coagulo" value={formData.ex_coagulo} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" placeholder="Geral..." /></div>
+                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">COAGULOGRAMA</label><input disabled={isReadOnly} type="text" name="ex_coagulo" value={formData.ex_coagulo} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TAP / INR</label><input disabled={isReadOnly} type="text" name="ex_inr" value={formData.ex_inr} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TTPA</label><input disabled={isReadOnly} type="text" name="ex_ttpa" value={formData.ex_ttpa} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">GLICEMIA</label><input disabled={isReadOnly} type="text" name="ex_glic" value={formData.ex_glic} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
@@ -1191,13 +1485,28 @@ export default function Apa({ paciente }) {
                                                     <span className="text-xs font-bold text-slate-700">Protocolo Padrão (ASA)</span>
                                                 </label>
                                                 <label className="flex items-center cursor-pointer">
-                                                    <input disabled={isReadOnly} type="radio" name="jejum_tipo" checked={formData.jejum_orientacao !== '' && formData.jejum_orientacao !== 'Padrão ASA'} onChange={() => handleChange({ target: { name: 'jejum_orientacao', value: 'Jejum diferenciado:\n' }})} className="mr-2 accent-blue-600" />
+                                                    <input disabled={isReadOnly} type="radio" name="jejum_tipo" checked={formData.jejum_orientacao === 'Protocolo Absoluto (8h)'} onChange={() => handleChange({ target: { name: 'jejum_orientacao', value: 'Protocolo Absoluto (8h)' }})} className="mr-2 accent-blue-600" />
+                                                    <span className="text-xs font-bold text-slate-700">Protocolo 8h (Tudo)</span>
+                                                </label>
+                                                <label className="flex items-center cursor-pointer">
+                                                    <input disabled={isReadOnly} type="radio" name="jejum_tipo" checked={formData.jejum_orientacao !== '' && formData.jejum_orientacao !== 'Padrão ASA' && formData.jejum_orientacao !== 'Protocolo Absoluto (8h)'} onChange={() => handleChange({ target: { name: 'jejum_orientacao', value: 'Jejum diferenciado:\n' }})} className="mr-2 accent-blue-600" />
                                                     <span className="text-xs font-bold text-slate-700">Personalizado</span>
                                                 </label>
                                             </div>
 
                                             {/* Exibição Condicional (Tabela ou Texto Livre) */}
-                                            {(formData.jejum_orientacao === '' || formData.jejum_orientacao === 'Padrão ASA') ? (
+                                            {formData.jejum_orientacao === 'Protocolo Absoluto (8h)' ? (
+                                                <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-3 animate-in fade-in duration-300">
+                                                    <table className="w-full text-sm text-left">
+                                                        <thead className="bg-slate-100 text-slate-600 font-bold">
+                                                            <tr><th className="px-4 py-2 border-b border-slate-200">Tipo de Alimento</th><th className="px-4 py-2 border-b border-slate-200">Tempo de Jejum Mínimo</th></tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-200">
+                                                            <tr><td className="px-4 py-2">Alimentos Sólidos e Líquidos</td><td className="px-4 py-2 font-black text-rose-600">8 horas</td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            ) : (formData.jejum_orientacao === '' || formData.jejum_orientacao === 'Padrão ASA') ? (
                                                 <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-3 animate-in fade-in duration-300">
                                                     <table className="w-full text-sm text-left">
                                                         <thead className="bg-slate-100 text-slate-600 font-bold">
@@ -1225,10 +1534,13 @@ export default function Apa({ paciente }) {
                                                 </div>
                                                 <div>
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PROFILAXIA DE ASPIRAÇÃO</label>
-                                                    <select disabled={isReadOnly} name="profilaxia_asp" value={formData.profilaxia_asp} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg">
-                                                        <option value="Não indicada">Não indicada</option>
-                                                        <option value="Indicada (Antiácido / Procinético)">Indicada (Antiácido / Procinético)</option>
-                                                    </select>
+                                                    <div className="flex gap-2">
+                                                        {[{val: 'Não indicada', label: 'Não indicada'}, {val: 'Indicada (Antiácido / Procinético)', label: 'Indicada'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, profilaxia_asp: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.profilaxia_asp === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </section>
@@ -1280,7 +1592,16 @@ export default function Apa({ paciente }) {
                                                     })()}
                                                 </div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">RESERVA DE HEMODERIVADOS</label><input disabled={isReadOnly} type="text" name="plan_hemoderivados" value={formData.plan_hemoderivados} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" placeholder="Ex: Não, 1 CH, 2 CH..." /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DESTINO PÓS-OP PREVISTO <span className="text-rose-500 text-[10px]">*</span></label><select disabled={isReadOnly} name="plan_destino" value={formData.plan_destino} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"><option value="">--</option><option value="RPA / Enfermaria">RPA / Enfermaria</option><option value="UTI / Cuidados Críticos">UTI / Cuidados Críticos</option><option value="Alta">Alta</option></select></div>
+                                                <div className="flex flex-col">
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DESTINO PÓS-OP PREVISTO <span className="text-rose-500 text-[10px]">*</span></label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {[{val: 'RPA / Enfermaria', label: 'RPA / Enfermaria'}, {val: 'UTI / Cuidados Críticos', label: 'UTI'}, {val: 'Alta', label: 'Alta'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_destino: opt.val})} className={`flex-1 h-[34px] px-2 whitespace-nowrap text-[11px] font-bold rounded-lg border transition-all ${formData.plan_destino === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div className="mt-4">
                                                 <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">OBSERVAÇÕES DO PLANO</label>
@@ -1348,6 +1669,81 @@ export default function Apa({ paciente }) {
                     </div>
                 )}
             </div>
+
+            {/* Modal de Validação de Extrato de Exames */}
+            {aiValidationData && (
+                <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+                        {/* Header */}
+                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                                <Sparkles className="text-indigo-600" size={20}/> Validação da Leitura
+                            </h2>
+                            <button onClick={() => { setAiValidationData(null); setAiValidationFileUrl(null); }} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-all">✕</button>
+                        </div>
+                        
+                        {/* Body */}
+                        <div className="flex-1 flex overflow-hidden flex-col md:flex-row">
+                            {/* Left: Document Viewer */}
+                            <div className="w-full md:w-1/2 bg-slate-100 border-r border-slate-200 p-2 flex items-center justify-center overflow-hidden">
+                                {aiValidationFileUrl?.type === 'application/pdf' ? (
+                                    <iframe src={aiValidationFileUrl.url} className="w-full h-full rounded-xl border border-slate-300 shadow-inner" />
+                                ) : (
+                                    <img src={aiValidationFileUrl?.url} className="max-w-full max-h-full rounded-xl object-contain shadow-sm" />
+                                )}
+                            </div>
+
+                            {/* Right: Extracted Data */}
+                            <div className="w-full md:w-1/2 overflow-y-auto p-5 bg-white">
+                                <p className="text-xs text-slate-500 font-semibold mb-4 bg-blue-50 text-blue-800 border border-blue-200 p-3 rounded-xl shadow-sm">
+                                    Confira os dados extraídos comparando com o documento original ao lado. Altere o que for necessário antes de confirmar a importação para a ficha.
+                                </p>
+                                
+                                <div className="grid grid-cols-2 gap-3">
+                                    {Object.entries(aiValidationData).map(([key, value]) => {
+                                        const labels = {
+                                            ex_hb: "HB", ex_ht: "HT", ex_plaq: "Plaquetas", ex_leuco: "Leucócitos", 
+                                            ex_coagulo: "Coagulograma", ex_inr: "TAP / INR", ex_ttpa: "TTPA", 
+                                            ex_glic: "Glicemia", ex_hba1c: "HbA1c", ex_ureia: "Ureia", ex_creat: "Creatinina", 
+                                            ex_na: "Sódio", ex_k: "Potássio", ex_eco: "Ecocardiograma", ex_hepato: "Função Hepática", 
+                                            ex_outros_esp: "Outros TSH/Urina...", ex_ecg: "ECG", ex_rx: "RX Tórax"
+                                        };
+                                        const label = labels[key];
+                                        if (!label) return null;
+
+                                        return (
+                                            <div key={key} className={['ex_ecg', 'ex_rx', 'ex_outros_esp', 'ex_eco', 'ex_hepato', 'ex_coagulo'].includes(key) ? "col-span-2" : ""}>
+                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">{label}</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={value} 
+                                                    onChange={(e) => setAiValidationData({...aiValidationData, [key]: e.target.value})}
+                                                    className="w-full px-3 py-1.5 text-xs font-bold bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-950 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all shadow-sm" 
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
+                            <button onClick={() => { setAiValidationData(null); setAiValidationFileUrl(null); setPendingExameFile(null); }} className="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-200 transition-all border border-slate-300 bg-white">Cancelar</button>
+                            <button onClick={() => { 
+                                setFormData(prev => ({ ...prev, ...aiValidationData })); 
+                                setExameFileToUpload(pendingExameFile);
+                                setAiValidationData(null); 
+                                setAiValidationFileUrl(null); 
+                                setPendingExameFile(null);
+                                toast.success("Dados importados com sucesso!");
+                            }} className="px-6 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 hover:shadow-indigo-600/40 transition-all flex items-center gap-2">
+                                <CheckSquare size={18} /> Confirmar Importação
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Componente Invisível que só aparece no Print Nativo */}
             {apaParaImprimir && createPortal(

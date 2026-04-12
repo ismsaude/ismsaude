@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
                     for (let i = 0; i < retries; i++) {
                         const { data, error } = await supabase
                             .from('users')
-                            .select('name, crm, rqe, cpf, role, status, unidades_permitidas')
+                            .select('name, crm, rqe, cpf, role, status, unidades_permitidas, sexo')
                             .eq('email', sessionUser.email)
                             .maybeSingle(); // maybeSingle não joga erro se não achar, útil pra verificar dados nulos
 
