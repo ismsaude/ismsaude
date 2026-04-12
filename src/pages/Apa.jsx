@@ -254,7 +254,7 @@ export default function Apa({ paciente }) {
         try {
             const { data, error } = await supabase
                 .from('apas')
-                .select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url')
+                .select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url, asa')
                 .or(`unidade.eq.${unidadeAtual},unidade.is.null`)
                 .order('createdAt', { ascending: false })
                 .limit(6000);
@@ -262,7 +262,7 @@ export default function Apa({ paciente }) {
             if (error) {
                 if (error.code === '42703' || error.message?.includes('does not exist')) {
                     toast.error("Por favor, crie a coluna 'unidade' na tabela apas!");
-                    const fallback = await supabase.from('apas').select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url').order('createdAt', { ascending: false }).limit(6000);
+                    const fallback = await supabase.from('apas').select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url, asa').order('createdAt', { ascending: false }).limit(6000);
                     setListaApas(fallback.data || []);
                 } else {
                     throw error;
@@ -964,6 +964,7 @@ Responda SOMENTE o bloco JSON.`;
                                         <div className="w-24 pl-2">Data</div>
                                         <div className="flex-1">Paciente</div>
                                         <div className="flex-1 hidden md:block">Procedimento</div>
+                                        <div className="w-16 text-center hidden md:block">ASA</div>
                                         <div className="w-28 text-center">Parecer</div>
                                         <div className="w-[190px] text-right pr-4">Ações</div>
                                     </div>
@@ -993,6 +994,13 @@ Responda SOMENTE o bloco JSON.`;
                                                 <div className="text-xs font-bold text-slate-600 truncate uppercase mt-0.5 max-w-[200px]" title={apa.procedimento}>
                                                     {apa.procedimento}
                                                 </div>
+                                            </div>
+
+                                            {/* ASA */}
+                                            <div className="w-16 hidden md:flex justify-center">
+                                                <span className="text-xs font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                                                    {apa.asa ? apa.asa.replace('ASA ', '') : '--'}
+                                                </span>
                                             </div>
 
                                             {/* Parecer */}
