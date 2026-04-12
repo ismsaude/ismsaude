@@ -987,11 +987,11 @@ Responda SOMENTE o bloco JSON.`;
                                             </div>
 
                                             {/* Procedimento */}
-                                            <div className="flex-1 hidden md:flex items-center gap-2 pr-4">
-                                                <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 shadow-[inset_0_1px_2px_rgba(255,255,255,1)]">
+                                            <div className="flex-1 hidden md:flex items-center gap-2 pr-4 min-w-0">
+                                                <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 shadow-[inset_0_1px_2px_rgba(255,255,255,1)] flex-shrink-0">
                                                     <Stethoscope size={14} />
                                                 </div>
-                                                <div className="text-xs font-bold text-slate-600 truncate uppercase mt-0.5 max-w-[200px]" title={apa.procedimento}>
+                                                <div className="flex-1 min-w-0 text-xs font-bold text-slate-600 truncate uppercase mt-0.5" title={apa.procedimento}>
                                                     {apa.procedimento}
                                                 </div>
                                             </div>
