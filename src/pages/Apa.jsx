@@ -1614,23 +1614,7 @@ Responda SOMENTE o bloco JSON.`;
                                                 <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight">11. Exames Complementares</h3>
                                                 
                                                 <div className="mt-2 md:mt-0 flex items-center">
-                                                    <input 
-                                                        type="file" 
-                                                        accept="application/pdf,image/*" 
-                                                        className="hidden" 
-                                                        ref={fileInputRef} 
-                                                        onChange={handleAiUpload} 
-                                                        disabled={isAiLoading || isReadOnly}
-                                                    />
-                                                    <button 
-                                                        type="button" 
-                                                        disabled={isAiLoading || isReadOnly}
-                                                        onClick={() => fileInputRef.current?.click()}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[10px] sm:text-xs font-bold rounded-lg border border-indigo-200 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        {isAiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} className="text-indigo-500" />}
-                                                        LEITURA DE EXAME COM IA
-                                                    </button>
+                                                    {/* Botão de Leitura de Exame por IA oculto temporariamente */}
                                                     {formData.exames_url && (
                                                         <button 
                                                             type="button" 
