@@ -120,6 +120,9 @@ export default function Apa({ paciente }) {
 
     const [pacientes, setPacientes] = useState([]);
     const [showPacientes, setShowPacientes] = useState(false);
+    
+    // Controle do menu de Ações mobile
+    const [openActionApaId, setOpenActionApaId] = useState(null);
 
     const defaultFormData = {
         nome: '', cpf: '', dataNasc: '', sexo: '', peso: '', altura: '', telefone: '',
@@ -973,29 +976,29 @@ Responda SOMENTE o bloco JSON.`;
                             ) : (
                                 <div className="divide-y divide-slate-100/60">
                                     {/* Header Row */}
-                                    <div className="px-6 py-3.5 bg-slate-50/50 flex items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                        <div className="w-24 pl-2">Data</div>
+                                    <div className="px-3 md:px-6 py-2.5 md:py-3.5 bg-slate-50/50 flex items-center text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                        <div className="w-16 md:w-20 pl-1 md:pl-2">Data</div>
                                         <div className="flex-1">Paciente</div>
                                         <div className="flex-1 hidden md:block">Procedimento</div>
                                         <div className="w-16 text-center hidden md:block">ASA</div>
-                                        <div className="w-28 text-center">Parecer</div>
-                                        <div className="w-[190px] text-right pr-4">Ações</div>
+                                        <div className="w-20 md:w-28 text-center">Parecer</div>
+                                        <div className="w-[80px] md:w-[190px] text-right pr-2 md:pr-4">Ações</div>
                                     </div>
                                     
                                     {/* List Items */}
-                                    {filteredApasList.map(apa => (
-                                        <div key={apa.id} className="group relative flex items-center px-6 py-4 hover:bg-white/80 transition-all duration-200 cursor-default">
+                                    {filteredApasList.map((apa, index) => (
+                                        <div key={apa.id} className="group relative flex items-center px-3 md:px-6 py-3 md:py-4 hover:bg-white/80 transition-all duration-200 cursor-default" style={{ zIndex: openActionApaId === apa.id ? 50 : 1 }}>
                                             {/* Accent Left Bar on Hover */}
                                             <div className="absolute left-0 top-3 bottom-3 w-1 bg-blue-500 rounded-r-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                             
                                             {/* Data */}
-                                            <div className="w-20 pl-2 text-xs font-bold text-slate-500 tracking-wide">
+                                            <div className="w-16 md:w-20 pl-1 md:pl-2 text-[9px] md:text-xs font-bold text-slate-500 tracking-wide">
                                                 {apa.dataRegistro ? new Date(apa.dataRegistro).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '--'}
                                             </div>
                                             
                                             {/* Paciente */}
                                             <div className="flex-1 min-w-0 pr-2">
-                                                <div className="text-sm font-black text-slate-800 truncate tracking-tight">{apa.nome}</div>
+                                                <div className="text-xs md:text-sm font-black text-slate-800 truncate tracking-tight">{apa.nome}</div>
                                             </div>
 
                                             {/* Procedimento */}
@@ -1016,27 +1019,35 @@ Responda SOMENTE o bloco JSON.`;
                                             </div>
 
                                             {/* Parecer */}
-                                            <div className="w-28 flex justify-center">
-                                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm border ${apa.parecerFinal === 'Apto' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : apa.parecerFinal === 'Restricao' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
+                                            <div className="w-20 md:w-28 flex justify-center">
+                                                <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest shadow-sm border ${apa.parecerFinal === 'Apto' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : apa.parecerFinal === 'Restricao' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
                                                     {apa.parecerFinal || 'N/A'}
                                                 </span>
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="md:w-[190px] flex items-center justify-end opacity-100 transition-opacity duration-200 pr-2 md:pr-4 ml-auto">
+                                            <div className="md:w-[190px] flex items-center justify-end opacity-100 transition-opacity duration-200 pr-1 md:pr-4 ml-auto">
                                                 {/* Mobile Dropdown */}
-                                                <details className="relative md:hidden group z-10">
-                                                    <summary className="list-none p-1.5 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none cursor-pointer text-xs font-bold flex items-center gap-1 shadow-sm selection:bg-transparent">
+                                                <div className="relative md:hidden">
+                                                    <button 
+                                                        onClick={() => setOpenActionApaId(openActionApaId === apa.id ? null : apa.id)} 
+                                                        className="p-1 px-2 md:p-1.5 md:px-3 rounded-md border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none cursor-pointer text-[10px] md:text-xs font-bold flex items-center gap-1 shadow-sm transition-all active:scale-95"
+                                                    >
                                                         Ações
-                                                    </summary>
-                                                    <div className="absolute right-0 top-[calc(100%+4px)] w-36 bg-white rounded-xl shadow-xl border border-slate-200 flex flex-col p-1.5 gap-1">
-                                                        {apa.exames_url && <button onClick={() => window.open(apa.exames_url, '_blank')} className="w-full flex items-center gap-2 p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg text-left text-xs font-bold"><FileText size={14}/> Exame</button>}
-                                                        <button onClick={() => handleVerPreviewPdf(apa)} className="w-full flex items-center gap-2 p-2 text-blue-600 hover:bg-blue-50 rounded-lg text-left text-xs font-bold"><Eye size={14}/> Preview</button>
-                                                        {hasPermission('Criar/Editar APA') && <button onClick={() => handleVisualizarPdf(apa)} className="w-full flex items-center gap-2 p-2 text-slate-600 hover:bg-slate-50 rounded-lg text-left text-xs font-bold"><Printer size={14}/> Imprimir</button>}
-                                                        {hasPermission('Criar/Editar APA') && <button onClick={() => handleDuplicarApa(apa)} className="w-full flex items-center gap-2 p-2 text-amber-600 hover:bg-amber-50 rounded-lg text-left text-xs font-bold"><Copy size={14}/> Duplicar</button>}
-                                                        {hasPermission('Excluir AIH/APA') && <button onClick={() => handleExcluirApa(apa.id)} className="w-full flex items-center gap-2 p-2 text-rose-600 hover:bg-rose-50 rounded-lg text-left text-xs font-bold"><Trash2 size={14}/> Excluir</button>}
-                                                    </div>
-                                                </details>
+                                                    </button>
+                                                    {openActionApaId === apa.id && (
+                                                        <>
+                                                            <div className="fixed inset-0 z-40" onClick={() => setOpenActionApaId(null)} />
+                                                            <div className={`absolute right-0 w-36 bg-white rounded-xl shadow-xl shadow-slate-200/50 border border-slate-200 flex flex-col p-1.5 gap-1 z-50 animate-in fade-in zoom-in-95 duration-100 ${index >= filteredApasList.length - 2 && filteredApasList.length > 3 ? 'bottom-[calc(100%+8px)] origin-bottom-right' : 'top-[calc(100%+8px)] origin-top-right'}`}>
+                                                                {apa.exames_url && <button onClick={() => { window.open(apa.exames_url, '_blank'); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg text-left text-xs font-bold"><FileText size={14}/> Exame</button>}
+                                                                <button onClick={() => { handleVerPreviewPdf(apa); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-blue-600 hover:bg-blue-50 rounded-lg text-left text-xs font-bold"><Eye size={14}/> Preview</button>
+                                                                {hasPermission('Criar/Editar APA') && <button onClick={() => { handleVisualizarPdf(apa); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-slate-600 hover:bg-slate-50 rounded-lg text-left text-xs font-bold"><Printer size={14}/> Imprimir</button>}
+                                                                {hasPermission('Criar/Editar APA') && <button onClick={() => { handleDuplicarApa(apa); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-amber-600 hover:bg-amber-50 rounded-lg text-left text-xs font-bold"><Copy size={14}/> Duplicar</button>}
+                                                                {hasPermission('Excluir AIH/APA') && <button onClick={() => { handleExcluirApa(apa.id); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-rose-600 hover:bg-rose-50 rounded-lg text-left text-xs font-bold"><Trash2 size={14}/> Excluir</button>}
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
 
                                                 {/* Desktop Actions */}
                                                 <div className="hidden md:flex gap-1.5">
