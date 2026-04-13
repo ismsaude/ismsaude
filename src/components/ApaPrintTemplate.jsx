@@ -139,22 +139,16 @@ export default function ApaPrintTemplate({ data }) {
     };
 
     // Processamento de exames empacotados em ex_outros
-    let displayCoagulo = data?.ex_coagulo || '';
     let displayEco = data?.ex_eco || '';
-    let displayHepato = data?.ex_hepato || '';
-    let displayOutrosEsp = data?.ex_outros_esp || '';
     let displayOutrosExames = data?.ex_outros || '';
 
-    if (displayOutrosExames.includes('[Coagulograma:') || displayOutrosExames.includes('[Ecocardiograma:') || displayOutrosExames.includes('[Func. Hepática:') || displayOutrosExames.includes('[Outros Específicos:')) {
+    if (displayOutrosExames.includes('[Ecocardiograma:')) {
         const matches = displayOutrosExames.match(/\[(.*?)\]/g);
         if (matches) {
             const lastPack = matches[matches.length - 1];
             const content = lastPack.replace('[', '').replace(']', '');
             content.split(' | ').forEach(item => {
-                if (item.startsWith('Coagulograma: ')) displayCoagulo = item.replace('Coagulograma: ', '');
                 if (item.startsWith('Ecocardiograma: ')) displayEco = item.replace('Ecocardiograma: ', '');
-                if (item.startsWith('Func. Hepática: ')) displayHepato = item.replace('Func. Hepática: ', '');
-                if (item.startsWith('Outros Específicos: ')) displayOutrosEsp = item.replace('Outros Específicos: ', '');
             });
             displayOutrosExames = displayOutrosExames.replace(lastPack, '').trim();
         }
@@ -226,7 +220,7 @@ export default function ApaPrintTemplate({ data }) {
             <SectionBlock title="2. Procedimento Proposto">
                 <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-1.5">
                     <Field label="Procedimento Cirúrgico" value={data?.procedimento} className="col-span-2" />
-                    <Field label="Cirurgião / Dentista" value={data?.profissional} />
+                    <Field label="Profissional" value={data?.profissional} />
                 </div>
                 <div className="grid grid-cols-3 gap-x-2 gap-y-1.5">
                     <Field label="Data Prevista" value={formatDate(data?.dataProcedimento)} />
@@ -238,10 +232,17 @@ export default function ApaPrintTemplate({ data }) {
             {/* 3. ANTECEDENTES PATOLÓGICOS / COMORBIDADES */}
             <SectionBlock title="3. Antecedentes Patológicos / Comorbidades">
                 <div className="grid grid-cols-4 gap-x-1.5 gap-y-1.5 mb-1.5">
-                    {comorbidadesList.map(item => {
-                        const isMarcado = !!data?.[item.k] || (Array.isArray(data?.comorbidadesList) && data.comorbidadesList.includes(item.k));
-                        return <Checkbox key={item.k} label={item.l} checked={isMarcado} />;
-                    })}
+                    {(() => {
+                        let checkedCount = 0;
+                        const elements = comorbidadesList.map(item => {
+                            const isMarcado = !!data?.[item.k] || (Array.isArray(data?.comorbidadesList) && data.comorbidadesList.includes(item.k));
+                            if (!isMarcado) return null;
+                            checkedCount++;
+                            return <Checkbox key={item.k} label={item.l} checked={true} />;
+                        });
+                        if (checkedCount === 0) return <div className="text-[8.5px] text-gray-500 italic col-span-4">Nenhuma comorbidade reportada.</div>;
+                        return elements;
+                    })()}
                 </div>
                 <div className="w-full">
                     <Field label="Detalhes das Comorbidades" value={data?.detalhes_comorbidades} />
@@ -250,10 +251,12 @@ export default function ApaPrintTemplate({ data }) {
 
             {/* 4. ALERGIAS */}
             <SectionBlock title="4. Alergias">
-                <div className="mb-1">
-                    <Checkbox label="Nega alergias declaradas" checked={!!data?.negaAlergia} />
-                </div>
-                {(!data?.negaAlergia && listaAlergias && listaAlergias.length > 0) && (
+                {(!listaAlergias || listaAlergias.length === 0) ? (
+                    <div className="mb-1">
+                        <Checkbox label="Nega alergias declaradas" checked={!!data?.negaAlergia} />
+                    </div>
+                ) : null}
+                {(listaAlergias && listaAlergias.length > 0) && (
                     <table className="w-full text-left border-collapse mt-1">
                         <thead>
                             <tr className="border-b border-gray-300">
@@ -275,10 +278,12 @@ export default function ApaPrintTemplate({ data }) {
 
             {/* 5. MEDICAMENTOS EM USO */}
             <SectionBlock title="5. Medicamentos em Uso">
-                <div className="mb-1">
-                    <Checkbox label="Nega uso de medicamentos contínuos" checked={!!data?.negaMed} />
-                </div>
-                {(!data?.negaMed && listaMedicamentos && listaMedicamentos.length > 0) && (
+                {(!listaMedicamentos || listaMedicamentos.length === 0) ? (
+                    <div className="mb-1">
+                        <Checkbox label="Nega uso de medicamentos contínuos" checked={!!data?.negaMed} />
+                    </div>
+                ) : null}
+                {(listaMedicamentos && listaMedicamentos.length > 0) && (
                     <table className="w-full text-left border-collapse mt-1">
                         <thead>
                             <tr className="border-b border-gray-300 bg-gray-50">
@@ -314,22 +319,30 @@ export default function ApaPrintTemplate({ data }) {
             <SectionBlock title="7. Hábitos">
                 <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-1.5">
                     <Field label="Tabagismo" value={data?.tabagismo} />
-                    <Field label="Carga Tabágica" value={data?.carga_tabagica} />
+                    <Field label="Carga Tabágica (anos-maço)" value={data?.carga_tabagica} />
                     <Field label="Parou há" value={data?.parou_fumo} />
                 </div>
-                <div className="grid grid-cols-3 gap-x-2 gap-y-1.5">
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
                     <Field label="Etilismo" value={data?.etilismo} />
                     <Field label="Drogas Ilícitas" value={data?.drogas} />
-                    <Field label="Capacidade Funcional (METS)" value={data?.mets} />
                 </div>
             </SectionBlock>
 
-            {/* 8. EXAME FÍSICO (ESPECIFICIDADES) */}
-            <SectionBlock title="8. Exame Físico (Especificidades)">
-                <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-0.5">
+            {/* 8. EXAME FÍSICO */}
+            <SectionBlock title="8. Exame Físico">
+                <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-1.5">
                     <Field label="Cardiovascular (ACV)" value={data?.acv} />
                     <Field label="Respiratório (AR)" value={data?.ar} />
                     <Field label="Abdome" value={data?.abdome} />
+                </div>
+                <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-1.5">
+                    <Field label="Capacidade Func. (METS)" value={data?.mets} />
+                    <Field label="Consciência" value={data?.neuro_consciencia} />
+                    <Field label="Déficit Motor/Sens" value={data?.neuro_deficit} />
+                </div>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 mb-0.5">
+                    <Field label="Coluna/Dorso" value={data?.coluna_dorso} />
+                    <Field label="Acesso Venoso" value={data?.acesso_venoso} />
                 </div>
             </SectionBlock>
 
@@ -393,25 +406,24 @@ export default function ApaPrintTemplate({ data }) {
                     <Field label="Leucócitos" value={data?.ex_leuco} />
                 </div>
                 <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
-                    <Field label="Coagulograma" value={displayCoagulo} />
                     <Field label="TAP/INR" value={data?.ex_inr} />
                     <Field label="TTPa" value={data?.ex_ttpa} />
-                    <Field label="Glicemia" value={data?.ex_glic} />
+                    <Field label="Glicemia de Jejum" value={data?.ex_glic} />
+                    <Field label="HbA1c" value={data?.ex_hba1c} />
                 </div>
                 <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
-                    <Field label="HbA1c" value={data?.ex_hba1c} />
                     <Field label="Ureia" value={data?.ex_ureia} />
                     <Field label="Creatinina" value={data?.ex_creat} />
                     <Field label="Sódio (Na+)" value={data?.ex_na} />
+                    <Field label="Potássio (K+)" value={data?.ex_k} />
                 </div>
                 <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
-                    <Field label="Potássio (K+)" value={data?.ex_k} />
-                    <Field label="Ecocardiograma" value={displayEco} />
-                    <Field label="Função Hepática" value={displayHepato} />
-                    <Field label="Outros (TSH / Urina...)" value={displayOutrosEsp} />
+                    <Field label="TGO (AST)" value={data?.ex_tgo} />
+                    <Field label="TGP (ALT)" value={data?.ex_tgp} />
                 </div>
-                <div className="grid grid-cols-2 gap-x-2 gap-y-1 mb-1.5">
+                <div className="grid grid-cols-3 gap-x-2 gap-y-1 mb-1.5">
                     <Field label="ECG" value={data?.ex_ecg} />
+                    <Field label="Ecocardiograma" value={displayEco} />
                     <Field label="RX Tórax" value={data?.ex_rx} />
                 </div>
                 <div className="mb-1.5">
@@ -422,22 +434,20 @@ export default function ApaPrintTemplate({ data }) {
 
             {/* 12. JEJUM */}
             <SectionBlock title="12. Jejum Pré-Operatório">
-                {data?.jejum_orientacao === 'Protocolo Absoluto (8h)' ? (
+                {['2h', '4h', '6h', '6h (Fórmula)', '8h'].includes(data?.jejum_orientacao) ? (
                     <table className="w-full text-left border border-gray-300 mb-1.5 text-[8px]">
                         <thead>
                             <tr className="bg-gray-100">
-                                <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase">Tipo de Ingesta</th>
-                                <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase text-center w-40">Tempo de Jejum Mínimo</th>
+                                <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase">Orientação de Jejum Mínimo Recomendada</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td className="p-1 border border-gray-300 font-bold">Alimentos Sólidos e Líquidos (Jejum absoluto)</td>
-                                <td className="p-1 border border-gray-300 text-center font-black text-rose-700">8 horas</td>
+                                <td className="p-1 border border-gray-300 font-bold text-rose-700">Tempo de Jejum indicado para o paciente: {data?.jejum_orientacao}</td>
                             </tr>
                         </tbody>
                     </table>
-                ) : (
+                ) : (data?.jejum_orientacao === 'Padrão ASA' || data?.jejum_orientacao === '') && (data?.jejum_liquidos || data?.jejum_leite || data?.jejum_formula || data?.jejum_leve || data?.jejum_completa) ? (
                     <table className="w-full text-left border border-gray-300 mb-1.5 text-[8px]">
                         <thead>
                             <tr className="bg-gray-100">
@@ -446,32 +456,41 @@ export default function ApaPrintTemplate({ data }) {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td className="p-1 border border-gray-300">Líquidos Claros (Água, Chá)</td><td className="p-1 border border-gray-300 text-center font-bold">2 horas</td></tr>
-                            <tr><td className="p-1 border border-gray-300">Leite Materno</td><td className="p-1 border border-gray-300 text-center font-bold">4 horas</td></tr>
-                            <tr><td className="p-1 border border-gray-300">Fórmula Láctea / Leite não humano / Refeição leve</td><td className="p-1 border border-gray-300 text-center font-bold">6 horas</td></tr>
-                            <tr><td className="p-1 border border-gray-300">Refeição completa (com gordura/carne)</td><td className="p-1 border border-gray-300 text-center font-bold">8 horas</td></tr>
+                            {data?.jejum_liquidos && <tr><td className="p-1 border border-gray-300">Líquidos Claros (Água, Chá)</td><td className="p-1 border border-gray-300 text-center font-bold text-rose-600">{data.jejum_liquidos}</td></tr>}
+                            {data?.jejum_leite && <tr><td className="p-1 border border-gray-300">Leite Materno</td><td className="p-1 border border-gray-300 text-center font-bold text-rose-600">{data.jejum_leite}</td></tr>}
+                            {data?.jejum_formula && <tr><td className="p-1 border border-gray-300">Fórmula Láctea / Leite não humano</td><td className="p-1 border border-gray-300 text-center font-bold text-rose-600">{data.jejum_formula}</td></tr>}
+                            {data?.jejum_leve && <tr><td className="p-1 border border-gray-300">Refeição leve</td><td className="p-1 border border-gray-300 text-center font-bold text-rose-600">{data.jejum_leve}</td></tr>}
+                            {data?.jejum_completa && <tr><td className="p-1 border border-gray-300">Refeição completa</td><td className="p-1 border border-gray-300 text-center font-bold text-rose-600">{data.jejum_completa}</td></tr>}
                         </tbody>
                     </table>
-                )}
+                ) : null}
                 <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
-                    <Field label="Orientação Específica de Jejum" value={data?.jejum_orientacao} />
-                    <Field label="Profilaxia de Aspiração" value={data?.profilaxia_asp} />
+                    <Field label="Orientação Específica de Jejum" value={!['2h', '4h', '6h', '6h (Fórmula)', '8h', 'Padrão ASA', ''].includes(data?.jejum_orientacao) ? data?.jejum_orientacao : 'Conforme a Tabela e Protocolo.'} />
+                    <Field label="Profilaxia de Aspiração" value={data?.profilaxia_asp} valueClassName={data?.profilaxia_asp && data.profilaxia_asp !== 'Não indicada' ? 'text-amber-600' : ''} />
                 </div>
             </SectionBlock>
 
             {/* 13. PLANO ANESTÉSICO */}
             <SectionBlock title="13. Plano Anestésico">
-                <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-1.5">
-                    <Field label="Técnica" value={data?.plan_tecnica} />
-                    <Field label="Hemoderivados" value={data?.plan_hemoderivados} />
-                    <Field label="Destino Pós-Op" value={data?.plan_destino} />
+                <div className="grid grid-cols-4 gap-x-2 gap-y-1.5 mb-1.5">
+                    <Field label="Técnica Prevista" value={data?.plan_tecnica} className="col-span-2" />
+                    <Field label="Reserva de UTI" value={data?.plan_destino} valueClassName={data?.plan_destino === 'Sim' ? 'text-rose-600' : ''} />
+                    <Field label="Hemoderivados" value={data?.plan_hemoderivados} valueClassName={data?.plan_hemoderivados === 'Sim' ? 'text-rose-600' : ''} />
                 </div>
-                <Field label="Observações do Plano" value={data?.plan_obs} />
+                {data?.plan_hemoderivados === 'Sim' && (
+                    <div className="grid grid-cols-4 gap-x-2 gap-y-1 px-2 py-1.5 mb-1.5 bg-rose-50/40 border-l-2 border-rose-300">
+                        {data?.plan_hemo_ch && <Field label="Hemácias (CH)" value={`${data.plan_hemo_ch} un`} valueClassName="text-rose-900" />}
+                        {data?.plan_hemo_pfc && <Field label="Plasma (PFC)" value={`${data.plan_hemo_pfc} un`} valueClassName="text-rose-900" />}
+                        {data?.plan_hemo_plaq && <Field label="Plaquetas" value={`${data.plan_hemo_plaq} un`} valueClassName="text-rose-900" />}
+                        {data?.plan_hemo_outros && <Field label="Outros" value={data.plan_hemo_outros} valueClassName="text-rose-900" />}
+                    </div>
+                )}
+                {data?.plan_obs && <Field label="Observações do Plano" value={data?.plan_obs} />}
             </SectionBlock>
 
-            {/* 15. PARECER */}
-            <SectionBlock title="15. Parecer Anestésico">
-                <div className="flex gap-2 mb-1.5">
+            {/* 14. PARECER */}
+            <SectionBlock title="14. Parecer Anestésico">
+                <div className="flex gap-2 mb-2">
                     {[
                         { val: 'Apto', label: 'APTO', colors: 'border-green-500 bg-green-50 text-green-800' },
                         { val: 'Restricao', altVal: 'Apto com restrições', label: 'APTO C/ RESTRIÇÕES', colors: 'border-amber-500 bg-amber-50 text-amber-800' },
@@ -488,7 +507,16 @@ export default function ApaPrintTemplate({ data }) {
                         );
                     })}
                 </div>
-                <Field label="Justificativa / Recomendações" value={data?.parecer_obs} />
+                <div className="mb-1.5">
+                    <Field label="Necessita avaliação especializada prévia?" value={data?.parecer_aval_esp} />
+                    {data?.parecer_aval_esp === 'Sim' && (
+                        <div className="grid grid-cols-2 gap-x-2 mt-1 border-l-2 border-slate-300 pl-2">
+                            <Field label="Especialidade" value={data?.parecer_aval_especialidade} />
+                            <Field label="Motivo" value={data?.parecer_aval_motivo} />
+                        </div>
+                    )}
+                </div>
+                <Field label="Justificativa / Recomendações Finais" value={data?.parecer_obs || (data?.parecerFinal === 'Apto' ? 'Nada digno de nota.' : '')} />
             </SectionBlock>
 
             {/* 16. ASSINATURAS */}

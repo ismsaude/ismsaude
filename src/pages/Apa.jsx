@@ -137,12 +137,14 @@ export default function Apa({ paciente }) {
         va_abertura: '', va_dtm: '', va_dem: '', va_cervical: '', va_protese: 'Não', va_cormack: '', va_dificil: '', va_obs: '',
         asa: '',
         ex_hb: '', ex_ht: '', ex_plaq: '', ex_leuco: '', ex_inr: '', ex_ttpa: '', ex_glic: '', ex_hba1c: '',
-        ex_ureia: '', ex_creat: '', ex_na: '', ex_k: '', ex_coagulo: '', ex_eco: '', ex_hepato: '', ex_outros_esp: '', ex_ecg: '', ex_rx: '', ex_outros: '', ex_obs: '', exames_url: '',
+        ex_ureia: '', ex_creat: '', ex_na: '', ex_k: '', ex_tgo: '', ex_tgp: '', ex_eco: '', ex_ecg: '', ex_rx: '', ex_outros: '', ex_obs: '', exames_url: '',
         jejum_orientacao: '', profilaxia_asp: 'Não indicada',
+        jejum_liquidos: '', jejum_leite: '', jejum_formula: '', jejum_leve: '', jejum_completa: '',
         plan_tecnica: '', plan_via_aerea: '', plan_monitor: 'Básica (ECG, SpO2, PANI, Capno)', plan_acesso: 'Periférico 1 via',
-        plan_hemoderivados: 'Não', plan_destino: '', plan_obs: '',
+        plan_hemoderivados: 'Não', plan_hemo_ch: '', plan_hemo_pfc: '', plan_hemo_plaq: '', plan_hemo_outros: '', plan_destino: 'Não', plan_obs: '',
         mpa_ansio: 'Não prescrito', mpa_nvpo: 'Não indicada', mpa_atb: 'Não indicada', mpa_outras: '',
-        parecer_obs: ''
+        parecer_obs: '', parecer_aval_esp: 'Não', parecer_aval_especialidade: '', parecer_aval_motivo: '',
+        neuro_consciencia: '', neuro_deficit: '', coluna_dorso: '', acesso_venoso: '', tabag_cigarros: '', tabag_anos: ''
     };
 
     const [formData, setFormData] = useState(draftState?.formData ? { ...defaultFormData, ...draftState.formData } : defaultFormData);
@@ -782,12 +784,61 @@ Responda SOMENTE o bloco JSON.`;
     };
 
     const tabs = [
-        { id: 'dados', label: 'Dados e Procedimento', icon: <User size={18} /> },
+        { id: 'dados', label: 'Identificação do paciente', icon: <User size={18} /> },
         { id: 'historico', label: 'Histórico Clínico', icon: <Stethoscope size={18} /> },
-        { id: 'exame', label: 'Exame Físico e VA', icon: <ActivitySquare size={18} /> },
+        { id: 'exame', label: 'Exame Físico', icon: <Activity size={18} /> },
         { id: 'exames', label: 'Exames e Jejum', icon: <FileText size={18} /> },
-        { id: 'plano', label: 'Plano e Parecer', icon: <CheckSquare size={18} /> },
+        { id: 'plano', label: 'Parecer Anestésico', icon: <CheckSquare size={18} /> },
     ];
+
+    const validateCurrentTab = () => {
+        if (activeTab === 'dados') {
+            if (!formData.nome) return "Selecione um paciente.";
+            if (!formData.dataNasc) return "A Data de Nascimento é obrigatória.";
+            if (!formData.sexo) return "O Sexo é obrigatório.";
+            if (!formData.peso) return "O Peso é obrigatório.";
+            if (!formData.altura) return "A Altura é obrigatória.";
+            if (!formData.procedimento) return "O Procedimento Cirúrgico é obrigatório.";
+            if (!formData.carater) return "O Caráter é obrigatório.";
+        }
+        if (activeTab === 'historico') {
+            if (!negaAlergia && (!alergias || alergias.length === 0 || !alergias[0].substancia)) return "Marque 'Nega alergias' ou descreva pelo menos uma substância.";
+            if (!negaMed && (!medicamentos || medicamentos.length === 0 || !medicamentos[0].nome || !medicamentos[0].conduta)) return "Preencha Medicamento e Conduta, ou marque 'Nega uso de medicamentos'.";
+            if (!formData.tabagismo) return "O status de Tabagismo é obrigatório.";
+        }
+        if (activeTab === 'exame') {
+            if (!mallampati) return "A Classificação de Mallampati é obrigatória.";
+            if (!formData.va_dificil) return "Informe se há previsão de Via Aérea Difícil.";
+        }
+        if (activeTab === 'plano') {
+            if (!formData.plan_tecnica) return "A Técnica Anestésica é obrigatória.";
+            if (!formData.plan_destino) return "O Destino Pós-Op é obrigatório.";
+            if (!parecer) return "O Parecer Anestésico é obrigatório.";
+            if ((parecer === 'Restricao' || parecer === 'Inapto') && !formData.parecer_obs?.trim()) {
+                return "Justificativas/Recomendações finais são obrigatórias quando o parecer for APTO C/ RESTRIÇÕES ou INAPTO.";
+            }
+        }
+        return null;
+    };
+
+    const handleTabNavigation = (targetTabId) => {
+        if (isReadOnly) {
+            setActiveTab(targetTabId);
+            return;
+        }
+
+        const currentIndex = tabs.findIndex(t => t.id === activeTab);
+        const targetIndex = tabs.findIndex(t => t.id === targetTabId);
+
+        if (targetIndex > currentIndex) {
+            const erro = validateCurrentTab();
+            if (erro) {
+                toast.error(`Atenção: ${erro}`);
+                return;
+            }
+        }
+        setActiveTab(targetTabId);
+    };
 
     const handleDownloadPDF = () => {
         const element = document.getElementById('apa-pdf-document');
@@ -1041,7 +1092,6 @@ Responda SOMENTE o bloco JSON.`;
                                                             <div className={`absolute right-0 w-36 bg-white rounded-xl shadow-xl shadow-slate-200/50 border border-slate-200 flex flex-col p-1.5 gap-1 z-50 animate-in fade-in zoom-in-95 duration-100 ${index >= filteredApasList.length - 2 && filteredApasList.length > 3 ? 'bottom-[calc(100%+8px)] origin-bottom-right' : 'top-[calc(100%+8px)] origin-top-right'}`}>
                                                                 {apa.exames_url && <button onClick={() => { window.open(apa.exames_url, '_blank'); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg text-left text-xs font-bold"><FileText size={14}/> Exame</button>}
                                                                 <button onClick={() => { handleVerPreviewPdf(apa); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-blue-600 hover:bg-blue-50 rounded-lg text-left text-xs font-bold"><Eye size={14}/> Preview</button>
-                                                                {hasPermission('Criar/Editar APA') && <button onClick={() => { handleVisualizarPdf(apa); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-slate-600 hover:bg-slate-50 rounded-lg text-left text-xs font-bold"><Printer size={14}/> Imprimir</button>}
                                                                 {hasPermission('Criar/Editar APA') && <button onClick={() => { handleDuplicarApa(apa); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-amber-600 hover:bg-amber-50 rounded-lg text-left text-xs font-bold"><Copy size={14}/> Duplicar</button>}
                                                                 {hasPermission('Excluir AIH/APA') && <button onClick={() => { handleExcluirApa(apa.id); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-rose-600 hover:bg-rose-50 rounded-lg text-left text-xs font-bold"><Trash2 size={14}/> Excluir</button>}
                                                             </div>
@@ -1049,11 +1099,9 @@ Responda SOMENTE o bloco JSON.`;
                                                     )}
                                                 </div>
 
-                                                {/* Desktop Actions */}
                                                 <div className="hidden md:flex gap-1.5">
                                                     {apa.exames_url && <button onClick={() => window.open(apa.exames_url, '_blank')} className="p-2 text-indigo-600 hover:bg-indigo-100 bg-indigo-50 border border-indigo-100 rounded-xl transition-all active:scale-95" title="Ver Exame Original"><FileText size={16} strokeWidth={2.5}/></button>}
                                                     <button onClick={() => handleVerPreviewPdf(apa)} className="p-2 text-blue-600 hover:bg-blue-100 bg-blue-50 rounded-xl transition-all active:scale-95" title="Visualizar PDF na tela"><Eye size={16} strokeWidth={2.5}/></button>
-                                                    {hasPermission('Criar/Editar APA') && <button onClick={() => handleVisualizarPdf(apa)} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 bg-slate-50 border border-slate-100 rounded-xl transition-all active:scale-95" title="Imprimir / Salvar PDF"><Printer size={16} strokeWidth={2.5}/></button>}
                                                     {hasPermission('Criar/Editar APA') && <button onClick={() => handleDuplicarApa(apa)} className="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all active:scale-95" title="Duplicar"><Copy size={16} strokeWidth={2.5}/></button>}
                                                     {hasPermission('Excluir AIH/APA') && <button onClick={() => handleExcluirApa(apa.id)} className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-95" title="Excluir"><Trash2 size={16} strokeWidth={2.5}/></button>}
                                                 </div>
@@ -1073,7 +1121,7 @@ Responda SOMENTE o bloco JSON.`;
                             </button>
                             <div className="flex flex-row xl:flex-col overflow-x-auto pb-2 xl:pb-0 gap-2 custom-scrollbar scroll-smooth">
                                 {tabs.map(tab => (
-                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                                    <button key={tab.id} onClick={() => handleTabNavigation(tab.id)}
                                         className={`flex-shrink-0 w-auto xl:w-full flex items-center gap-3 px-4 py-3 xl:py-3.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-transparent' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}>
                                         <div className={`${activeTab === tab.id ? 'text-blue-100' : 'text-slate-400'}`}>
                                             {tab.icon}
@@ -1167,7 +1215,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                 <div className="flex flex-col">
                                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">POSIÇÃO</label>
                                                                     <div className="flex flex-wrap gap-1">
-                                                                        {[{val: 'DD', label: 'DD'}, {val: 'DV', label: 'DV'}, {val: 'DLE', label: 'DLE'}, {val: 'DLD', label: 'DLD'}, {val: 'Sentado', label: 'Sent'}, {val: 'Litotomia', label: 'Litot'}].map(opt => (
+                                                                        {[{val: 'Dorsal Horizontal', label: 'Dorsal Horizontal'}, {val: 'Ventral', label: 'Ventral'}, {val: 'Lateral Esquerdo', label: 'Lateral Esquerdo'}, {val: 'Lateral Direito', label: 'Lateral Direito'}, {val: 'Sentado', label: 'Sentado'}, {val: 'Litotomia', label: 'Litotomia'}].map(opt => (
                                                                             <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, posicao: opt.val})} className={`flex-[1_1_30%] h-[32px] flex items-center justify-center px-0.5 whitespace-nowrap text-[9px] font-bold rounded-lg border transition-all ${formData.posicao === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
                                                                                 {opt.label}
                                                                             </button>
@@ -1280,25 +1328,64 @@ Responda SOMENTE o bloco JSON.`;
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ANESTESIAS PRÉVIAS / COMPLICAÇÕES</label><textarea disabled={isReadOnly} name="anestesias_previas" value={formData.anestesias_previas} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea></div>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                                                <div className="md:col-span-4">
-                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">TABAGISMO</label>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {[{val: 'Não', label: 'Não'}, {val: 'Sim, ativo', label: 'Sim, ativo'}, {val: 'Ex-tabagista', label: 'Ex-tabagista'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, tabagismo: opt.val})} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-[11px] md:text-xs font-bold rounded-lg border transition-all ${formData.tabagismo === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
-                                                                {opt.label}
-                                                            </button>
-                                                        ))}
+                                                <div className="md:col-span-12 grid grid-cols-1 md:grid-cols-12 gap-4">
+                                                    <div className="md:col-span-4">
+                                                        <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">TABAGISMO</label>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {[{val: 'Não', label: 'Não'}, {val: 'Sim, ativo', label: 'Sim, ativo'}, {val: 'Ex-tabagista', label: 'Ex-tabagista'}].map(opt => (
+                                                                <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => {
+                                                                    let newCarga = formData.carga_tabagica;
+                                                                    let newCig = formData.tabag_cigarros;
+                                                                    let newAnos = formData.tabag_anos;
+                                                                    if (opt.val === 'Não') {
+                                                                        newCarga = '';
+                                                                        newCig = '';
+                                                                        newAnos = '';
+                                                                    }
+                                                                    setFormData({...formData, tabagismo: opt.val, carga_tabagica: newCarga, tabag_cigarros: newCig, tabag_anos: newAnos});
+                                                                }} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-[11px] md:text-xs font-bold rounded-lg border transition-all ${formData.tabagismo === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                    {opt.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
                                                     </div>
+                                                    
+                                                    {(formData.tabagismo === 'Sim, ativo' || formData.tabagismo === 'Ex-tabagista') && (
+                                                        <>
+                                                            <div className="md:col-span-2">
+                                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">Cigarros/dia</label>
+                                                                <input disabled={isReadOnly} type="number" name="tabag_cigarros" value={formData.tabag_cigarros || ''} onChange={(e) => {
+                                                                    const cig = e.target.value;
+                                                                    const anos = formData.tabag_anos;
+                                                                    const result = cig && anos ? ((parseFloat(cig) / 20) * parseFloat(anos)).toFixed(1).replace('.0', '') : '';
+                                                                    setFormData({...formData, tabag_cigarros: cig, carga_tabagica: result});
+                                                                }} className="w-full h-[40px] px-3 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white" />
+                                                            </div>
+                                                            <div className="md:col-span-2">
+                                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">Tempo (anos)</label>
+                                                                <input disabled={isReadOnly} type="number" name="tabag_anos" value={formData.tabag_anos || ''} onChange={(e) => {
+                                                                    const anos = e.target.value;
+                                                                    const cig = formData.tabag_cigarros;
+                                                                    const result = cig && anos ? ((parseFloat(cig) / 20) * parseFloat(anos)).toFixed(1).replace('.0', '') : '';
+                                                                    setFormData({...formData, tabag_anos: anos, carga_tabagica: result});
+                                                                }} className="w-full h-[40px] px-3 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white" />
+                                                            </div>
+                                                            <div className="md:col-span-4">
+                                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">Carga Tabágica (anos-maço)</label>
+                                                                <input disabled type="text" value={formData.carga_tabagica} className="w-full h-[40px] px-3 text-xs font-bold text-slate-500 bg-slate-100 border border-slate-200 rounded-lg outline-none" />
+                                                            </div>
+                                                        </>
+                                                    )}
+
+                                                    {formData.tabagismo === 'Ex-tabagista' && (
+                                                        <div className="md:col-span-4">
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">PAROU HÁ</label>
+                                                            <input disabled={isReadOnly} type="text" name="parou_fumo" value={formData.parou_fumo} onChange={handleChange} className="w-full h-[40px] px-3 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white" />
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div className="md:col-span-2">
-                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">CARGA TABÁGICA</label>
-                                                    <input disabled={isReadOnly} type="text" name="carga_tabagica" value={formData.carga_tabagica} onChange={handleChange} className="w-full h-[40px] px-3 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white" />
-                                                </div>
-                                                <div className="md:col-span-2">
-                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">PAROU HÁ</label>
-                                                    <input disabled={isReadOnly} type="text" name="parou_fumo" value={formData.parou_fumo} onChange={handleChange} className="w-full h-[40px] px-3 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white" />
-                                                </div>
-                                                <div className="md:col-span-4">
+
+                                                <div className="md:col-span-6">
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">ETILISMO</label>
                                                     <div className="flex flex-wrap gap-2">
                                                         {[{val: 'Não', label: 'Não'}, {val: 'Social', label: 'Social'}, {val: 'Diário', label: 'Diário'}].map(opt => (
@@ -1318,17 +1405,6 @@ Responda SOMENTE o bloco JSON.`;
                                                         ))}
                                                     </div>
                                                 </div>
-                                                <div className="md:col-span-6">
-                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">CAPACIDADE FUNCIONAL (METS)</label>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {[{val: '>10 METS', label: '>10 METS', sub: '(Excelente)'}, {val: '4-7 METS', label: '4-7 METS'}, {val: '<4 METS', label: '<4 METS', sub: '(Ruim)'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, mets: opt.val})} className={`flex-1 h-[40px] flex flex-col items-center justify-center px-1 whitespace-nowrap text-[11px] md:text-xs font-bold rounded-lg border transition-all ${formData.mets === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
-                                                                <span>{opt.label}</span>
-                                                                {opt.sub && <span className="text-[8.5px] font-semibold opacity-75 md:mt-0.5">{opt.sub}</span>}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
                                             </div>
                                         </section>
                                     </div>
@@ -1338,15 +1414,80 @@ Responda SOMENTE o bloco JSON.`;
                                 {activeTab === 'exame' && (
                                     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">8. Exame Físico (Especificidades)</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CARDIOVASCULAR (ACV)</label><input disabled={isReadOnly} type="text" name="acv" value={formData.acv} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">RESPIRATÓRIO (AR)</label><input disabled={isReadOnly} type="text" name="ar" value={formData.ar} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ABDOME</label><input disabled={isReadOnly} type="text" name="abdome" value={formData.abdome} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                            </div>
-                                        </section>
-                                        <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">9. Avaliação da Via Aérea</h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">8. Exame Físico</h3>
+                                            
+                                            <div className="space-y-6">
+                                                {/* 1. AVALIAÇÃO CLÍNICA GERAL */}
+                                                <div>
+                                                    <h4 className="text-[10px] font-bold text-slate-400 mb-2">1. AVALIAÇÃO CLÍNICA GERAL</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CARDIOVASCULAR (ACV)</label><input disabled={isReadOnly} type="text" name="acv" value={formData.acv} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">RESPIRATÓRIO (AR)</label><input disabled={isReadOnly} type="text" name="ar" value={formData.ar} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ABDOME</label><input disabled={isReadOnly} type="text" name="abdome" value={formData.abdome} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    </div>
+                                                </div>
+
+                                                {/* 2. CAPACIDADE FUNCIONAL (METS) */}
+                                                <div>
+                                                    <h4 className="text-[10px] font-bold text-slate-400 mb-2">2. CAPACIDADE FUNCIONAL (METS)</h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {[{val: '>10 METS', label: '>10 METS (Excelente)'}, {val: '4-7 METS', label: '4-7 METS'}, {val: '<4 METS', label: '<4 METS (Ruim)'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, mets: opt.val})} className={`px-4 py-1.5 text-[11px] md:text-xs font-bold rounded-lg border transition-all ${formData.mets === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* 3. AVALIAÇÃO NEUROLÓGICA */}
+                                                <div>
+                                                    <h4 className="text-[10px] font-bold text-slate-400 mb-2">3. AVALIAÇÃO NEUROLÓGICA</h4>
+                                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ESTADO DE CONSCIÊNCIA</label>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {[{val: 'Lúcido/Orientado', label: 'Lúcido/Orientado'}, {val: 'Alteração de Consciência', label: 'Alteração de Consciência'}].map(opt => (
+                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, neuro_consciencia: opt.val})} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg border transition-all ${formData.neuro_consciencia === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DÉFICIT MOTOR/SENSITIVO</label>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {[{val: 'Sem Déficit', label: 'Sem Déficit'}, {val: 'Hemiparesia', label: 'Hemiparesia'}, {val: 'Parestesia', label: 'Parestesia'}, {val: 'Paraplegia', label: 'Paraplegia'}].map(opt => (
+                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, neuro_deficit: opt.val})} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg border transition-all ${formData.neuro_deficit === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* 4. COLUNA VERTEBRAL E ACESSO VENOSO */}
+                                                <div>
+                                                    <h4 className="text-[10px] font-bold text-slate-400 mb-2">4. COLUNA VERTEBRAL E ACESSO VENOSO</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">COLUNA/DORSO</label>
+                                                            <div className="flex gap-1">
+                                                                {[{val: 'Normal', label: 'Normal'}, {val: 'Deformidade/Escoliose', label: 'Deformidade/Escoliose'}, {val: 'Restrição Local', label: 'Restrição Local'}].map(opt => (
+                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, coluna_dorso: opt.val})} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg border transition-all ${formData.coluna_dorso === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ACESSO VENOSO</label>
+                                                            <div className="flex gap-1">
+                                                                {[{val: 'Fácil', label: 'Fácil'}, {val: 'Difícil', label: 'Difícil'}, {val: 'Necessita USG', label: 'Necessita USG'}].map(opt => (
+                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, acesso_venoso: opt.val})} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg border transition-all ${formData.acesso_venoso === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* 5. VIA AÉREA */}
+                                                <div>
+                                                    <h4 className="text-[10px] font-bold text-slate-400 mb-2">5. VIA AÉREA</h4>
                                             <div className="mb-6">
                                                 <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CLASSIFICAÇÃO DE MALLAMPATI <span className="text-rose-500 text-[10px]">*</span></label>
                                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1383,24 +1524,24 @@ Responda SOMENTE o bloco JSON.`;
                                                 <div>
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ABERTURA BUCAL</label>
                                                     <div className="flex gap-1">
-                                                        {[{val: 'Adequada (> 3cm)', label: '> 3cm'}, {val: 'Limitada (< 3cm)', label: '< 3cm'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_abertura: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_abertura === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                        {[{val: '> 3cm (Adequada)', label: '> 3cm (Adequada)', fallback: 'Adequada (> 3cm)'}, {val: '< 3cm (Restrita)', label: '< 3cm (Restrita)', fallback: 'Limitada (< 3cm)'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_abertura: opt.val})} className={`flex-1 px-2 py-1.5 text-[10px] md:text-[11px] font-bold rounded-lg border transition-all ${(formData.va_abertura === opt.val || formData.va_abertura === opt.fallback) ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DIST. TIREOMENTUAL</label>
                                                     <div className="flex gap-1">
-                                                        {[{val: 'Adequada (> 6cm)', label: '> 6cm'}, {val: 'Limitada (< 6cm)', label: '< 6cm'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dtm: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_dtm === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                        {[{val: '> 6cm (Adequada)', label: '> 6cm (Adequada)', fallback: 'Adequada (> 6cm)'}, {val: '< 6cm (Curta)', label: '< 6cm (Curta)', fallback: 'Limitada (< 6cm)'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dtm: opt.val})} className={`flex-1 px-2 py-1.5 text-[10px] md:text-[11px] font-bold rounded-lg border transition-all ${(formData.va_dtm === opt.val || formData.va_dtm === opt.fallback) ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DIST. ESTERNOMENTO</label>
                                                     <div className="flex gap-1">
-                                                        {[{val: 'Adequada (> 12.5cm)', label: '> 12.5cm'}, {val: 'Limitada (< 12.5cm)', label: '< 12.5cm'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dem: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_dem === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                        {[{val: '> 12.5cm (Adequada)', label: '> 12.5cm (Adequada)', fallback: 'Adequada (> 12.5cm)'}, {val: '< 12.5cm (Curta)', label: '< 12.5cm (Curta)', fallback: 'Limitada (< 12.5cm)'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dem: opt.val})} className={`flex-1 px-2 py-1.5 text-[10px] md:text-[11px] font-bold rounded-lg border transition-all ${(formData.va_dem === opt.val || formData.va_dem === opt.fallback) ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -1408,7 +1549,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">MOBILIDADE CERVICAL</label>
                                                     <div className="flex gap-1">
                                                         {[{val: 'Normal', label: 'Normal'}, {val: 'Limitada', label: 'Limitada'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_cervical: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_cervical === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_cervical: opt.val})} className={`flex-1 px-2 py-1.5 text-[11px] font-bold rounded-lg border transition-all ${formData.va_cervical === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -1416,7 +1557,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PRÓTESE DENTÁRIA</label>
                                                     <div className="flex gap-1">
                                                         {[{val: 'Não', label: 'Não'}, {val: 'Fixa', label: 'Fixa'}, {val: 'Móvel', label: 'Móvel'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_protese: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_protese === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_protese: opt.val})} className={`flex-1 px-2 py-1.5 text-[11px] font-bold rounded-lg border transition-all ${formData.va_protese === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -1424,14 +1565,16 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className={`block text-[9px] font-black uppercase tracking-wide mb-1 ${formData.va_dificil === 'Sim' ? 'text-rose-600' : formData.va_dificil === 'Possível' ? 'text-amber-600' : 'text-slate-500'}`}>VA DIFÍCIL PREVISTA <span className="text-rose-500 text-[10px]">*</span></label>
                                                     <div className="flex gap-1">
                                                         {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim', color: 'rose'}, {val: 'Possível', label: 'Possível', color: 'amber'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dificil: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.va_dificil === opt.val ? (opt.color === 'rose' ? 'bg-rose-50 border-rose-400 text-rose-700 shadow-sm' : opt.color === 'amber' ? 'bg-amber-50 border-amber-400 text-amber-700 shadow-sm' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm') : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dificil: opt.val})} className={`flex-1 px-2 py-1.5 text-[11px] font-bold rounded-lg border transition-all ${formData.va_dificil === opt.val ? (opt.color === 'rose' ? 'bg-rose-50 border-rose-400 text-rose-700 shadow-sm' : opt.color === 'amber' ? 'bg-amber-50 border-amber-400 text-amber-700 shadow-sm' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm') : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="mt-4">
-                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">OBSERVAÇÕES VIA AÉREA</label>
-                                                <textarea disabled={isReadOnly} name="va_obs" value={formData.va_obs} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea>
+                                                    <div className="mt-4">
+                                                        <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">OBSERVAÇÕES VIA AÉREA</label>
+                                                        <textarea disabled={isReadOnly} name="va_obs" value={formData.va_obs} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </section>
                                     </div>
@@ -1445,14 +1588,24 @@ Responda SOMENTE o bloco JSON.`;
                                             <div className="grid grid-cols-1 gap-3">
                                                 <div>
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CLASSIFICAÇÃO ASA</label>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {[{val: 'ASA I', label: 'ASA I', sub: 'Saudável'}, {val: 'ASA II', label: 'ASA II', sub: 'Doença sist. leve'}, {val: 'ASA III', label: 'ASA III', sub: 'Doença sist. grave'}, {val: 'ASA IV', label: 'ASA IV', sub: 'Risco à vida'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, asa: opt.val})} className={`flex-1 min-w-[120px] h-[40px] flex flex-col items-center justify-center px-2 whitespace-nowrap text-[11px] font-bold rounded-lg border transition-all ${formData.asa === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                        {[{val: 'ASA I', label: 'ASA I', sub: 'Saudável'}, {val: 'ASA II', label: 'ASA II', sub: 'Doença sist. leve'}, {val: 'ASA III', label: 'ASA III', sub: 'Doença sist. grave'}, {val: 'ASA IV', label: 'ASA IV', sub: 'Risco à vida'}, {val: 'ASA V', label: 'ASA V', sub: 'Sobrevida < 24h'}, {val: 'ASA VI', label: 'ASA VI', sub: 'Morte encefálica'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, asa: opt.val})} className={`w-full min-w-[100px] h-[40px] flex flex-col items-center justify-center px-1 whitespace-nowrap text-[11px] font-bold rounded-lg border transition-all ${formData.asa === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
                                                                 <span>{opt.label}</span>
                                                                 <span className="text-[8px] font-semibold opacity-75">{opt.sub}</span>
                                                             </button>
                                                         ))}
                                                     </div>
+                                                </div>
+                                                <div className="mt-2">
+                                                    <label className="flex items-center gap-2 cursor-pointer bg-slate-50 p-2 rounded-lg border border-slate-200 hover:border-slate-300 transition-all w-fit">
+                                                        <div className="relative">
+                                                            <input type="checkbox" className="sr-only" disabled={isReadOnly} checked={formData.asa_e === true || formData.asa_e === 'true'} onChange={(e) => setFormData({...formData, asa_e: e.target.checked})} />
+                                                            <div className={`block w-10 h-6 outline-none rounded-full transition-colors ${formData.asa_e === true || formData.asa_e === 'true' ? 'bg-rose-500' : 'bg-slate-300'}`}></div>
+                                                            <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.asa_e === true || formData.asa_e === 'true' ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                                        </div>
+                                                        <span className="text-[10px] md:text-[11px] font-bold text-slate-600 uppercase tracking-wide">Emergência (E)</span>
+                                                    </label>
                                                 </div>
                                             </div>
                                         </section>
@@ -1490,25 +1643,31 @@ Responda SOMENTE o bloco JSON.`;
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HB</label><input disabled={isReadOnly} type="text" name="ex_hb" value={formData.ex_hb} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HT</label><input disabled={isReadOnly} type="text" name="ex_ht" value={formData.ex_ht} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PLAQUETAS</label><input disabled={isReadOnly} type="text" name="ex_plaq" value={formData.ex_plaq} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">LEUCÓCITOS</label><input disabled={isReadOnly} type="text" name="ex_leuco" value={formData.ex_leuco} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">COAGULOGRAMA</label><input disabled={isReadOnly} type="text" name="ex_coagulo" value={formData.ex_coagulo} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TAP / INR</label><input disabled={isReadOnly} type="text" name="ex_inr" value={formData.ex_inr} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TTPA</label><input disabled={isReadOnly} type="text" name="ex_ttpa" value={formData.ex_ttpa} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">GLICEMIA</label><input disabled={isReadOnly} type="text" name="ex_glic" value={formData.ex_glic} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HBA1C</label><input disabled={isReadOnly} type="text" name="ex_hba1c" value={formData.ex_hba1c} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">UREIA</label><input disabled={isReadOnly} type="text" name="ex_ureia" value={formData.ex_ureia} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CREATININA</label><input disabled={isReadOnly} type="text" name="ex_creat" value={formData.ex_creat} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">SÓDIO (NA+)</label><input disabled={isReadOnly} type="text" name="ex_na" value={formData.ex_na} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">POTÁSSIO (K+)</label><input disabled={isReadOnly} type="text" name="ex_k" value={formData.ex_k} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ECOCARDIOGRAMA</label><input disabled={isReadOnly} type="text" name="ex_eco" value={formData.ex_eco} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">FUNÇÃO HEPÁTICA</label><input disabled={isReadOnly} type="text" name="ex_hepato" value={formData.ex_hepato} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" placeholder="TGO / TGP..." /></div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">OUTROS (TSH / URINA...)</label><input disabled={isReadOnly} type="text" name="ex_outros_esp" value={formData.ex_outros_esp} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div className="md:col-span-2"><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ECG</label><input disabled={isReadOnly} type="text" name="ex_ecg" value={formData.ex_ecg} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div className="md:col-span-2"><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">RX TÓRAX</label><input disabled={isReadOnly} type="text" name="ex_rx" value={formData.ex_rx} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                            <div className="space-y-4">
+                                                {/* Exames Laboratoriais (Compactos) */}
+                                                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3">
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HB</label><input disabled={isReadOnly} type="text" name="ex_hb" value={formData.ex_hb} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HT</label><input disabled={isReadOnly} type="text" name="ex_ht" value={formData.ex_ht} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">PLAQUETAS</label><input disabled={isReadOnly} type="text" name="ex_plaq" value={formData.ex_plaq} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">LEUCÓCITOS</label><input disabled={isReadOnly} type="text" name="ex_leuco" value={formData.ex_leuco} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">TAP/INR</label><input disabled={isReadOnly} type="text" name="ex_inr" value={formData.ex_inr} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TTPA</label><input disabled={isReadOnly} type="text" name="ex_ttpa" value={formData.ex_ttpa} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">GLICEMIA JEJUM</label><input disabled={isReadOnly} type="text" name="ex_glic" value={formData.ex_glic} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HBA1C</label><input disabled={isReadOnly} type="text" name="ex_hba1c" value={formData.ex_hba1c} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">UREIA</label><input disabled={isReadOnly} type="text" name="ex_ureia" value={formData.ex_ureia} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">CREATININA</label><input disabled={isReadOnly} type="text" name="ex_creat" value={formData.ex_creat} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">SÓDIO (NA+)</label><input disabled={isReadOnly} type="text" name="ex_na" value={formData.ex_na} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">POTÁSSIO (K+)</label><input disabled={isReadOnly} type="text" name="ex_k" value={formData.ex_k} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TGO (AST)</label><input disabled={isReadOnly} type="text" name="ex_tgo" value={formData.ex_tgo} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TGP (ALT)</label><input disabled={isReadOnly} type="text" name="ex_tgp" value={formData.ex_tgp} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                </div>
+
+                                                {/* Exames de Imagem e Traçados */}
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 border-t border-slate-100 pt-3">
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ECG</label><input disabled={isReadOnly} type="text" name="ex_ecg" value={formData.ex_ecg} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ECOCARDIOGRAMA</label><input disabled={isReadOnly} type="text" name="ex_eco" value={formData.ex_eco} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">RX TÓRAX</label><input disabled={isReadOnly} type="text" name="ex_rx" value={formData.ex_rx} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                </div>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                                                 <div>
@@ -1529,49 +1688,55 @@ Responda SOMENTE o bloco JSON.`;
                                             {/* Radios de Seleção de Jejum */}
                                             <div className="flex gap-4 mb-3">
                                                 <label className="flex items-center cursor-pointer">
-                                                    <input disabled={isReadOnly} type="radio" name="jejum_tipo" checked={formData.jejum_orientacao === '' || formData.jejum_orientacao === 'Padrão ASA'} onChange={() => handleChange({ target: { name: 'jejum_orientacao', value: 'Padrão ASA' }})} className="mr-2 accent-blue-600" />
-                                                    <span className="text-xs font-bold text-slate-700">Protocolo Padrão (ASA)</span>
+                                                    <input disabled={isReadOnly} type="radio" name="jejum_tipo" checked={formData.jejum_orientacao === '' || formData.jejum_orientacao === 'Padrão ASA' || ['2h', '4h', '6h (Fórmula)', '6h', '8h'].includes(formData.jejum_orientacao)} onChange={() => handleChange({ target: { name: 'jejum_orientacao', value: 'Padrão ASA' }})} className="mr-2 accent-blue-600" />
+                                                    <span className="text-xs font-bold text-slate-700">Padrão</span>
                                                 </label>
                                                 <label className="flex items-center cursor-pointer">
-                                                    <input disabled={isReadOnly} type="radio" name="jejum_tipo" checked={formData.jejum_orientacao === 'Protocolo Absoluto (8h)'} onChange={() => handleChange({ target: { name: 'jejum_orientacao', value: 'Protocolo Absoluto (8h)' }})} className="mr-2 accent-blue-600" />
-                                                    <span className="text-xs font-bold text-slate-700">Protocolo 8h (Tudo)</span>
-                                                </label>
-                                                <label className="flex items-center cursor-pointer">
-                                                    <input disabled={isReadOnly} type="radio" name="jejum_tipo" checked={formData.jejum_orientacao !== '' && formData.jejum_orientacao !== 'Padrão ASA' && formData.jejum_orientacao !== 'Protocolo Absoluto (8h)'} onChange={() => handleChange({ target: { name: 'jejum_orientacao', value: 'Jejum diferenciado:\n' }})} className="mr-2 accent-blue-600" />
+                                                    <input disabled={isReadOnly} type="radio" name="jejum_tipo" checked={formData.jejum_orientacao !== '' && formData.jejum_orientacao !== 'Padrão ASA' && !['2h','4h','6h (Fórmula)', '6h','8h'].includes(formData.jejum_orientacao)} onChange={() => handleChange({ target: { name: 'jejum_orientacao', value: 'Jejum diferenciado:\n' }})} className="mr-2 accent-blue-600" />
                                                     <span className="text-xs font-bold text-slate-700">Personalizado</span>
                                                 </label>
                                             </div>
 
                                             {/* Exibição Condicional (Tabela ou Texto Livre) */}
-                                            {formData.jejum_orientacao === 'Protocolo Absoluto (8h)' ? (
+                                            {formData.jejum_orientacao === '' || formData.jejum_orientacao === 'Padrão ASA' ? (
                                                 <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-3 animate-in fade-in duration-300">
                                                     <table className="w-full text-sm text-left">
                                                         <thead className="bg-slate-100 text-slate-600 font-bold">
                                                             <tr><th className="px-4 py-2 border-b border-slate-200">Tipo de Alimento</th><th className="px-4 py-2 border-b border-slate-200">Tempo de Jejum Mínimo</th></tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-slate-200">
-                                                            <tr><td className="px-4 py-2">Alimentos Sólidos e Líquidos</td><td className="px-4 py-2 font-black text-rose-600">8 horas</td></tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            ) : (formData.jejum_orientacao === '' || formData.jejum_orientacao === 'Padrão ASA') ? (
-                                                <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-3 animate-in fade-in duration-300">
-                                                    <table className="w-full text-sm text-left">
-                                                        <thead className="bg-slate-100 text-slate-600 font-bold">
-                                                            <tr><th className="px-4 py-2 border-b border-slate-200">Tipo de Alimento</th><th className="px-4 py-2 border-b border-slate-200">Tempo de Jejum Mínimo</th></tr>
-                                                        </thead>
-                                                        <tbody className="divide-y divide-slate-200">
-                                                            <tr><td className="px-4 py-2">Líquidos Claros (Água, Chá sem resíduos)</td><td className="px-4 py-2">2 horas</td></tr>
-                                                            <tr><td className="px-4 py-2">Leite Materno</td><td className="px-4 py-2">4 horas</td></tr>
-                                                            <tr><td className="px-4 py-2">Fórmula Láctea / Leite não humano</td><td className="px-4 py-2">6 horas</td></tr>
-                                                            <tr><td className="px-4 py-2">Refeição leve (sem gordura)</td><td className="px-4 py-2">6 horas</td></tr>
-                                                            <tr><td className="px-4 py-2">Refeição completa (com gordura/carne)</td><td className="px-4 py-2">8 horas</td></tr>
+                                                            {[
+                                                                { id: 'jejum_liquidos', food: 'Líquidos Claros (Água, Chá sem resíduos)' },
+                                                                { id: 'jejum_leite', food: 'Leite Materno' },
+                                                                { id: 'jejum_formula', food: 'Fórmula Láctea / Leite não humano' },
+                                                                { id: 'jejum_leve', food: 'Refeição leve' },
+                                                                { id: 'jejum_completa', food: 'Refeição completa' },
+                                                            ].map(item => (
+                                                                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                                                    <td className="px-4 py-3">{item.food}</td>
+                                                                    <td className="px-4 py-3">
+                                                                        <div className="flex gap-2">
+                                                                            {['2h', '4h', '6h', '8h'].map(time => (
+                                                                                <button 
+                                                                                    key={time}
+                                                                                    type="button" 
+                                                                                    disabled={isReadOnly} 
+                                                                                    onClick={() => setFormData({...formData, [item.id]: formData[item.id] === time ? '' : time, jejum_orientacao: 'Padrão ASA'})}
+                                                                                    className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all ${formData[item.id] === time ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                                                                                >
+                                                                                    {time}
+                                                                                </button>
+                                                                            ))}
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
                                                         </tbody>
                                                     </table>
                                                 </div>
                                             ) : (
-                                                <div className="mb-3 animate-in fade-in duration-300">
-                                                    <textarea disabled={isReadOnly} name="jejum_orientacao" value={formData.jejum_orientacao} onChange={handleChange} rows="4" placeholder="Descreva a orientação de jejum personalizada..." className="w-full px-3 py-2 text-xs font-semibold bg-blue-50/30 border border-blue-200 rounded-lg outline-none focus:border-blue-500 focus:bg-white transition-all shadow-sm"></textarea>
+                                                <div className="animate-in fade-in duration-300">
+                                                    <textarea disabled={isReadOnly} name="jejum_orientacao" value={formData.jejum_orientacao} onChange={handleChange} rows="3" className="w-full px-3 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-mono" placeholder="Descreva o jejum personalizado..."></textarea>
                                                 </div>
                                             )}
 
@@ -1584,7 +1749,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PROFILAXIA DE ASPIRAÇÃO</label>
                                                     <div className="flex gap-2">
                                                         {[{val: 'Não indicada', label: 'Não indicada'}, {val: 'Indicada (Antiácido / Procinético)', label: 'Indicada'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, profilaxia_asp: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.profilaxia_asp === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, profilaxia_asp: opt.val})} className={`flex-1 h-[36px] text-[11px] font-bold rounded-lg border transition-all ${formData.profilaxia_asp === opt.val ? (opt.label === 'Indicada' ? 'bg-orange-50 border-orange-500 text-orange-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
                                                                 {opt.label}
                                                             </button>
                                                         ))}
@@ -1600,7 +1765,7 @@ Responda SOMENTE o bloco JSON.`;
                                     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
                                         <section>
                                             <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">13. Plano Anestésico</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div>
                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TÉCNICA PREVISTA <span className="text-rose-500 text-[10px]">*</span></label>
                                                     {(() => {
@@ -1639,17 +1804,57 @@ Responda SOMENTE o bloco JSON.`;
                                                         );
                                                     })()}
                                                 </div>
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">RESERVA DE HEMODERIVADOS</label><input disabled={isReadOnly} type="text" name="plan_hemoderivados" value={formData.plan_hemoderivados} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" placeholder="Ex: Não, 1 CH, 2 CH..." /></div>
                                                 <div className="flex flex-col">
-                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">DESTINO PÓS-OP PREVISTO <span className="text-rose-500 text-[10px]">*</span></label>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {[{val: 'RPA / Enfermaria', label: 'RPA / Enfermaria'}, {val: 'UTI / Cuidados Críticos', label: 'UTI'}, {val: 'Alta', label: 'Alta'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_destino: opt.val})} className={`flex-1 h-[34px] px-2 whitespace-nowrap text-[11px] font-bold rounded-lg border transition-all ${formData.plan_destino === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">RESERVA DE UTI? <span className="text-rose-500 text-[10px]">*</span></label>
+                                                    <div className="flex flex-wrap gap-3 mt-1">
+                                                        {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_destino: opt.val})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_destino === opt.val ? (opt.val === 'Sim' ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
                                                                 {opt.label}
                                                             </button>
                                                         ))}
                                                     </div>
                                                 </div>
+                                            </div>
+
+                                            {/* Hemoderivados */}
+                                            <div className="mt-5 pt-4 border-t border-slate-100">
+                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">RESERVA DE HEMODERIVADOS</label>
+                                                <div className="flex flex-wrap gap-3 mb-4">
+                                                    {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
+                                                        <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_hemoderivados: opt.val, plan_hemo_ch: opt.val==='Não'?'':formData.plan_hemo_ch, plan_hemo_pfc: opt.val==='Não'?'':formData.plan_hemo_pfc, plan_hemo_plaq: opt.val==='Não'?'':formData.plan_hemo_plaq, plan_hemo_outros: opt.val==='Não'?'':formData.plan_hemo_outros })} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_hemoderivados === opt.val ? (opt.val === 'Sim' ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                            {opt.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                {formData.plan_hemoderivados === 'Sim' && (
+                                                    <div className="flex flex-wrap gap-x-8 gap-y-4 bg-rose-50/40 p-5 rounded-2xl border border-rose-100 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300 mt-2">
+                                                        <div>
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1.5" title="Concentrado de Hemácias">Hemácias (CH)</label>
+                                                            <div className="flex items-center gap-2">
+                                                                <input disabled={isReadOnly} type="number" name="plan_hemo_ch" value={formData.plan_hemo_ch} onChange={handleChange} min="0" placeholder="0" className="w-16 px-2 py-1.5 text-center text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
+                                                                <span className="text-[10px] text-slate-500 font-bold">un</span>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1.5" title="Plasma Fresco">Plasma Fresco (PFC)</label>
+                                                            <div className="flex items-center gap-2">
+                                                                <input disabled={isReadOnly} type="number" name="plan_hemo_pfc" value={formData.plan_hemo_pfc} onChange={handleChange} min="0" placeholder="0" className="w-16 px-2 py-1.5 text-center text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
+                                                                <span className="text-[10px] text-slate-500 font-bold">un</span>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1.5">Plaquetas</label>
+                                                            <div className="flex items-center gap-2">
+                                                                <input disabled={isReadOnly} type="number" name="plan_hemo_plaq" value={formData.plan_hemo_plaq} onChange={handleChange} min="0" placeholder="0" className="w-16 px-2 py-1.5 text-center text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
+                                                                <span className="text-[10px] text-slate-500 font-bold">un</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex-1 min-w-[220px]">
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1.5">Outros Hemoderivados</label>
+                                                            <input disabled={isReadOnly} type="text" name="plan_hemo_outros" value={formData.plan_hemo_outros} onChange={handleChange} placeholder="Descrição detalhada..." className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="mt-4">
                                                 <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">OBSERVAÇÕES DO PLANO</label>
@@ -1658,20 +1863,49 @@ Responda SOMENTE o bloco JSON.`;
                                         </section>
                                         <section>
                                             <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">14. Parecer Anestésico <span className="text-rose-500">*</span></h3>
+                                            
+                                            {/* Avaliação Especializada Prévia */}
+                                            <div className="mb-8 border-l-4 border-slate-200 pl-4 py-1">
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="block text-[10px] font-black text-slate-600 uppercase tracking-wide">Necessita avaliação especializada prévia?</label>
+                                                    <div className="flex gap-3 mt-1">
+                                                        {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, parecer_aval_esp: opt.val, parecer_aval_especialidade: opt.val==='Não'?'':formData.parecer_aval_especialidade, parecer_aval_motivo: opt.val==='Não'?'':formData.parecer_aval_motivo})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.parecer_aval_esp === opt.val ? (opt.val === 'Sim' ? 'bg-orange-50 border-orange-500 text-orange-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                {formData.parecer_aval_esp === 'Sim' && (
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4 bg-orange-50/40 p-5 rounded-2xl border border-orange-100 shadow-sm animate-in fade-in slide-in-from-left-2 duration-300">
+                                                        <div className="flex flex-col md:col-span-1">
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1.5">Especialidade</label>
+                                                            <input disabled={isReadOnly} type="text" name="parecer_aval_especialidade" value={formData.parecer_aval_especialidade} onChange={handleChange} className="w-full px-3 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all shadow-sm" placeholder="Ex: Cardiologista" />
+                                                        </div>
+                                                        <div className="flex flex-col md:col-span-2">
+                                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1.5">Motivo</label>
+                                                            <textarea disabled={isReadOnly} name="parecer_aval_motivo" value={formData.parecer_aval_motivo} onChange={handleChange} rows="2" className="w-full px-3 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all resize-none shadow-sm" placeholder="Ex: Avaliar risco cirúrgico aumentado..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-                                                <div onClick={!isReadOnly ? () => setParecer('Apto') : undefined} className={`p-4 rounded-xl border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Apto' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-100 hover:border-slate-300 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
-                                                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">{parecer === 'Apto' && <div className="w-2 h-2 rounded-full bg-current" />}</div><span className="font-bold">APTO</span>
+                                                <div onClick={!isReadOnly ? () => setParecer('Apto') : undefined} className={`p-3 py-2.5 rounded-lg border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Apto' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-slate-200 hover:border-slate-300 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
+                                                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">{parecer === 'Apto' && <div className="w-2 h-2 rounded-full bg-current" />}</div><span className="font-bold text-xs uppercase">APTO</span>
                                                 </div>
-                                                <div onClick={!isReadOnly ? () => setParecer('Restricao') : undefined} className={`p-4 rounded-xl border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Restricao' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-slate-100 hover:border-slate-300 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
-                                                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">{parecer === 'Restricao' && <div className="w-2 h-2 rounded-full bg-current" />}</div><span className="font-bold text-sm">APTO C/ RESTRIÇÕES</span>
+                                                <div onClick={!isReadOnly ? () => setParecer('Restricao') : undefined} className={`p-3 py-2.5 rounded-lg border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Restricao' ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm' : 'border-slate-200 hover:border-slate-300 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
+                                                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">{parecer === 'Restricao' && <div className="w-2 h-2 rounded-full bg-current" />}</div><span className="font-bold text-xs uppercase">APTO C/ RESTRIÇÕES</span>
                                                 </div>
-                                                <div onClick={!isReadOnly ? () => setParecer('Inapto') : undefined} className={`p-4 rounded-xl border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Inapto' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-100 hover:border-slate-300 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
-                                                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">{parecer === 'Inapto' && <div className="w-2 h-2 rounded-full bg-current" />}</div><span className="font-bold">INAPTO</span>
+                                                <div onClick={!isReadOnly ? () => setParecer('Inapto') : undefined} className={`p-3 py-2.5 rounded-lg border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Inapto' ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-sm' : 'border-slate-200 hover:border-slate-300 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
+                                                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">{parecer === 'Inapto' && <div className="w-2 h-2 rounded-full bg-current" />}</div><span className="font-bold text-xs uppercase">INAPTO</span>
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">JUSTIFICATIVAS / RECOMENDAÇÕES FINAIS</label>
-                                                <textarea disabled={isReadOnly} name="parecer_obs" value={formData.parecer_obs} onChange={handleChange} rows="3" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea>
+                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">
+                                                    JUSTIFICATIVAS / RECOMENDAÇÕES FINAIS {(parecer === 'Restricao' || parecer === 'Inapto') && <span className="text-rose-500 text-[10px]">*</span>}
+                                                </label>
+                                                <textarea disabled={isReadOnly} name="parecer_obs" value={formData.parecer_obs} onChange={handleChange} rows="3" className={`w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border rounded-lg transition-all ${(parecer === 'Restricao' || parecer === 'Inapto') && !formData.parecer_obs?.trim() ? 'border-rose-500 bg-rose-50/50 focus:ring-rose-500 outline-none focus:ring-1' : 'border-slate-200'}`}></textarea>
                                             </div>
                                         </section>
                                     </div>
@@ -1684,7 +1918,7 @@ Responda SOMENTE o bloco JSON.`;
                                         onClick={() => {
                                             const currentIndex = tabs.findIndex(t => t.id === activeTab);
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
-                                            if(currentIndex > 0) setActiveTab(tabs[currentIndex - 1].id);
+                                            if(currentIndex > 0) handleTabNavigation(tabs[currentIndex - 1].id);
                                         }}
                                         disabled={activeTab === tabs[0].id}
                                         className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === tabs[0].id ? 'opacity-0 pointer-events-none' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
@@ -1698,7 +1932,7 @@ Responda SOMENTE o bloco JSON.`;
                                             onClick={() => {
                                                 const currentIndex = tabs.findIndex(t => t.id === activeTab);
                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                if(currentIndex < tabs.length - 1) setActiveTab(tabs[currentIndex + 1].id);
+                                                if(currentIndex < tabs.length - 1) handleTabNavigation(tabs[currentIndex + 1].id);
                                             }}
                                             className="px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all flex items-center gap-2"
                                         >
