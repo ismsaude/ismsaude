@@ -1367,7 +1367,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-center align-top">
-                                            <div className="flex flex-col gap-2 items-center opacity-0 group-hover:opacity-100 transition-all translate-x-3 group-hover:translate-x-0 w-full">
+                                            <div className="flex flex-col gap-2 items-center w-full">
                                                 {(item.arquivos?.length > 0 || item.arquivoUrl || item.externalExamUrl) && (
                                                     <a
                                                         href={item.externalExamUrl || item.arquivoUrl || item.arquivos?.[0]?.url}
