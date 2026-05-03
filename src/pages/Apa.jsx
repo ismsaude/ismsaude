@@ -1282,7 +1282,36 @@ Responda SOMENTE o bloco JSON.`;
                                         <section className="pt-4 border-t border-slate-100/50 mt-4">
                                             <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">Sinais Vitais Básicos</h3>
                                             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-                                                <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PA (mmHg)</label><input disabled={isReadOnly} type="text" name="pa" value={formData.pa} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                <div>
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">PA (mmHg)</label>
+                                                    <div className="flex items-center gap-1">
+                                                        <input 
+                                                            disabled={isReadOnly} 
+                                                            type="number" 
+                                                            value={formData.pa ? formData.pa.split(/x|\//)[0] || '' : ''} 
+                                                            onChange={e => {
+                                                                const dia = formData.pa ? formData.pa.split(/x|\//)[1] || '' : '';
+                                                                const sis = e.target.value;
+                                                                setFormData(prev => ({ ...prev, pa: (!sis && !dia) ? '' : `${sis}/${dia}` }));
+                                                            }} 
+                                                            placeholder="Sis"
+                                                            className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg text-center appearance-none" 
+                                                        />
+                                                        <span className="text-slate-400 font-black">/</span>
+                                                        <input 
+                                                            disabled={isReadOnly} 
+                                                            type="number" 
+                                                            value={formData.pa ? formData.pa.split(/x|\//)[1] || '' : ''} 
+                                                            onChange={e => {
+                                                                const sis = formData.pa ? formData.pa.split(/x|\//)[0] || '' : '';
+                                                                const dia = e.target.value;
+                                                                setFormData(prev => ({ ...prev, pa: (!sis && !dia) ? '' : `${sis}/${dia}` }));
+                                                            }} 
+                                                            placeholder="Dia"
+                                                            className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg text-center appearance-none" 
+                                                        />
+                                                    </div>
+                                                </div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">FC (bpm)</label><input disabled={isReadOnly} type="number" name="fc" value={formData.fc} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">SpO2 (%)</label><input disabled={isReadOnly} type="number" name="spo2" value={formData.spo2} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
                                                 <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">FR (irpm)</label><input disabled={isReadOnly} type="number" name="fr" value={formData.fr} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
