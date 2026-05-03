@@ -1703,7 +1703,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <div className="flex justify-between items-center mb-2">
                                                         <h4 className="text-[10px] font-black text-slate-600 uppercase">Exames Laboratoriais</h4>
                                                         <div className="flex items-center gap-2">
-                                                            <label className="text-[8px] font-bold text-slate-500 uppercase">Data da Coleta:</label>
+                                                            <label className="text-[8px] font-bold text-slate-500 uppercase">Data do Exame:</label>
                                                             <input disabled={isReadOnly} type="date" name="ex_data_lab" value={formData.ex_data_lab || ''} onChange={handleChange} className="px-2 py-1 text-[10px] font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none" />
                                                         </div>
                                                     </div>

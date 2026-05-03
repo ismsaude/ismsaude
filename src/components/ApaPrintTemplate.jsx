@@ -402,7 +402,7 @@ export default function ApaPrintTemplate({ data }) {
                 <div className="mb-1.5 border border-slate-200 p-1">
                     <div className="flex justify-between items-center mb-1 border-b border-slate-100 pb-0.5">
                         <span className="text-[8px] font-bold text-slate-700 uppercase">Exames Laboratoriais</span>
-                        {data?.ex_data_lab && <span className="text-[7px] font-bold text-slate-500 uppercase">Data da Coleta: {formatDate(data.ex_data_lab)}</span>}
+                        {data?.ex_data_lab && <span className="text-[7px] font-bold text-slate-500 uppercase">Data do Exame: {formatDate(data.ex_data_lab)}</span>}
                     </div>
                     <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
                         <Field label="Hb" value={data?.ex_hb} />
@@ -432,7 +432,7 @@ export default function ApaPrintTemplate({ data }) {
                     <div className="border border-slate-200 p-1">
                         <div className="flex justify-between items-center mb-1 border-b border-slate-100 pb-0.5">
                             <span className="text-[8px] font-bold text-slate-700 uppercase">Exames Cardíacos</span>
-                            {data?.ex_data_cardio && <span className="text-[7px] font-bold text-slate-500 uppercase">Data: {formatDate(data.ex_data_cardio)}</span>}
+                            {data?.ex_data_cardio && <span className="text-[7px] font-bold text-slate-500 uppercase">Data do Exame: {formatDate(data.ex_data_cardio)}</span>}
                         </div>
                         <div className="grid grid-cols-1 gap-x-2 gap-y-1">
                             <Field label="ECG" value={data?.ex_ecg} />
@@ -443,7 +443,7 @@ export default function ApaPrintTemplate({ data }) {
                     <div className="border border-slate-200 p-1">
                         <div className="flex justify-between items-center mb-1 border-b border-slate-100 pb-0.5">
                             <span className="text-[8px] font-bold text-slate-700 uppercase">Exames de Imagem</span>
-                            {data?.ex_data_imagem && <span className="text-[7px] font-bold text-slate-500 uppercase">Data: {formatDate(data.ex_data_imagem)}</span>}
+                            {data?.ex_data_imagem && <span className="text-[7px] font-bold text-slate-500 uppercase">Data do Exame: {formatDate(data.ex_data_imagem)}</span>}
                         </div>
                         <div className="grid grid-cols-1 gap-x-2 gap-y-1">
                             <Field label="RX Tórax" value={data?.ex_rx} />
