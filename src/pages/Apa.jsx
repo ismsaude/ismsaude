@@ -143,7 +143,7 @@ export default function Apa({ paciente }) {
         jejum_orientacao: '', profilaxia_asp: 'Não indicada',
         jejum_liquidos: '', jejum_leite: '', jejum_formula: '', jejum_leve: '', jejum_completa: '',
         plan_tecnica: '', plan_via_aerea: '', plan_monitor: 'Básica (ECG, SpO2, PANI, Capno)', plan_acesso: 'Periférico 1 via',
-        plan_hemoderivados: 'Não', plan_hemo_ch: '', plan_hemo_pfc: '', plan_hemo_plaq: '', plan_hemo_outros: '', plan_destino: 'Não', plan_obs: '',
+        plan_hemoderivados: 'Não', plan_recusa_hemo: '', plan_hemo_ch: '', plan_hemo_pfc: '', plan_hemo_plaq: '', plan_hemo_outros: '', plan_destino: 'Não', plan_obs: '',
         mpa_ansio: 'Não prescrito', mpa_nvpo: 'Não indicada', mpa_atb: 'Não indicada', mpa_outras: '',
         parecer_obs: '', parecer_aval_esp: 'Não', parecer_aval_especialidade: '', parecer_aval_motivo: '',
         neuro_consciencia: '', neuro_deficit: '', coluna_dorso: '', acesso_venoso: '', tabag_cigarros: '', tabag_anos: ''
@@ -316,7 +316,7 @@ export default function Apa({ paciente }) {
             ex_data_lab: '', ex_data_cardio: '', ex_data_imagem: '',
             jejum_orientacao: '', profilaxia_asp: 'Não indicada',
             plan_tecnica: '', plan_via_aerea: '', plan_monitor: 'Básica (ECG, SpO2, PANI, Capno)', plan_acesso: 'Periférico 1 via',
-            plan_hemoderivados: 'Não', plan_destino: '', plan_obs: '',
+            plan_hemoderivados: 'Não', plan_recusa_hemo: '', plan_destino: '', plan_obs: '',
             mpa_ansio: 'Não prescrito', mpa_nvpo: 'Não indicada', mpa_atb: 'Não indicada', mpa_outras: '',
             parecer_obs: ''
         });
@@ -458,6 +458,7 @@ export default function Apa({ paciente }) {
         if (!mallampati) return toast.error("Obrigatório: Preencha a Avaliação da Via Aérea (Mallampati).");
         if (!formData.va_dificil) return toast.error("Obrigatório: Informe se há previsão de Via Aérea Difícil.");
         if (!formData.plan_tecnica) return toast.error("Obrigatório: Selecione a Técnica Anestésica Prevista.");
+        if (!formData.plan_recusa_hemo) return toast.error("Obrigatório: Informe se há Protocolo de Recusa de Hemotransfusão.");
         if (!formData.plan_destino) return toast.error("Obrigatório: Informe o Destino Pós-Op Previsto.");
         if (!parecer) return toast.error("Obrigatório: Assinale o Parecer Anestésico final (Apto/Restrição/Inapto).");
 
@@ -1903,16 +1904,30 @@ Responda SOMENTE o bloco JSON.`;
                                                 </div>
                                             </div>
 
-                                            {/* Hemoderivados */}
-                                            <div className="mt-5 pt-4 border-t border-slate-100">
-                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">RESERVA DE HEMODERIVADOS</label>
-                                                <div className="flex flex-wrap gap-3 mb-4">
-                                                    {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
-                                                        <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_hemoderivados: opt.val, plan_hemo_ch: opt.val==='Não'?'':formData.plan_hemo_ch, plan_hemo_pfc: opt.val==='Não'?'':formData.plan_hemo_pfc, plan_hemo_plaq: opt.val==='Não'?'':formData.plan_hemo_plaq, plan_hemo_outros: opt.val==='Não'?'':formData.plan_hemo_outros })} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_hemoderivados === opt.val ? (opt.val === 'Sim' ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
-                                                            {opt.label}
-                                                        </button>
-                                                    ))}
+                                            {/* Hemoderivados & Protocolo de Recusa */}
+                                            <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap gap-8">
+                                                <div>
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">RESERVA DE HEMODERIVADOS</label>
+                                                    <div className="flex flex-wrap gap-3 mb-4">
+                                                        {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_hemoderivados: opt.val, plan_hemo_ch: opt.val==='Não'?'':formData.plan_hemo_ch, plan_hemo_pfc: opt.val==='Não'?'':formData.plan_hemo_pfc, plan_hemo_plaq: opt.val==='Não'?'':formData.plan_hemo_plaq, plan_hemo_outros: opt.val==='Não'?'':formData.plan_hemo_outros })} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_hemoderivados === opt.val ? (opt.val === 'Sim' ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
+                                                
+                                                <div>
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">Protocolo de Recusa de Hemotransfusão? <span className="text-red-500">*</span></label>
+                                                    <div className="flex flex-wrap gap-3 mb-4">
+                                                        {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_recusa_hemo: opt.val})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_recusa_hemo === opt.val ? (opt.val === 'Sim' ? 'bg-amber-50 border-amber-500 text-amber-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
                                                 {formData.plan_hemoderivados === 'Sim' && (
                                                     <div className="flex flex-wrap gap-x-8 gap-y-4 bg-rose-50/40 p-5 rounded-2xl border border-rose-100 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300 mt-2">
                                                         <div>
