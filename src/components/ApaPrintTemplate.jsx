@@ -490,7 +490,7 @@ export default function ApaPrintTemplate({ data }) {
                     </table>
                 ) : null}
                 <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
-                    <Field label="Orientação Específica de Jejum" value={!['2h', '4h', '6h', '6h (Fórmula)', '8h', 'Padrão ASA', ''].includes(data?.jejum_orientacao) ? data?.jejum_orientacao : 'Conforme a Tabela e Protocolo.'} />
+                    <Field label="Orientação Específica de Jejum" value={!['2h', '4h', '6h', '6h (Fórmula)', '8h', 'Padrão ASA', ''].includes(data?.jejum_orientacao) ? data?.jejum_orientacao : ''} />
                     <Field label="Profilaxia de Aspiração" value={data?.profilaxia_asp} valueClassName={data?.profilaxia_asp && data.profilaxia_asp !== 'Não indicada' ? 'text-amber-600' : ''} />
                 </div>
             </SectionBlock>
@@ -541,7 +541,7 @@ export default function ApaPrintTemplate({ data }) {
                         </div>
                     )}
                 </div>
-                <Field label="Justificativa / Recomendações Finais" value={data?.parecer_obs || (data?.parecerFinal === 'Apto' ? 'Nada digno de nota.' : '')} />
+                <Field label="Justificativa / Recomendações Finais" value={data?.parecer_obs || ''} />
             </SectionBlock>
 
             {/* 16. ASSINATURAS */}
