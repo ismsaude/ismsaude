@@ -1217,7 +1217,6 @@ Responda SOMENTE o bloco JSON.`;
                                                             )}
                                                         </div>
                                                     </div>
-                                                    </div>
                                                 </div>
                                                 {(() => {
                                                     const idadeStr = calcularIdade(formData.dataNasc);
