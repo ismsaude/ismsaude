@@ -1045,6 +1045,7 @@ Responda SOMENTE o bloco JSON.`;
                                     <div className="px-3 md:px-6 py-2.5 md:py-3.5 bg-slate-50/50 flex items-center text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-400">
                                         <div className="w-16 md:w-20 pl-1 md:pl-2">Data</div>
                                         <div className="flex-1">Paciente</div>
+                                        <div className="flex-1 hidden lg:block">Unidade</div>
                                         <div className="flex-1 hidden md:block">Procedimento</div>
                                         <div className="w-16 text-center hidden md:block">ASA</div>
                                         <div className="w-20 md:w-28 text-center">Parecer</div>
@@ -1065,6 +1066,13 @@ Responda SOMENTE o bloco JSON.`;
                                             {/* Paciente */}
                                             <div className="flex-1 min-w-0 pr-2">
                                                 <div className="text-xs md:text-sm font-black text-slate-800 truncate tracking-tight">{apa.nome}</div>
+                                            </div>
+
+                                            {/* Unidade */}
+                                            <div className="flex-1 hidden lg:flex items-center gap-2 pr-4 min-w-0">
+                                                <div className="flex-1 min-w-0 text-xs font-bold text-slate-500 truncate mt-0.5" title={apa.unidade}>
+                                                    {apa.unidade || '--'}
+                                                </div>
                                             </div>
 
                                             {/* Procedimento */}
