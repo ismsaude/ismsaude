@@ -790,9 +790,9 @@ export default function ApaPrintTemplate({ data }) {
             </div>
 
             {data?.plan_recusa_hemo === 'Sim' && (
-                <div style={{ pageBreakBefore: 'always' }} className="pt-8 print:pt-4">
+                <div style={{ pageBreakBefore: 'always' }} className="pt-4 print:pt-2">
                     {/* CABEÇALHO DO TERMO DE RECUSA */}
-                    <div className="flex justify-between items-end border-b-2 border-gray-800 pb-1.5 mb-6 print:break-inside-avoid">
+                    <div className="flex justify-between items-end border-b-2 border-gray-800 pb-1.5 mb-3 print:break-inside-avoid">
                         <div className="flex flex-col justify-end w-1/3">
                             {theme.logoUrl && <img src={theme.logoUrl} alt="Logo" className="h-[32px] w-[auto] object-contain object-left mb-1" onError={(e) => e.target.style.display = 'none'} />}
                         </div>
@@ -806,19 +806,17 @@ export default function ApaPrintTemplate({ data }) {
                         </div>
                     </div>
 
-                    <h2 className="text-center font-black text-[12px] uppercase text-gray-800 mb-6">
+                    <h2 className="text-center font-black text-[12px] uppercase text-gray-800 mb-4">
                         TERMO DE RECUSA DE HEMOTRANSFUSÃO ALOGÊNICA E DIRETIVAS SOBRE SANGUE AUTÓLOGO
                     </h2>
 
-                    <div className="text-[9.5px] text-justify text-gray-800 leading-relaxed space-y-3.5">
+                    <div className="text-[9.5px] text-justify text-gray-800 leading-relaxed space-y-2">
                         <div>
                             <h3 className="font-bold text-[10px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO DO PACIENTE</h3>
-                            <div className="mb-2 bg-gray-50 p-2 border border-gray-200 rounded">
-                                <p><strong>Nome:</strong> <span className="uppercase">{data?.nome || '__________________________________________________'}</span></p>
-                                <div className="flex gap-6 mt-1">
-                                    <p><strong>CPF:</strong> {data?.cpf || '__________________'}</p>
-                                    <p><strong>Idade:</strong> {data?.idadeInfo || '________'}</p>
-                                </div>
+                            <div className="mb-1.5 bg-gray-50 py-1.5 px-2 border border-gray-200 rounded flex gap-4 items-center">
+                                <p className="flex-1 truncate"><strong>Nome:</strong> <span className="uppercase">{data?.nome || '________________________________________'}</span></p>
+                                <p><strong>CPF:</strong> {data?.cpf || '________________'}</p>
+                                <p><strong>Idade:</strong> {data?.idadeInfo || calcularIdadeLocal(data?.dataNasc) || '________'}</p>
                             </div>
                             <p className="italic text-[8.5px] text-gray-600">
                                 (Declaro ser maior de 18 anos, capaz e estar em pleno gozo das minhas faculdades mentais para tomar esta decisão de forma livre e consciente).
@@ -837,10 +835,10 @@ export default function ApaPrintTemplate({ data }) {
 
                         <div>
                             <h3 className="font-bold text-[10px] mb-1 text-[#002776]">3. DIRETIVAS SOBRE O USO DO PRÓPRIO SANGUE (AUTÓLOGO)</h3>
-                            <p className="mb-2">
+                            <p className="mb-1.5">
                                 Fui informado(a) sobre técnicas que utilizam meu próprio sangue para minimizar a necessidade de transfusões externas. Sobre estas opções, manifesto minha vontade de acordo com minha consciência:
                             </p>
-                            <div className="space-y-4 pl-2 border-l-2 border-gray-200 mt-2 py-1">
+                            <div className="space-y-2 pl-2 border-l-2 border-gray-200 mt-1 py-1">
                                 <div className="flex gap-3">
                                     <div className="min-w-[80px] pt-4">
                                         <div className="border-b border-black w-16"></div>
@@ -887,16 +885,16 @@ export default function ApaPrintTemplate({ data }) {
                             <p>
                                 Diante da minha decisão, assumo integral e exclusiva responsabilidade pelas consequências diretas e indiretas desta escolha. ISENTO expressamente o médico assistente, a equipe de anestesia, a equipe de enfermagem e esta instituição hospitalar de qualquer responsabilidade civil, penal, ética ou administrativa por danos à minha saúde ou falecimento que ocorram em decorrência direta da não realização da transfusão de sangue ora recusada.
                             </p>
-                            <p className="mt-2 font-bold">Por ser a expressão fiel da minha vontade, assino o presente termo.</p>
+                            <p className="mt-1.5 font-bold">Por ser a expressão fiel da minha vontade, assino o presente termo.</p>
                         </div>
                     </div>
 
-                    <div className="mt-6 print:break-inside-avoid">
-                        <p className="text-[9px] text-center mb-8 text-gray-700">
+                    <div className="mt-4 print:break-inside-avoid">
+                        <p className="text-[9px] text-center mb-6 text-gray-700">
                             {data?.unidade || '__________________________________'}, {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                         </p>
 
-                        <div className="flex justify-between items-end mb-6 px-4 gap-8">
+                        <div className="flex justify-between items-end mb-4 px-4 gap-8">
                             <div className="text-center flex-1">
                                 <div className="border-t border-black w-full mb-1"></div>
                                 <p className="font-bold text-[9px] uppercase">Assinatura do Paciente</p>
@@ -910,9 +908,9 @@ export default function ApaPrintTemplate({ data }) {
                             </div>
                         </div>
 
-                        <div className="border border-gray-300 p-3 rounded bg-gray-50/50 mt-4">
-                            <h3 className="font-bold text-[9px] mb-4 uppercase text-gray-700">Testemunhas:</h3>
-                            <div className="flex flex-col gap-6">
+                        <div className="border border-gray-300 p-2.5 rounded bg-gray-50/50 mt-3">
+                            <h3 className="font-bold text-[9px] mb-3 uppercase text-gray-700">Testemunhas:</h3>
+                            <div className="flex flex-col gap-4">
                                 <div className="flex gap-4 items-end">
                                     <div className="flex-[2]">
                                         <div className="border-b border-black w-full"></div>
