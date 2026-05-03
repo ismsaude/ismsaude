@@ -391,7 +391,7 @@ export default function ApaPrintTemplate({ data }) {
                     </div>
                     {data?.asa_e === 'true' || data?.asa_e === true ? (
                         <div className="px-2 py-0.5 bg-red-100 text-red-700 font-black border border-red-300 text-[9px] rounded-sm uppercase tracking-widest">
-                            Em Emergência (E)
+                            Emergência (E)
                         </div>
                     ) : null}
                 </div>
@@ -399,33 +399,58 @@ export default function ApaPrintTemplate({ data }) {
 
             {/* 11. EXAMES COMPLEMENTARES */}
             <SectionBlock title="11. Exames Complementares">
-                <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
-                    <Field label="Hb" value={data?.ex_hb} />
-                    <Field label="Ht" value={data?.ex_ht} />
-                    <Field label="Plaquetas" value={data?.ex_plaq} />
-                    <Field label="Leucócitos" value={data?.ex_leuco} />
+                <div className="mb-1.5 border border-slate-200 p-1">
+                    <div className="flex justify-between items-center mb-1 border-b border-slate-100 pb-0.5">
+                        <span className="text-[8px] font-bold text-slate-700 uppercase">Exames Laboratoriais</span>
+                        {data?.ex_data_lab && <span className="text-[7px] font-bold text-slate-500 uppercase">Data da Coleta: {formatDate(data.ex_data_lab)}</span>}
+                    </div>
+                    <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
+                        <Field label="Hb" value={data?.ex_hb} />
+                        <Field label="Ht" value={data?.ex_ht} />
+                        <Field label="Plaquetas" value={data?.ex_plaq} />
+                        <Field label="Leucócitos" value={data?.ex_leuco} />
+                    </div>
+                    <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
+                        <Field label="TAP/INR" value={data?.ex_inr} />
+                        <Field label="TTPa" value={data?.ex_ttpa} />
+                        <Field label="Glicemia de Jejum" value={data?.ex_glic} />
+                        <Field label="HbA1c" value={data?.ex_hba1c} />
+                    </div>
+                    <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
+                        <Field label="Ureia" value={data?.ex_ureia} />
+                        <Field label="Creatinina" value={data?.ex_creat} />
+                        <Field label="Sódio (Na+)" value={data?.ex_na} />
+                        <Field label="Potássio (K+)" value={data?.ex_k} />
+                    </div>
+                    <div className="grid grid-cols-4 gap-x-2 gap-y-1">
+                        <Field label="TGO (AST)" value={data?.ex_tgo} />
+                        <Field label="TGP (ALT)" value={data?.ex_tgp} />
+                    </div>
                 </div>
-                <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
-                    <Field label="TAP/INR" value={data?.ex_inr} />
-                    <Field label="TTPa" value={data?.ex_ttpa} />
-                    <Field label="Glicemia de Jejum" value={data?.ex_glic} />
-                    <Field label="HbA1c" value={data?.ex_hba1c} />
+
+                <div className="grid grid-cols-2 gap-2 mb-1.5">
+                    <div className="border border-slate-200 p-1">
+                        <div className="flex justify-between items-center mb-1 border-b border-slate-100 pb-0.5">
+                            <span className="text-[8px] font-bold text-slate-700 uppercase">Exames Cardíacos</span>
+                            {data?.ex_data_cardio && <span className="text-[7px] font-bold text-slate-500 uppercase">Data: {formatDate(data.ex_data_cardio)}</span>}
+                        </div>
+                        <div className="grid grid-cols-1 gap-x-2 gap-y-1">
+                            <Field label="ECG" value={data?.ex_ecg} />
+                            <Field label="Ecocardiograma" value={displayEco} />
+                        </div>
+                    </div>
+                    
+                    <div className="border border-slate-200 p-1">
+                        <div className="flex justify-between items-center mb-1 border-b border-slate-100 pb-0.5">
+                            <span className="text-[8px] font-bold text-slate-700 uppercase">Exames de Imagem</span>
+                            {data?.ex_data_imagem && <span className="text-[7px] font-bold text-slate-500 uppercase">Data: {formatDate(data.ex_data_imagem)}</span>}
+                        </div>
+                        <div className="grid grid-cols-1 gap-x-2 gap-y-1">
+                            <Field label="RX Tórax" value={data?.ex_rx} />
+                        </div>
+                    </div>
                 </div>
-                <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
-                    <Field label="Ureia" value={data?.ex_ureia} />
-                    <Field label="Creatinina" value={data?.ex_creat} />
-                    <Field label="Sódio (Na+)" value={data?.ex_na} />
-                    <Field label="Potássio (K+)" value={data?.ex_k} />
-                </div>
-                <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
-                    <Field label="TGO (AST)" value={data?.ex_tgo} />
-                    <Field label="TGP (ALT)" value={data?.ex_tgp} />
-                </div>
-                <div className="grid grid-cols-3 gap-x-2 gap-y-1 mb-1.5">
-                    <Field label="ECG" value={data?.ex_ecg} />
-                    <Field label="Ecocardiograma" value={displayEco} />
-                    <Field label="RX Tórax" value={data?.ex_rx} />
-                </div>
+
                 <div className="mb-1.5">
                     <Field label="Outros Exames" value={displayOutrosExames} />
                 </div>

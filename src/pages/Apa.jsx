@@ -139,6 +139,7 @@ export default function Apa({ paciente }) {
         asa: '',
         ex_hb: '', ex_ht: '', ex_plaq: '', ex_leuco: '', ex_inr: '', ex_ttpa: '', ex_glic: '', ex_hba1c: '',
         ex_ureia: '', ex_creat: '', ex_na: '', ex_k: '', ex_tgo: '', ex_tgp: '', ex_eco: '', ex_ecg: '', ex_rx: '', ex_outros: '', ex_obs: '', exames_url: '',
+        ex_data_lab: '', ex_data_cardio: '', ex_data_imagem: '',
         jejum_orientacao: '', profilaxia_asp: 'Não indicada',
         jejum_liquidos: '', jejum_leite: '', jejum_formula: '', jejum_leve: '', jejum_completa: '',
         plan_tecnica: '', plan_via_aerea: '', plan_monitor: 'Básica (ECG, SpO2, PANI, Capno)', plan_acesso: 'Periférico 1 via',
@@ -312,6 +313,7 @@ export default function Apa({ paciente }) {
             asa: '', asa_e: false,
             ex_hb: '', ex_ht: '', ex_plaq: '', ex_leuco: '', ex_inr: '', ex_ttpa: '', ex_glic: '', ex_hba1c: '',
             ex_ureia: '', ex_creat: '', ex_na: '', ex_k: '', ex_coagulo: '', ex_eco: '', ex_hepato: '', ex_outros_esp: '', ex_ecg: '', ex_rx: '', ex_outros: '', ex_obs: '',
+            ex_data_lab: '', ex_data_cardio: '', ex_data_imagem: '',
             jejum_orientacao: '', profilaxia_asp: 'Não indicada',
             plan_tecnica: '', plan_via_aerea: '', plan_monitor: 'Básica (ECG, SpO2, PANI, Capno)', plan_acesso: 'Periférico 1 via',
             plan_hemoderivados: 'Não', plan_destino: '', plan_obs: '',
@@ -526,22 +528,7 @@ export default function Apa({ paciente }) {
         delete apaCompleta.ef_outros;
         delete apaCompleta.hist_fam;
         
-        let anexarExamesExtras = [];
-        if (apaCompleta.ex_coagulo) anexarExamesExtras.push(`Coagulograma: ${apaCompleta.ex_coagulo}`);
-        if (apaCompleta.ex_eco) anexarExamesExtras.push(`Ecocardiograma: ${apaCompleta.ex_eco}`);
-        if (apaCompleta.ex_hepato) anexarExamesExtras.push(`Func. Hepática: ${apaCompleta.ex_hepato}`);
-        if (apaCompleta.ex_outros_esp) anexarExamesExtras.push(`Outros Específicos: ${apaCompleta.ex_outros_esp}`);
-        
-        if (anexarExamesExtras.length > 0) {
-            apaCompleta.ex_outros = apaCompleta.ex_outros 
-                ? apaCompleta.ex_outros + '\n[' + anexarExamesExtras.join(' | ') + ']'
-                : '[' + anexarExamesExtras.join(' | ') + ']';
-        }
 
-        delete apaCompleta.ex_coagulo;
-        delete apaCompleta.ex_eco;
-        delete apaCompleta.ex_hepato;
-        delete apaCompleta.ex_outros_esp;
 
         // Limpeza de chaves de sistema e controle para evitar Rest API Errors (not-null constraint id / missing schema info)
         delete apaCompleta.id;
@@ -1704,28 +1691,61 @@ Responda SOMENTE o bloco JSON.`;
                                             </div>
                                             <div className="space-y-4">
                                                 {/* Exames Laboratoriais (Compactos) */}
-                                                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3">
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HB</label><input disabled={isReadOnly} type="text" name="ex_hb" value={formData.ex_hb} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HT</label><input disabled={isReadOnly} type="text" name="ex_ht" value={formData.ex_ht} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">PLAQUETAS</label><input disabled={isReadOnly} type="text" name="ex_plaq" value={formData.ex_plaq} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">LEUCÓCITOS</label><input disabled={isReadOnly} type="text" name="ex_leuco" value={formData.ex_leuco} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">TAP/INR</label><input disabled={isReadOnly} type="text" name="ex_inr" value={formData.ex_inr} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TTPA</label><input disabled={isReadOnly} type="text" name="ex_ttpa" value={formData.ex_ttpa} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">GLICEMIA JEJUM</label><input disabled={isReadOnly} type="text" name="ex_glic" value={formData.ex_glic} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HBA1C</label><input disabled={isReadOnly} type="text" name="ex_hba1c" value={formData.ex_hba1c} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">UREIA</label><input disabled={isReadOnly} type="text" name="ex_ureia" value={formData.ex_ureia} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">CREATININA</label><input disabled={isReadOnly} type="text" name="ex_creat" value={formData.ex_creat} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">SÓDIO (NA+)</label><input disabled={isReadOnly} type="text" name="ex_na" value={formData.ex_na} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">POTÁSSIO (K+)</label><input disabled={isReadOnly} type="text" name="ex_k" value={formData.ex_k} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TGO (AST)</label><input disabled={isReadOnly} type="text" name="ex_tgo" value={formData.ex_tgo} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TGP (ALT)</label><input disabled={isReadOnly} type="text" name="ex_tgp" value={formData.ex_tgp} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                <div className="mb-2">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <h4 className="text-[10px] font-black text-slate-600 uppercase">Exames Laboratoriais</h4>
+                                                        <div className="flex items-center gap-2">
+                                                            <label className="text-[8px] font-bold text-slate-500 uppercase">Data da Coleta:</label>
+                                                            <input disabled={isReadOnly} type="date" name="ex_data_lab" value={formData.ex_data_lab || ''} onChange={handleChange} className="px-2 py-1 text-[10px] font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3">
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HB</label><input disabled={isReadOnly} type="text" name="ex_hb" value={formData.ex_hb} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HT</label><input disabled={isReadOnly} type="text" name="ex_ht" value={formData.ex_ht} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">PLAQUETAS</label><input disabled={isReadOnly} type="text" name="ex_plaq" value={formData.ex_plaq} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">LEUCÓCITOS</label><input disabled={isReadOnly} type="text" name="ex_leuco" value={formData.ex_leuco} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">TAP/INR</label><input disabled={isReadOnly} type="text" name="ex_inr" value={formData.ex_inr} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TTPA</label><input disabled={isReadOnly} type="text" name="ex_ttpa" value={formData.ex_ttpa} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">GLICEMIA JEJUM</label><input disabled={isReadOnly} type="text" name="ex_glic" value={formData.ex_glic} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">HBA1C</label><input disabled={isReadOnly} type="text" name="ex_hba1c" value={formData.ex_hba1c} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">UREIA</label><input disabled={isReadOnly} type="text" name="ex_ureia" value={formData.ex_ureia} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">CREATININA</label><input disabled={isReadOnly} type="text" name="ex_creat" value={formData.ex_creat} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">SÓDIO (NA+)</label><input disabled={isReadOnly} type="text" name="ex_na" value={formData.ex_na} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">POTÁSSIO (K+)</label><input disabled={isReadOnly} type="text" name="ex_k" value={formData.ex_k} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TGO (AST)</label><input disabled={isReadOnly} type="text" name="ex_tgo" value={formData.ex_tgo} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">TGP (ALT)</label><input disabled={isReadOnly} type="text" name="ex_tgp" value={formData.ex_tgp} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                    </div>
                                                 </div>
 
-                                                {/* Exames de Imagem e Traçados */}
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 border-t border-slate-100 pt-3">
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ECG</label><input disabled={isReadOnly} type="text" name="ex_ecg" value={formData.ex_ecg} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ECOCARDIOGRAMA</label><input disabled={isReadOnly} type="text" name="ex_eco" value={formData.ex_eco} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                    <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">RX TÓRAX</label><input disabled={isReadOnly} type="text" name="ex_rx" value={formData.ex_rx} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {/* Exames Cardíacos */}
+                                                    <div className="border-t border-slate-100 pt-3">
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <h4 className="text-[10px] font-black text-slate-600 uppercase">Exames Cardíacos</h4>
+                                                            <div className="flex items-center gap-2">
+                                                                <label className="text-[8px] font-bold text-slate-500 uppercase">Data do Exame:</label>
+                                                                <input disabled={isReadOnly} type="date" name="ex_data_cardio" value={formData.ex_data_cardio || ''} onChange={handleChange} className="px-2 py-1 text-[10px] font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-1 gap-3">
+                                                            <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ECG</label><input disabled={isReadOnly} type="text" name="ex_ecg" value={formData.ex_ecg} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                            <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ECOCARDIOGRAMA</label><input disabled={isReadOnly} type="text" name="ex_eco" value={formData.ex_eco} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Exames de Imagem */}
+                                                    <div className="border-t border-slate-100 pt-3 md:border-l md:pl-4 md:border-t-0 md:pt-3">
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <h4 className="text-[10px] font-black text-slate-600 uppercase">Exames de Imagem</h4>
+                                                            <div className="flex items-center gap-2">
+                                                                <label className="text-[8px] font-bold text-slate-500 uppercase">Data do Exame:</label>
+                                                                <input disabled={isReadOnly} type="date" name="ex_data_imagem" value={formData.ex_data_imagem || ''} onChange={handleChange} className="px-2 py-1 text-[10px] font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-1 gap-3">
+                                                            <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">RX TÓRAX</label><input disabled={isReadOnly} type="text" name="ex_rx" value={formData.ex_rx} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
