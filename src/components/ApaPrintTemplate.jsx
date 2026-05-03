@@ -63,24 +63,16 @@ export default function ApaPrintTemplate({ data }) {
         } catch { return '--'; }
     };
 
-    const isPacienteMenor = (dataNasc) => {
-        if (!dataNasc) return false;
-        try {
-            let dateStr = dataNasc;
-            if (dateStr.includes('/')) {
-                const [d, m, y] = dateStr.split('/');
-                if (d && m && y) dateStr = `${y}-${m}-${d}`;
-            }
-            const hoje = new Date(); const nasc = new Date(dateStr);
-            if (isNaN(nasc.getTime())) return false;
-            let idade = hoje.getFullYear() - nasc.getFullYear();
-            const m = hoje.getMonth() - nasc.getMonth();
-            if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
-            return idade < 18;
-        } catch { return false; }
+    const checkIsMenor = () => {
+        const idadeInfo = data?.idadeInfo || calcularIdadeLocal(data?.dataNasc);
+        if (!idadeInfo || idadeInfo === '--') return false;
+        if (idadeInfo.toLowerCase().includes('mes')) return true;
+        const anos = parseInt(idadeInfo);
+        if (!isNaN(anos) && anos < 18) return true;
+        return false;
     };
 
-    const isMenor = isPacienteMenor(data?.dataNasc);
+    const isMenor = checkIsMenor();
 
 
     const getImcData = (imc) => {
