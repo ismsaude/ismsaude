@@ -789,7 +789,7 @@ export default function ApaPrintTemplate({ data }) {
                 )}
             </div>
 
-            {data?.plan_recusa_hemo === 'Sim' && (
+            {data?.plan_recusa_hemo === 'Sim' && !isMenor && (
                 <div style={{ pageBreakBefore: 'always' }} className="pt-4 print:pt-2">
                     {/* CABEÇALHO DO TERMO DE RECUSA */}
                     <div className="flex justify-between items-end border-b-2 border-gray-800 pb-1.5 mb-3 print:break-inside-avoid">
