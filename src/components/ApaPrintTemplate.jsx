@@ -509,11 +509,11 @@ export default function ApaPrintTemplate({ data }) {
 
             {/* 13. PLANO ANESTÉSICO */}
             <SectionBlock title="13. Plano Anestésico">
-                <div className="grid grid-cols-5 gap-x-2 gap-y-1.5 mb-1.5">
-                    <Field label="Técnica Prevista" value={data?.plan_tecnica} className="col-span-2" />
-                    <Field label="Reserva de UTI" value={data?.plan_destino} valueClassName={data?.plan_destino === 'Sim' ? 'text-rose-600' : ''} />
-                    <Field label="Hemoderivados" value={data?.plan_hemoderivados} valueClassName={data?.plan_hemoderivados === 'Sim' ? 'text-rose-600' : ''} />
-                    <Field label="Protocolo de Recusa de Hemotransfusão?" value={data?.plan_recusa_hemo} valueClassName={data?.plan_recusa_hemo === 'Sim' ? 'text-amber-600' : ''} />
+                <div className="grid grid-cols-10 gap-x-2 gap-y-1.5 mb-1.5">
+                    <Field label="Técnica Prevista" value={data?.plan_tecnica} className="col-span-4" />
+                    <Field label="Res. UTI" value={data?.plan_destino} valueClassName={data?.plan_destino === 'Sim' ? 'text-rose-600' : ''} className="col-span-1" />
+                    <Field label="Res. Sangue" value={data?.plan_hemoderivados} valueClassName={data?.plan_hemoderivados === 'Sim' ? 'text-rose-600' : ''} className="col-span-2" />
+                    <Field label="Protocolo de Recusa de Hemotransfusão?" value={data?.plan_recusa_hemo} valueClassName={data?.plan_recusa_hemo === 'Sim' ? 'text-amber-600' : ''} className="col-span-3" />
                 </div>
                 {data?.plan_hemoderivados === 'Sim' && (
                     <div className="grid grid-cols-4 gap-x-2 gap-y-1 px-2 py-1.5 mb-1.5 bg-rose-50/40 border-l-2 border-rose-300">
@@ -735,14 +735,14 @@ export default function ApaPrintTemplate({ data }) {
                                     <div className="flex gap-3">
                                         <div className="min-w-[120px] pt-4">
                                             <div className="border-b border-black w-24"></div>
-                                            <p className="text-[7px] text-center w-24 mt-0.5 uppercase">Assinatura</p>
+                                            <p className="text-[7px] text-center w-24 mt-0.5 uppercase">Rúbrica</p>
                                         </div>
                                         <p><strong>ACEITO</strong> receber transfusão de sangue e hemocomponentes, caso a equipe médica julgue estritamente necessário para salvar minha vida.</p>
                                     </div>
                                     <div className="flex gap-3">
                                         <div className="min-w-[120px] pt-4">
                                             <div className="border-b border-black w-24"></div>
-                                            <p className="text-[7px] text-center w-24 mt-0.5 uppercase">Assinatura</p>
+                                            <p className="text-[7px] text-center w-24 mt-0.5 uppercase">Rúbrica</p>
                                         </div>
                                         <p><strong>RECUSO</strong> receber transfusão de sangue e hemocomponentes por motivos de convicção pessoal/religiosa. Fui exaustivamente alertado(a) pela equipe médica de que esta recusa pode resultar em danos irreversíveis ou morte. Assumo integralmente a responsabilidade por esta decisão. (Em caso de recusa, assinar também o Termo de Recusa Terapêutica anexo).</p>
                                     </div>
@@ -788,6 +788,164 @@ export default function ApaPrintTemplate({ data }) {
                     </>
                 )}
             </div>
+
+            {data?.plan_recusa_hemo === 'Sim' && (
+                <div style={{ pageBreakBefore: 'always' }} className="pt-8 print:pt-4">
+                    {/* CABEÇALHO DO TERMO DE RECUSA */}
+                    <div className="flex justify-between items-end border-b-2 border-gray-800 pb-1.5 mb-6 print:break-inside-avoid">
+                        <div className="flex flex-col justify-end w-1/3">
+                            {theme.logoUrl && <img src={theme.logoUrl} alt="Logo" className="h-[32px] w-[auto] object-contain object-left mb-1" onError={(e) => e.target.style.display = 'none'} />}
+                        </div>
+                        <div className="flex-1 text-center pb-0.5">
+                            <h1 className="text-[11px] font-black uppercase text-[#002776] tracking-widest">
+                                TERMO DE RECUSA
+                            </h1>
+                        </div>
+                        <div className="w-1/3 flex justify-end pb-0.5">
+                            <span className="text-[7px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 font-bold uppercase tracking-wider">Pág Extra</span>
+                        </div>
+                    </div>
+
+                    <h2 className="text-center font-black text-[12px] uppercase text-gray-800 mb-6">
+                        TERMO DE RECUSA DE HEMOTRANSFUSÃO ALOGÊNICA E DIRETIVAS SOBRE SANGUE AUTÓLOGO
+                    </h2>
+
+                    <div className="text-[9.5px] text-justify text-gray-800 leading-relaxed space-y-3.5">
+                        <div>
+                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO DO PACIENTE</h3>
+                            <div className="mb-2 bg-gray-50 p-2 border border-gray-200 rounded">
+                                <p><strong>Nome:</strong> <span className="uppercase">{data?.nome || '__________________________________________________'}</span></p>
+                                <div className="flex gap-6 mt-1">
+                                    <p><strong>CPF:</strong> {data?.cpf || '__________________'}</p>
+                                    <p><strong>Idade:</strong> {data?.idadeInfo || '________'}</p>
+                                </div>
+                            </div>
+                            <p className="italic text-[8.5px] text-gray-600">
+                                (Declaro ser maior de 18 anos, capaz e estar em pleno gozo das minhas faculdades mentais para tomar esta decisão de forma livre e consciente).
+                            </p>
+                        </div>
+
+                        <div>
+                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">2. RECUSA DE SANGUE E HEMOCOMPONENTES DE TERCEIROS (ALOGÊNICOS)</h3>
+                            <p>
+                                No exercício de minha autonomia individual e liberdade de convicção, conforme garantido pela Constituição Federal e ratificado pelo Supremo Tribunal Federal (STF), eu <strong className="uppercase">RECUSO EXPRESSAMENTE</strong> a administração de sangue total e seus hemocomponentes (glóbulos vermelhos, plaquetas, plasma, crioprecipitado e outros) provenientes de doadores terceiros.
+                            </p>
+                            <p className="font-bold mt-1">
+                                Esta recusa aplica-se mesmo em situações de extrema emergência ou risco iminente de morte durante meu tratamento, cirurgia ou período de internação nesta instituição.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">3. DIRETIVAS SOBRE O USO DO PRÓPRIO SANGUE (AUTÓLOGO)</h3>
+                            <p className="mb-2">
+                                Fui informado(a) sobre técnicas que utilizam meu próprio sangue para minimizar a necessidade de transfusões externas. Sobre estas opções, manifesto minha vontade de acordo com minha consciência:
+                            </p>
+                            <div className="space-y-4 pl-2 border-l-2 border-gray-200 mt-2 py-1">
+                                <div className="flex gap-3">
+                                    <div className="min-w-[80px] pt-4">
+                                        <div className="border-b border-black w-16"></div>
+                                        <p className="text-[6px] text-center w-16 mt-0.5 uppercase">Rúbrica do Paciente</p>
+                                    </div>
+                                    <p><strong>ACEITO TOTALMENTE:</strong> Autorizo tanto o armazenamento prévio do meu próprio sangue (doação autóloga) para uso posterior, quanto o uso de máquinas de recuperação intraoperatória (ex: Cell Saver) em circuito contínuo ou hemodiluição.</p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="min-w-[80px] pt-4">
+                                        <div className="border-b border-black w-16"></div>
+                                        <p className="text-[6px] text-center w-16 mt-0.5 uppercase">Rúbrica do Paciente</p>
+                                    </div>
+                                    <p><strong>ACEITO APENAS RECUPERAÇÃO EM CIRCUITO CONTÍNUO:</strong> Autorizo o uso de máquinas de recuperação de sangue durante a cirurgia (circuito fechado e contínuo), mas RECUSO o armazenamento prévio de sangue (fora do corpo).</p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="min-w-[80px] pt-4">
+                                        <div className="border-b border-black w-16"></div>
+                                        <p className="text-[6px] text-center w-16 mt-0.5 uppercase">Rúbrica do Paciente</p>
+                                    </div>
+                                    <p><strong>RECUSO TOTALMENTE:</strong> Não autorizo nenhuma técnica que envolva meu próprio sangue uma vez que ele tenha saído do meu sistema circulatório, ainda que em circuito contínuo.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">4. AUTORIZAÇÃO PARA TERAPIAS ALTERNATIVAS</h3>
+                            <p>
+                                Solicito e autorizo a equipe médica a empregar todos os meios e recursos científicos disponíveis que não envolvam a transfusão de sangue de terceiros, tais como: técnicas cirúrgicas para preservação de sangue, uso de expansores de volume não sanguíneos (cristaloides e coloides), uso de agentes farmacológicos (hemostáticos, eritropoetina, etc.), dentro das possibilidades estruturais deste hospital.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">5. CIÊNCIA DOS RISCOS E ASSUNÇÃO DE RESPONSABILIDADE</h3>
+                            <p className="mb-1">Declaro que fui exaustivamente informado(a) pelo <strong>Dr(a). {data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : '________________________________________'}</strong> e sua equipe sobre:</p>
+                            <ul className="list-disc pl-5 space-y-0.5">
+                                <li>Meu diagnóstico clínico e a necessidade técnica da transfusão de sangue no meu caso.</li>
+                                <li>A gravidade dos riscos decorrentes desta recusa, que incluem: anemia grave, falência de órgãos, choque hipovolêmico, danos cerebrais irreversíveis e, fundamentalmente, o <strong>RISCO DE ÓBITO</strong>.</li>
+                                <li>Compreendo que a ausência da transfusão pode limitar a eficácia de outros tratamentos e procedimentos realizados pela equipe médica.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">6. EXONERAÇÃO DE RESPONSABILIDADE JURÍDICA E ÉTICA</h3>
+                            <p>
+                                Diante da minha decisão, assumo integral e exclusiva responsabilidade pelas consequências diretas e indiretas desta escolha. ISENTO expressamente o médico assistente, a equipe de anestesia, a equipe de enfermagem e esta instituição hospitalar de qualquer responsabilidade civil, penal, ética ou administrativa por danos à minha saúde ou falecimento que ocorram em decorrência direta da não realização da transfusão de sangue ora recusada.
+                            </p>
+                            <p className="mt-2 font-bold">Por ser a expressão fiel da minha vontade, assino o presente termo.</p>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 print:break-inside-avoid">
+                        <p className="text-[9px] text-center mb-8 text-gray-700">
+                            {data?.unidade || '__________________________________'}, {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                        </p>
+
+                        <div className="flex justify-between items-end mb-6 px-4 gap-8">
+                            <div className="text-center flex-1">
+                                <div className="border-t border-black w-full mb-1"></div>
+                                <p className="font-bold text-[9px] uppercase">Assinatura do Paciente</p>
+                                <p className="text-[8px] mt-1 uppercase text-gray-600">{data?.nome}</p>
+                            </div>
+                            <div className="text-center flex-1">
+                                <div className="border-t border-black w-full mb-1"></div>
+                                <p className="font-bold text-[8px] uppercase">Assinatura e Carimbo do Médico</p>
+                                <p className="text-[7.5px] mt-1 uppercase text-[#002776] font-bold">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}</p>
+                                <p className="text-[7.5px] uppercase text-gray-500">{data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : ''}</p>
+                            </div>
+                        </div>
+
+                        <div className="border border-gray-300 p-3 rounded bg-gray-50/50 mt-4">
+                            <h3 className="font-bold text-[9px] mb-4 uppercase text-gray-700">Testemunhas:</h3>
+                            <div className="flex flex-col gap-6">
+                                <div className="flex gap-4 items-end">
+                                    <div className="flex-[2]">
+                                        <div className="border-b border-black w-full"></div>
+                                        <p className="text-[7px] text-gray-500 mt-0.5 uppercase">Nome Legível</p>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="border-b border-black w-full"></div>
+                                        <p className="text-[7px] text-gray-500 mt-0.5 uppercase">CPF</p>
+                                    </div>
+                                    <div className="flex-[2]">
+                                        <div className="border-b border-black w-full"></div>
+                                        <p className="text-[7px] text-gray-500 mt-0.5 uppercase">Assinatura</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 items-end">
+                                    <div className="flex-[2]">
+                                        <div className="border-b border-black w-full"></div>
+                                        <p className="text-[7px] text-gray-500 mt-0.5 uppercase">Nome Legível</p>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="border-b border-black w-full"></div>
+                                        <p className="text-[7px] text-gray-500 mt-0.5 uppercase">CPF</p>
+                                    </div>
+                                    <div className="flex-[2]">
+                                        <div className="border-b border-black w-full"></div>
+                                        <p className="text-[7px] text-gray-500 mt-0.5 uppercase">Assinatura</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
