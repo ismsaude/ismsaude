@@ -706,7 +706,7 @@ Responda SOMENTE o bloco JSON.`;
 
     const handleChange = (e) => {
         let { name, type, checked, value } = e.target;
-        if (name === 'cpf') value = maskCPF(value);
+        if (name === 'cpf' || name === 'resp_cpf') value = maskCPF(value);
         if (name === 'telefone') value = maskTelefone(value);
         setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
