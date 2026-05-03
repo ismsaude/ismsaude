@@ -1905,29 +1905,30 @@ Responda SOMENTE o bloco JSON.`;
                                             </div>
 
                                             {/* Hemoderivados & Protocolo de Recusa */}
-                                            <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap gap-8">
-                                                <div>
-                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">RESERVA DE HEMODERIVADOS</label>
-                                                    <div className="flex flex-wrap gap-3 mb-4">
-                                                        {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_hemoderivados: opt.val, plan_hemo_ch: opt.val==='Não'?'':formData.plan_hemo_ch, plan_hemo_pfc: opt.val==='Não'?'':formData.plan_hemo_pfc, plan_hemo_plaq: opt.val==='Não'?'':formData.plan_hemo_plaq, plan_hemo_outros: opt.val==='Não'?'':formData.plan_hemo_outros })} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_hemoderivados === opt.val ? (opt.val === 'Sim' ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
-                                                                {opt.label}
-                                                            </button>
-                                                        ))}
+                                            <div className="mt-5 pt-4 border-t border-slate-100">
+                                                <div className="flex flex-wrap gap-8">
+                                                    <div>
+                                                        <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">RESERVA DE HEMODERIVADOS</label>
+                                                        <div className="flex flex-wrap gap-3 mb-4">
+                                                            {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
+                                                                <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_hemoderivados: opt.val, plan_hemo_ch: opt.val==='Não'?'':formData.plan_hemo_ch, plan_hemo_pfc: opt.val==='Não'?'':formData.plan_hemo_pfc, plan_hemo_plaq: opt.val==='Não'?'':formData.plan_hemo_plaq, plan_hemo_outros: opt.val==='Não'?'':formData.plan_hemo_outros })} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_hemoderivados === opt.val ? (opt.val === 'Sim' ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                    {opt.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">Protocolo de Recusa de Hemotransfusão? <span className="text-red-500">*</span></label>
+                                                        <div className="flex flex-wrap gap-3 mb-4">
+                                                            {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
+                                                                <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_recusa_hemo: opt.val})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_recusa_hemo === opt.val ? (opt.val === 'Sim' ? 'bg-amber-50 border-amber-500 text-amber-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                    {opt.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                
-                                                <div>
-                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-2">Protocolo de Recusa de Hemotransfusão? <span className="text-red-500">*</span></label>
-                                                    <div className="flex flex-wrap gap-3 mb-4">
-                                                        {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_recusa_hemo: opt.val})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_recusa_hemo === opt.val ? (opt.val === 'Sim' ? 'bg-amber-50 border-amber-500 text-amber-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
-                                                                {opt.label}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
                                                 {formData.plan_hemoderivados === 'Sim' && (
                                                     <div className="flex flex-wrap gap-x-8 gap-y-4 bg-rose-50/40 p-5 rounded-2xl border border-rose-100 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300 mt-2">
                                                         <div>
