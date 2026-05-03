@@ -127,6 +127,7 @@ export default function Apa({ paciente }) {
 
     const defaultFormData = {
         nome: '', cpf: '', dataNasc: '', sexo: '', peso: '', altura: '', telefone: '',
+        resp_nome: '', resp_cpf: '', resp_parentesco: '',
         procedimento: '', profissional: '', dataProcedimento: '', carater: 'Eletivo', porte: '', posicao: '',
         has: false, dm: false, cardio: false, arritmia: false, icc: false, iam: false, asma: false, dpoc: false,
         pneumo: false, renal: false, hepato: false, tireo: false, neuro: false, convulsao: false, avc: false,
@@ -300,7 +301,8 @@ export default function Apa({ paciente }) {
 
     const handleNovaApa = () => {
         setFormData({
-            nome: '', cpf: '', dataNasc: '', sexo: '', peso: '', altura: '', telefone: '',
+            nome: '', dataNasc: '', cpf: '', sexo: 'Feminino', peso: '', altura: '',
+            resp_nome: '', resp_cpf: '', resp_parentesco: '', telefone: '',
             procedimento: '', profissional: '', dataProcedimento: '', carater: 'Eletivo', porte: '', posicao: '',
             has: false, dm: false, cardio: false, arritmia: false, icc: false, iam: false, asma: false, dpoc: false,
             pneumo: false, renal: false, hepato: false, tireo: false, neuro: false, convulsao: false, avc: false,
@@ -437,6 +439,15 @@ export default function Apa({ paciente }) {
         if (!unidadeAtual) return toast.error("Ação Bloqueada: Selecione o Local de Atendimento antes de salvar.");
         if (!formData.nome) return toast.error("Selecione um paciente antes de salvar.");
         if (!formData.dataNasc) return toast.error("A Data de Nascimento é obrigatória.");
+        
+        const idadeStr = calcularIdade(formData.dataNasc);
+        const idadeInt = parseInt(idadeStr);
+        if (!isNaN(idadeInt) && idadeInt < 18) {
+            if (!formData.resp_nome) return toast.error("Obrigatório: Nome do Responsável Legal (paciente menor de idade).");
+            if (!formData.resp_cpf) return toast.error("Obrigatório: CPF do Responsável Legal (paciente menor de idade).");
+            if (!formData.resp_parentesco) return toast.error("Obrigatório: Grau de Parentesco (paciente menor de idade).");
+        }
+
         if (!formData.sexo) return toast.error("O Sexo é obrigatório.");
         if (!formData.peso) return toast.error("O Peso é obrigatório.");
         if (!formData.altura) return toast.error("A Altura é obrigatória.");
@@ -1206,7 +1217,36 @@ Responda SOMENTE o bloco JSON.`;
                                                             )}
                                                         </div>
                                                     </div>
+                                                    </div>
                                                 </div>
+                                                {(() => {
+                                                    const idadeStr = calcularIdade(formData.dataNasc);
+                                                    const idadeInt = parseInt(idadeStr);
+                                                    if (!isNaN(idadeInt) && idadeInt < 18) {
+                                                        return (
+                                                            <div className="md:col-span-12 grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-3 mt-1 pt-3 border-t border-slate-100 bg-amber-50/30 p-3 rounded-xl border border-amber-100">
+                                                                <div className="md:col-span-12">
+                                                                    <h4 className="text-[10px] font-black text-amber-800 uppercase flex items-center gap-1.5">
+                                                                        <User size={12} /> Dados do Responsável Legal (Paciente Menor de Idade)
+                                                                    </h4>
+                                                                </div>
+                                                                <div className="md:col-span-6">
+                                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">Nome do Responsável<span className="text-red-500 ml-0.5">*</span></label>
+                                                                    <input disabled={isReadOnly} type="text" name="resp_nome" value={formData.resp_nome} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 transition-all shadow-sm" />
+                                                                </div>
+                                                                <div className="md:col-span-3">
+                                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CPF do Responsável<span className="text-red-500 ml-0.5">*</span></label>
+                                                                    <input disabled={isReadOnly} type="text" name="resp_cpf" value={formData.resp_cpf} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 transition-all shadow-sm" />
+                                                                </div>
+                                                                <div className="md:col-span-3">
+                                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">Grau de Parentesco<span className="text-red-500 ml-0.5">*</span></label>
+                                                                    <input disabled={isReadOnly} type="text" name="resp_parentesco" value={formData.resp_parentesco} onChange={handleChange} placeholder="Ex: Pai, Mãe" className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 transition-all shadow-sm" />
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                })()}
                                             </div>
                                         </section>
                                         <section>

@@ -63,6 +63,26 @@ export default function ApaPrintTemplate({ data }) {
         } catch { return '--'; }
     };
 
+    const isPacienteMenor = (dataNasc) => {
+        if (!dataNasc) return false;
+        try {
+            let dateStr = dataNasc;
+            if (dateStr.includes('/')) {
+                const [d, m, y] = dateStr.split('/');
+                if (d && m && y) dateStr = `${y}-${m}-${d}`;
+            }
+            const hoje = new Date(); const nasc = new Date(dateStr);
+            if (isNaN(nasc.getTime())) return false;
+            let idade = hoje.getFullYear() - nasc.getFullYear();
+            const m = hoje.getMonth() - nasc.getMonth();
+            if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+            return idade < 18;
+        } catch { return false; }
+    };
+
+    const isMenor = isPacienteMenor(data?.dataNasc);
+
+
     const getImcData = (imc) => {
         if (!imc) return { label: '', color: '' };
         const v = parseFloat(imc);
@@ -574,7 +594,6 @@ export default function ApaPrintTemplate({ data }) {
                 Este documento é confidencial e protegido pela LGPD (Lei 13.709/2018). Uso exclusivo para fins médicos.
             </div>
 
-            {/* PAGE BREAK PARA O TERMO DE CONSENTIMENTO */}
             <div style={{ pageBreakBefore: 'always' }} className="pt-8 print:pt-4">
                 {/* CABEÇALHO DO TERMO */}
                 <div className="flex justify-between items-end border-b-2 border-gray-800 pb-1.5 mb-6 print:break-inside-avoid">
@@ -595,94 +614,187 @@ export default function ApaPrintTemplate({ data }) {
                     Termo de Consentimento Livre e Esclarecido para Anestesia
                 </h2>
 
-                <div className="text-[9.5px] text-justify text-gray-800 leading-relaxed space-y-3.5">
-                    <div>
-                        <h3 className="font-bold text-[10px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO E ESCLARECIMENTOS GERAIS</h3>
-                        <p>
-                            Eu, <strong className="uppercase">{data?.nome || '__________________________________________________'}</strong>, declaro que o(a) médico(a) anestesiologista <strong className="uppercase">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : '________________________________________'}</strong>, inscrito(a) no CRM sob o nº <strong>{data?.anestesistaCRM ? data.anestesistaCRM : '____________'}</strong>, informou-me de que serei submetido(a) ao procedimento anestésico para a cirurgia/procedimento de <strong className="uppercase">{data?.procedimento || '________________________________________'}</strong>. O médico explicou-me detalhadamente o procedimento, informando sobre os riscos, benefícios e alternativas disponíveis, inclusive a possibilidade de não realização do procedimento ou desistência da operação, e suas repercussões.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h3 className="font-bold text-[10px] mb-1 text-[#002776]">2. RISCOS INERENTES À ANESTESIA</h3>
-                        <p>
-                            Estou ciente de que qualquer tipo de anestesia envolve riscos, que não há garantia absoluta de resultado e que estou sujeito(a) a: dores, mal-estar, hemorragias, reações alérgicas, perda ou danos aos dentes, infecções, perda de movimentos ou sentidos (tato, olfato, visão, paladar e audição) temporária ou permanente, derrames, paralisia, danos cerebrais, falência de órgãos vitais, paradas cardiorrespiratórias e morte. O médico e sua equipe adotarão a melhor técnica e recursos disponíveis, mas compreendo que podem ocorrer intercorrências insuperáveis, inerentes à própria operação.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h3 className="font-bold text-[10px] mb-1 text-[#002776]">3. DEVERES DO PACIENTE E OMISSÃO DE INFORMAÇÕES</h3>
-                        <p>
-                            Declaro que, na entrevista pré-anestésica, não ocultei qualquer fato. Informei com total veracidade minhas condições físicas, psicológicas e meus hábitos. Estou ciente de que o tabagismo (mesmo recreativo), álcool e o uso de fármacos/drogas de qualquer tipo aumentam gravemente o risco de complicações. Compreendo que posso apresentar reações alérgicas imprevisíveis a medicações. Estou ciente de que devo seguir rigorosamente as instruções médicas antes, durante e após o procedimento, e que o não cumprimento destas orientações pode ser a causa de danos permanentes ou temporários à minha saúde.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h3 className="font-bold text-[10px] mb-1 text-[#002776]">4. MUDANÇAS DE CONDUTA, CANCELAMENTO E EQUIPE</h3>
-                        <p>
-                            Fui informado(a) da possibilidade de cancelamento da operação e/ou anestesia sem aviso prévio devido a circunstâncias alheias à vontade da equipe ou instituição. Estou ciente de que o médico que realizou a avaliação pré-anestésica não será necessariamente o mesmo que me acompanhará no dia da cirurgia. Autorizo a equipe a realizar as mudanças necessárias no procedimento inicial caso ocorram eventos indesejados, visando salvaguardar minha vida.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h3 className="font-bold text-[10px] mb-1 text-[#002776]">5. MANIFESTAÇÃO DE VONTADE SOBRE TRANSFUSÃO DE SANGUE E HEMOCOMPONENTES</h3>
-                        <p className="mb-2">
-                            Fui informado(a) de que, durante o ato cirúrgico, pode haver necessidade extrema de transfusão de sangue. Ciente dos riscos de transmissão de doenças (como hepatite ou HIV, embora raros devido à testagem) e do risco iminente de morte em caso de hemorragia grave, decido de forma livre e inequívoca:
-                        </p>
-                        <div className="space-y-3 pl-4 border-l-2 border-gray-200 mt-2 py-1">
-                            <div className="flex gap-3">
-                                <div className="min-w-[120px] pt-1">
-                                    <div className="border-b border-black w-24"></div>
-                                    <p className="text-[7px] text-center w-24 mt-0.5 uppercase">Assinatura</p>
+                {isMenor ? (
+                    <>
+                        <div className="text-[9.5px] text-justify text-gray-800 leading-relaxed space-y-3.5">
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO DO PACIENTE E DO RESPONSÁVEL LEGAL</h3>
+                                <div className="mb-2 bg-gray-50 p-2 border border-gray-200 rounded">
+                                    <p><strong>Nome do(a) Paciente (Menor):</strong> <span className="uppercase">{data?.nome || '__________________________________________________'}</span></p>
+                                    <p className="mt-1"><strong>Nome do Responsável Legal:</strong> <span className="uppercase">{data?.resp_nome || '__________________________________________________'}</span></p>
+                                    <div className="flex gap-6 mt-1">
+                                        <p><strong>Grau de Parentesco:</strong> <span className="uppercase">{data?.resp_parentesco || '__________________'}</span></p>
+                                        <p><strong>CPF do Responsável:</strong> {data?.resp_cpf || '__________________'}</p>
+                                    </div>
                                 </div>
-                                <p><strong>ACEITO</strong> receber transfusão de sangue e hemocomponentes, caso a equipe médica julgue estritamente necessário para salvar minha vida.</p>
+                                <p>
+                                    Declaro, na condição de responsável legal, que o(a) médico(a) anestesiologista <strong className="uppercase">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : '________________________________________'}</strong>, inscrito(a) no CRM sob o nº <strong>{data?.anestesistaCRM ? data.anestesistaCRM : '____________'}</strong>, informou-me de que o(a) menor acima qualificado(a) será submetido(a) ao procedimento anestésico para a cirurgia/procedimento de <strong className="uppercase">{data?.procedimento || '________________________________________'}</strong>. O médico explicou-me detalhadamente o procedimento, informando sobre os riscos, benefícios e alternativas disponíveis.
+                                </p>
                             </div>
-                            <div className="flex gap-3">
-                                <div className="min-w-[120px] pt-1">
-                                    <div className="border-b border-black w-24"></div>
-                                    <p className="text-[7px] text-center w-24 mt-0.5 uppercase">Assinatura</p>
+
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">2. RISCOS INERENTES À ANESTESIA</h3>
+                                <p>
+                                    Estou ciente de que qualquer tipo de anestesia envolve riscos, que não há garantia absoluta de resultado e que o(a) paciente está sujeito(a) a: dores, mal-estar, hemorragias, reações alérgicas, perda ou danos aos dentes, infecções, perda de movimentos ou sentidos (temporária ou permanente), derrames, paralisia, danos cerebrais, falência de órgãos vitais, paradas cardiorrespiratórias e morte. O médico e sua equipe adotarão a melhor técnica e recursos disponíveis, mas compreendo que podem ocorrer intercorrências insuperáveis, inerentes à própria operação.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">3. DEVERES DO RESPONSÁVEL E OMISSÃO DE INFORMAÇÕES</h3>
+                                <p>
+                                    Declaro que, na entrevista pré-anestésica, não ocultei qualquer fato sobre o histórico do(a) paciente. Informei com total veracidade suas condições físicas, psicológicas e o uso de quaisquer medicações. Estou ciente de que devo garantir que o(a) menor siga rigorosamente as instruções médicas (como o tempo de jejum) antes, durante e após o procedimento, e que o não cumprimento destas orientações pode ser a causa de danos permanentes à sua saúde.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">4. MUDANÇAS DE CONDUTA, CANCELAMENTO E EQUIPE</h3>
+                                <p>
+                                    Fui informado(a) da possibilidade de cancelamento da operação e/ou anestesia sem aviso prévio devido a circunstâncias imprevistas. Estou ciente de que o médico que realizou a avaliação pré-anestésica não será necessariamente o mesmo que acompanhará o(a) paciente no dia da cirurgia. Autorizo a equipe a realizar as mudanças necessárias no procedimento inicial caso ocorram eventos indesejados, visando salvaguardar a vida e a saúde do(a) menor.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">5. MANIFESTAÇÃO DE VONTADE E AUTORIDADE MÉDICA SOBRE TRANSFUSÃO DE SANGUE</h3>
+                                <p className="mb-2">
+                                    Fui informado(a) de que, durante o ato cirúrgico, pode haver necessidade extrema de transfusão de sangue e/ou hemocomponentes. A equipe médica se compromete a utilizar técnicas de conservação de sangue e opções alternativas viáveis, respeitando as convicções religiosas e pessoais da família sempre que o quadro clínico permitir.
+                                </p>
+                                <p className="mb-2">
+                                    Contudo, estou plenamente ciente de que, conforme o Estatuto da Criança e do Adolescente (ECA) e a jurisprudência do Supremo Tribunal Federal (STF), a liberdade religiosa dos pais/responsáveis não autoriza a recusa de tratamento essencial à vida de menores de idade.
+                                </p>
+                                <p>
+                                    Portanto, em caso de risco iminente de morte onde a transfusão de sangue seja a única medida terapêutica capaz de preservar a vida da criança/adolescente, autorizo e reconheço o dever legal e ético da equipe médica de realizar a hemotransfusão, independentemente de recusas prévias.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">6. CONSENTIMENTO FINAL</h3>
+                                <p>
+                                    Confirmo que recebi, li e compreendi todas as explicações, e que me foi dada a oportunidade de tirar todas as dúvidas. Dessa forma, declaro meu pleno consentimento para o ato anestésico a ser realizado no(a) menor pelo qual sou responsável.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 print:break-inside-avoid">
+                            <p className="text-[9px] text-center mb-10 text-gray-700">
+                                {data?.unidade || '__________________________________'}, {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                            </p>
+
+                            <div className="flex justify-center mb-8">
+                                <div className="text-center w-2/3">
+                                    <div className="border-t border-black w-full mb-1"></div>
+                                    <p className="font-bold text-[9px] uppercase">Assinatura do Responsável Legal</p>
+                                    <p className="text-[8px] mt-1 uppercase text-gray-600">{data?.resp_nome || '__________________________________________________'}</p>
                                 </div>
-                                <p><strong>RECUSO</strong> receber transfusão de sangue e hemocomponentes por motivos de convicção pessoal/religiosa. Fui exaustivamente alertado(a) pela equipe médica de que esta recusa pode resultar em danos irreversíveis ou morte. Assumo integralmente a responsabilidade por esta decisão. (Em caso de recusa, assinar também o Termo de Recusa Terapêutica anexo).</p>
+                            </div>
+
+                            <div className="border border-gray-300 p-4 rounded bg-gray-50/50 mb-2 mt-6">
+                                <h3 className="font-bold text-[9px] mb-1.5 uppercase text-center text-gray-700">Declaração do Médico Responsável</h3>
+                                <p className="text-[8px] text-justify mb-8 text-gray-600">
+                                    Declaro que expliquei em detalhes para o responsável legal, e dirimi todas as dúvidas apresentadas sobre o ato anestésico, seus benefícios, riscos e alternativas, bem como sobre a conduta médica inegociável em caso de risco de morte do menor. Informo crer que o responsável entendeu adequadamente o que foi explicado.
+                                </p>
+                                <div className="flex justify-center">
+                                    <div className="text-center w-1/2">
+                                        <div className="border-t border-black w-full mb-1"></div>
+                                        <p className="font-bold text-[8px] uppercase">Assinatura e CRM do Médico</p>
+                                        <p className="text-[7.5px] mt-1 uppercase text-[#002776] font-bold">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}</p>
+                                        <p className="text-[7.5px] uppercase text-gray-500">{data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : ''}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="text-[9.5px] text-justify text-gray-800 leading-relaxed space-y-3.5">
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO E ESCLARECIMENTOS GERAIS</h3>
+                                <p>
+                                    Eu, <strong className="uppercase">{data?.nome || '__________________________________________________'}</strong>, declaro que o(a) médico(a) anestesiologista <strong className="uppercase">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : '________________________________________'}</strong>, inscrito(a) no CRM sob o nº <strong>{data?.anestesistaCRM ? data.anestesistaCRM : '____________'}</strong>, informou-me de que serei submetido(a) ao procedimento anestésico para a cirurgia/procedimento de <strong className="uppercase">{data?.procedimento || '________________________________________'}</strong>. O médico explicou-me detalhadamente o procedimento, informando sobre os riscos, benefícios e alternativas disponíveis, inclusive a possibilidade de não realização do procedimento ou desistência da operação, e suas repercussões.
+                                </p>
+                            </div>
 
-                    <div>
-                        <h3 className="font-bold text-[10px] mb-1 text-[#002776]">6. CONSENTIMENTO FINAL</h3>
-                        <p>
-                            Confirmo que recebi, li e compreendi todas as explicações, e que me foi dada a oportunidade de tirar todas as dúvidas. Dessa forma, declaro meu pleno consentimento para o ato anestésico.
-                        </p>
-                    </div>
-                </div>
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">2. RISCOS INERENTES À ANESTESIA</h3>
+                                <p>
+                                    Estou ciente de que qualquer tipo de anestesia envolve riscos, que não há garantia absoluta de resultado e que estou sujeito(a) a: dores, mal-estar, hemorragias, reações alérgicas, perda ou danos aos dentes, infecções, perda de movimentos ou sentidos (tato, olfato, visão, paladar e audição) temporária ou permanente, derrames, paralisia, danos cerebrais, falência de órgãos vitais, paradas cardiorrespiratórias e morte. O médico e sua equipe adotarão a melhor técnica e recursos disponíveis, mas compreendo que podem ocorrer intercorrências insuperáveis, inerentes à própria operação.
+                                </p>
+                            </div>
 
-                <div className="mt-8 print:break-inside-avoid">
-                    <p className="text-[9px] text-center mb-10 text-gray-700">
-                        {data?.unidade || '__________________________________'}, {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-                    </p>
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">3. DEVERES DO PACIENTE E OMISSÃO DE INFORMAÇÕES</h3>
+                                <p>
+                                    Declaro que, na entrevista pré-anestésica, não ocultei qualquer fato. Informei com total veracidade minhas condições físicas, psicológicas e meus hábitos. Estou ciente de que o tabagismo (mesmo recreativo), álcool e o uso de fármacos/drogas de qualquer tipo aumentam gravemente o risco de complicações. Compreendo que posso apresentar reações alérgicas imprevisíveis a medicações. Estou ciente de que devo seguir rigorosamente as instruções médicas antes, durante e após o procedimento, e que o não cumprimento destas orientações pode ser a causa de danos permanentes ou temporários à minha saúde.
+                                </p>
+                            </div>
 
-                    <div className="flex justify-center mb-8">
-                        <div className="text-center w-2/3">
-                            <div className="border-t border-black w-full mb-1"></div>
-                            <p className="font-bold text-[9px] uppercase">Assinatura do Paciente (ou Responsável Legal)</p>
-                            <p className="text-[8px] mt-1 uppercase text-gray-600">{data?.nome}</p>
-                        </div>
-                    </div>
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">4. MUDANÇAS DE CONDUTA, CANCELAMENTO E EQUIPE</h3>
+                                <p>
+                                    Fui informado(a) da possibilidade de cancelamento da operação e/ou anestesia sem aviso prévio devido a circunstâncias alheias à vontade da equipe ou instituição. Estou ciente de que o médico que realizou a avaliação pré-anestésica não será necessariamente o mesmo que me acompanhará no dia da cirurgia. Autorizo a equipe a realizar as mudanças necessárias no procedimento inicial caso ocorram eventos indesejados, visando salvaguardar minha vida.
+                                </p>
+                            </div>
 
-                    <div className="border border-gray-300 p-4 rounded bg-gray-50/50 mb-2 mt-6">
-                        <h3 className="font-bold text-[9px] mb-1.5 uppercase text-center text-gray-700">Declaração do Médico Responsável</h3>
-                        <p className="text-[8px] text-justify mb-8 text-gray-600">
-                            Declaro que expliquei em detalhes para o paciente (familiar ou responsável), e dirimi todas as dúvidas apresentadas sobre o ato anestésico, seus benefícios, riscos e alternativas. Informo crer que o paciente ou o seu responsável entendeu adequadamente o que foi explicado.
-                        </p>
-                        <div className="flex justify-center">
-                            <div className="text-center w-1/2">
-                                <div className="border-t border-black w-full mb-1"></div>
-                                <p className="font-bold text-[8px] uppercase">Assinatura e CRM do Médico</p>
-                                <p className="text-[7.5px] mt-1 uppercase text-[#002776] font-bold">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}</p>
-                                <p className="text-[7.5px] uppercase text-gray-500">{data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : ''}</p>
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">5. MANIFESTAÇÃO DE VONTADE SOBRE TRANSFUSÃO DE SANGUE E HEMOCOMPONENTES</h3>
+                                <p className="mb-2">
+                                    Fui informado(a) de que, durante o ato cirúrgico, pode haver necessidade extrema de transfusão de sangue. Ciente dos riscos de transmissão de doenças (como hepatite ou HIV, embora raros devido à testagem) e do risco iminente de morte em caso de hemorragia grave, decido de forma livre e inequívoca:
+                                </p>
+                                <div className="space-y-4 pl-4 border-l-2 border-gray-200 mt-2 py-1">
+                                    <div className="flex gap-3">
+                                        <div className="min-w-[120px] pt-4">
+                                            <div className="border-b border-black w-24"></div>
+                                            <p className="text-[7px] text-center w-24 mt-0.5 uppercase">Assinatura</p>
+                                        </div>
+                                        <p><strong>ACEITO</strong> receber transfusão de sangue e hemocomponentes, caso a equipe médica julgue estritamente necessário para salvar minha vida.</p>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="min-w-[120px] pt-4">
+                                            <div className="border-b border-black w-24"></div>
+                                            <p className="text-[7px] text-center w-24 mt-0.5 uppercase">Assinatura</p>
+                                        </div>
+                                        <p><strong>RECUSO</strong> receber transfusão de sangue e hemocomponentes por motivos de convicção pessoal/religiosa. Fui exaustivamente alertado(a) pela equipe médica de que esta recusa pode resultar em danos irreversíveis ou morte. Assumo integralmente a responsabilidade por esta decisão. (Em caso de recusa, assinar também o Termo de Recusa Terapêutica anexo).</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">6. CONSENTIMENTO FINAL</h3>
+                                <p>
+                                    Confirmo que recebi, li e compreendi todas as explicações, e que me foi dada a oportunidade de tirar todas as dúvidas. Dessa forma, declaro meu pleno consentimento para o ato anestésico.
+                                </p>
                             </div>
                         </div>
-                    </div>
-                </div>
+
+                        <div className="mt-8 print:break-inside-avoid">
+                            <p className="text-[9px] text-center mb-10 text-gray-700">
+                                {data?.unidade || '__________________________________'}, {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                            </p>
+
+                            <div className="flex justify-center mb-8">
+                                <div className="text-center w-2/3">
+                                    <div className="border-t border-black w-full mb-1"></div>
+                                    <p className="font-bold text-[9px] uppercase">Assinatura do Paciente (ou Responsável Legal)</p>
+                                    <p className="text-[8px] mt-1 uppercase text-gray-600">{data?.nome}</p>
+                                </div>
+                            </div>
+
+                            <div className="border border-gray-300 p-4 rounded bg-gray-50/50 mb-2 mt-6">
+                                <h3 className="font-bold text-[9px] mb-1.5 uppercase text-center text-gray-700">Declaração do Médico Responsável</h3>
+                                <p className="text-[8px] text-justify mb-8 text-gray-600">
+                                    Declaro que expliquei em detalhes para o paciente (familiar ou responsável), e dirimi todas as dúvidas apresentadas sobre o ato anestésico, seus benefícios, riscos e alternativas. Informo crer que o paciente ou o seu responsável entendeu adequadamente o que foi explicado.
+                                </p>
+                                <div className="flex justify-center">
+                                    <div className="text-center w-1/2">
+                                        <div className="border-t border-black w-full mb-1"></div>
+                                        <p className="font-bold text-[8px] uppercase">Assinatura e CRM do Médico</p>
+                                        <p className="text-[7.5px] mt-1 uppercase text-[#002776] font-bold">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}</p>
+                                        <p className="text-[7.5px] uppercase text-gray-500">{data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : ''}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
         </div>
