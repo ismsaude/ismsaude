@@ -7,7 +7,7 @@ import { useUnit } from '../contexts/UnitContext';
 import ApaPrintTemplate from '../components/ApaPrintTemplate';
 import { supabase } from '../services/supabase';
 import { logAction } from '../utils/logger';
-import { Search, Printer, Save, Activity, Plus, ArrowLeft, Loader2, ZoomIn, ZoomOut, Eye, Trash2, ChevronRight, ChevronDown, User, Stethoscope, FileText, ActivitySquare, CheckSquare, AlertTriangle, Copy, Sparkles, Upload } from 'lucide-react';
+import { Search, Printer, Save, Activity, Plus, ArrowLeft, Loader2, ZoomIn, ZoomOut, Eye, Trash2, ChevronRight, ChevronDown, User, Stethoscope, FileText, ActivitySquare, CheckSquare, AlertTriangle, Copy, Sparkles, Upload, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { maskCPF, maskTelefone } from '../utils/masks';
 import UnitPrompt from '../components/UnitPrompt';
@@ -82,7 +82,7 @@ export default function Apa({ paciente }) {
     const location = useLocation();
     const { hasPermission } = usePermission();
     const { currentUser: user } = useAuth();
-    const { unidadeAtual } = useUnit();
+    const { unidadeAtual, unidades } = useUnit();
 
     const getDraft = () => {
         if (location.state?.apaId) return null;
@@ -117,6 +117,7 @@ export default function Apa({ paciente }) {
     const [filterDataInicio, setFilterDataInicio] = useState('');
     const [filterDataFim, setFilterDataFim] = useState('');
     const [filterProcedimento, setFilterProcedimento] = useState('Todos');
+    const [mostrarTodasUnidades, setMostrarTodasUnidades] = useState(false);
 
     const [pacientes, setPacientes] = useState([]);
     const [showPacientes, setShowPacientes] = useState(false);
@@ -250,19 +251,26 @@ export default function Apa({ paciente }) {
     }, [paciente]);
 
     const loadApasList = async () => {
-        if (!unidadeAtual) {
+        if (!unidadeAtual && !mostrarTodasUnidades) {
             setListaApas([]);
             setLoadingApas(false);
             return;
         }
         setLoadingApas(true);
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('apas')
                 .select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url, asa')
-                .or(`unidade.eq.${unidadeAtual},unidade.is.null`)
                 .order('createdAt', { ascending: false })
                 .limit(6000);
+
+            if (mostrarTodasUnidades && unidades && unidades.length > 0) {
+                query = query.in('unidade', unidades);
+            } else if (unidadeAtual) {
+                query = query.or(`unidade.eq.${unidadeAtual},unidade.is.null`);
+            }
+
+            const { data, error } = await query;
 
             if (error) {
                 if (error.code === '42703' || error.message?.includes('does not exist')) {
@@ -287,7 +295,7 @@ export default function Apa({ paciente }) {
         if (modoVisao === 'lista') {
             loadApasList();
         }
-    }, [modoVisao, unidadeAtual]);
+    }, [modoVisao, unidadeAtual, mostrarTodasUnidades, unidades]);
 
     const handleNovaApa = () => {
         setFormData({
@@ -1008,6 +1016,26 @@ Responda SOMENTE o bloco JSON.`;
                                     </div>
                                 )}
                             </div>
+
+                            {/* Mostrar todas as unidades toggle */}
+                            <div className="flex items-center gap-2 px-2 py-1">
+                                <label className="flex items-center gap-2 cursor-pointer group">
+                                    <div className="relative">
+                                        <input 
+                                            type="checkbox" 
+                                            className="sr-only" 
+                                            checked={mostrarTodasUnidades}
+                                            onChange={(e) => setMostrarTodasUnidades(e.target.checked)}
+                                        />
+                                        <div className={`block w-10 h-6 rounded-full transition-colors ${mostrarTodasUnidades ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                                        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${mostrarTodasUnidades ? 'transform translate-x-4' : ''}`}></div>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 group-hover:text-slate-700 transition-colors">
+                                        <Globe size={14} className={mostrarTodasUnidades ? 'text-blue-500' : ''} />
+                                        Buscar em todas as minhas unidades
+                                    </div>
+                                </label>
+                            </div>
                         </div>
 
                         {/* Apple-style Data List */}
@@ -1200,7 +1228,25 @@ Responda SOMENTE o bloco JSON.`;
                                                 <div className="md:col-span-2">
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start mt-2">
                                                         <div className="col-span-1 md:col-span-2 space-y-4">
-                                                            <div><label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CIRURGIÃO / EQUIPE</label><select disabled={isReadOnly} name="profissional" value={formData.profissional} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 uppercase"><option value="">SELECIONE...</option>{settings.cirurgioes?.map((m, idx) => { const label = typeof m === 'string' ? m : m.nome; const display = label ? label.toUpperCase() : ''; return <option key={idx} value={label}>{display}</option>; })}</select></div>
+                                                            <div className="relative">
+                                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">ESPECIALIDADE</label>
+                                                                <input 
+                                                                    disabled={isReadOnly} 
+                                                                    name="profissional" 
+                                                                    value={formData.profissional} 
+                                                                    onChange={handleChange} 
+                                                                    list="especialidadesList"
+                                                                    placeholder="SELECIONE OU DIGITE..."
+                                                                    className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all uppercase"
+                                                                />
+                                                                <datalist id="especialidadesList">
+                                                                    {settings.especialidades?.map((m, idx) => { 
+                                                                        const label = typeof m === 'string' ? m : m.nome; 
+                                                                        const display = label ? label.toUpperCase() : ''; 
+                                                                        return <option key={idx} value={label}>{display}</option>; 
+                                                                    })}
+                                                                </datalist>
+                                                            </div>
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                 <div className="flex flex-col">
                                                                     <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">CARÁTER<span className="text-red-500 ml-0.5">*</span></label>

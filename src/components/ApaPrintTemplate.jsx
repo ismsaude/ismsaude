@@ -220,7 +220,7 @@ export default function ApaPrintTemplate({ data }) {
             <SectionBlock title="2. Procedimento Proposto">
                 <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mb-1.5">
                     <Field label="Procedimento Cirúrgico" value={data?.procedimento} className="col-span-2" />
-                    <Field label="Profissional" value={data?.profissional} />
+                    <Field label="Especialidade" value={data?.profissional} />
                 </div>
                 <div className="grid grid-cols-3 gap-x-2 gap-y-1.5">
                     <Field label="Data Prevista" value={formatDate(data?.dataProcedimento)} />
