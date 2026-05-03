@@ -1289,7 +1289,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                 const sis = e.target.value;
                                                                 setFormData(prev => ({ ...prev, pa: (!sis && !dia) ? '' : `${sis}/${dia}` }));
                                                             }} 
-                                                            placeholder="Sis"
+                                                            placeholder="Máxima"
                                                             className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg text-center appearance-none" 
                                                         />
                                                         <span className="text-slate-400 font-black">/</span>
@@ -1302,7 +1302,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                 const dia = e.target.value;
                                                                 setFormData(prev => ({ ...prev, pa: (!sis && !dia) ? '' : `${sis}/${dia}` }));
                                                             }} 
-                                                            placeholder="Dia"
+                                                            placeholder="Mínima"
                                                             className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg text-center appearance-none" 
                                                         />
                                                     </div>
