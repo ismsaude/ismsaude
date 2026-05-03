@@ -509,11 +509,11 @@ export default function ApaPrintTemplate({ data }) {
 
             {/* 13. PLANO ANESTÉSICO */}
             <SectionBlock title="13. Plano Anestésico">
-                <div className="grid grid-cols-10 gap-x-2 gap-y-1.5 mb-1.5">
+                <div className="grid grid-cols-12 gap-x-2 gap-y-1.5 mb-1.5">
                     <Field label="Técnica Prevista" value={data?.plan_tecnica} className="col-span-4" />
-                    <Field label="Res. UTI" value={data?.plan_destino} valueClassName={data?.plan_destino === 'Sim' ? 'text-rose-600' : ''} className="col-span-1" />
-                    <Field label="Res. Sangue" value={data?.plan_hemoderivados} valueClassName={data?.plan_hemoderivados === 'Sim' ? 'text-rose-600' : ''} className="col-span-2" />
-                    <Field label="Protocolo de Recusa de Hemotransfusão?" value={data?.plan_recusa_hemo} valueClassName={data?.plan_recusa_hemo === 'Sim' ? 'text-amber-600' : ''} className="col-span-3" />
+                    <Field label="Reserva de UTI" value={data?.plan_destino} valueClassName={data?.plan_destino === 'Sim' ? 'text-rose-600' : ''} className="col-span-2" />
+                    <Field label="Hemoderivados" value={data?.plan_hemoderivados} valueClassName={data?.plan_hemoderivados === 'Sim' ? 'text-rose-600' : ''} className="col-span-2" />
+                    <Field label="Protocolo de Recusa de Hemotransfusão?" value={data?.plan_recusa_hemo} valueClassName={data?.plan_recusa_hemo === 'Sim' ? 'text-amber-600' : ''} className="col-span-4" />
                 </div>
                 {data?.plan_hemoderivados === 'Sim' && (
                     <div className="grid grid-cols-4 gap-x-2 gap-y-1 px-2 py-1.5 mb-1.5 bg-rose-50/40 border-l-2 border-rose-300">
