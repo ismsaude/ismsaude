@@ -7,6 +7,8 @@ export default function ApaPrintTemplate({ data }) {
     const { theme } = useWhiteLabel();
     if (!data) return null;
 
+    const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
     const getDoctorPrefix = (nome, sexo) => {
         if (sexo === 'Masculino' || sexo === 'M') return 'DR.';
         if (sexo === 'Feminino' || sexo === 'F') return 'DRA.';
@@ -586,7 +588,8 @@ export default function ApaPrintTemplate({ data }) {
                 Este documento é confidencial e protegido pela LGPD (Lei 13.709/2018). Uso exclusivo para fins médicos.
             </div>
 
-            <div style={{ pageBreakBefore: 'always' }} className="pt-8 print:pt-4">
+            {isLocalhost && (
+                <div style={{ pageBreakBefore: 'always' }} className="pt-8 print:pt-4">
                 {/* CABEÇALHO DO TERMO */}
                 <div className="flex justify-between items-end border-b-2 border-gray-800 pb-1.5 mb-6 print:break-inside-avoid">
                     <div className="flex flex-col justify-end w-1/3">
@@ -787,9 +790,10 @@ export default function ApaPrintTemplate({ data }) {
                         </div>
                     </>
                 )}
-            </div>
+                </div>
+            )}
 
-            {data?.plan_recusa_hemo === 'Sim' && !isMenor && (
+            {isLocalhost && data?.plan_recusa_hemo === 'Sim' && !isMenor && (
                 <div style={{ pageBreakBefore: 'always' }} className="pt-4 print:pt-2">
                     {/* CABEÇALHO DO TERMO DE RECUSA */}
                     <div className="flex justify-between items-end border-b-2 border-gray-800 pb-1.5 mb-3 print:break-inside-avoid">
