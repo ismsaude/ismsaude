@@ -22,6 +22,11 @@ export const logAction = async (action, details) => {
             ip_address: ipAddress,
             timestamp: new Date().toISOString()
         }]);
+
+        // Apagar logs mais antigos que 6 meses
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        await supabase.from('logs').delete().lt('timestamp', sixMonthsAgo.toISOString());
     } catch (error) {
         console.error('Erro ao gravar log:', error);
     }

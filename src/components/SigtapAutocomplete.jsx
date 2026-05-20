@@ -111,12 +111,12 @@ export const SigtapAutocomplete = ({ value, onSelect, disabled, className }) => 
                         return (
                             <div key={codShow} onClick={() => handleSelect(p)} className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors">
                                 <div className="text-xs font-bold uppercase text-slate-800">{nomeShow}</div>
-                                <div className="text-[10px] font-semibold text-blue-500 uppercase mt-0.5">CÓDIGO: {codShow}</div>
+                                <div className="text-[11px] font-semibold text-blue-500 uppercase mt-0.5">CÓDIGO: {codShow}</div>
                             </div>
                         );
                     }) : (
                         !loading && <div className="p-3 bg-slate-50 flex flex-col items-center text-center gap-2 border-t border-slate-100">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">Nenhum procedimento encontrado.</span>
+                            <span className="text-[11px] font-bold text-slate-500 uppercase">Nenhum procedimento encontrado.</span>
                         </div>
                     )}
                 </div>

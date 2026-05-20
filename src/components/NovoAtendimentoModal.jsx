@@ -73,7 +73,7 @@ export const NovoAtendimentoModal = ({ isOpen, onClose, unidadeAtual }) => {
 
                 <form onSubmit={handleSave} className="p-5 space-y-4 bg-slate-50">
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">Buscar Paciente</label>
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">Buscar Paciente</label>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                             <input
@@ -93,7 +93,7 @@ export const NovoAtendimentoModal = ({ isOpen, onClose, unidadeAtual }) => {
                                             setShowPacientes(false);
                                         }} className="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-50">
                                             <div className="text-xs font-bold text-slate-800">{p.nome}</div>
-                                            <div className="text-[10px] text-slate-500 mt-0.5">{p.cpf || 'Sem CPF'}</div>
+                                            <div className="text-[11px] text-slate-500 mt-0.5">{p.cpf || 'Sem CPF'}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -103,7 +103,7 @@ export const NovoAtendimentoModal = ({ isOpen, onClose, unidadeAtual }) => {
 
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 space-y-3">
                         <div>
-                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1">Tipo de Atendimento</label>
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">Tipo de Atendimento</label>
                             <select
                                 value={formData.tipoAtendimento} onChange={e => setFormData({ ...formData, tipoAtendimento: e.target.value })}
                                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold outline-none"
@@ -115,7 +115,7 @@ export const NovoAtendimentoModal = ({ isOpen, onClose, unidadeAtual }) => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wide mb-1 flex items-center gap-1"><FileText size={12} /> Queixa Principal / Motivo</label>
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 flex items-center gap-1"><FileText size={12} /> Queixa Principal / Motivo</label>
                             <textarea
                                 value={formData.queixaPrincipal} onChange={e => setFormData({ ...formData, queixaPrincipal: e.target.value })}
                                 rows="3" className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold outline-none resize-none"

@@ -48,7 +48,7 @@ export const UnitGatekeeper = ({ children }) => {
                                         <Building2 size={18} />
                                     </div>
                                     <div className="min-w-0">
-                                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Unidade</div>
+                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Unidade</div>
                                         <div className="text-xs sm:text-sm font-bold text-slate-800 uppercase leading-tight truncate">{u}</div>
                                     </div>
                                 </div>

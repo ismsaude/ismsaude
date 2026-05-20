@@ -57,10 +57,10 @@ export const PreOpDocument = ({ surgery }) => {
             <div className="flex justify-between items-end border-b-2 border-slate-800 pb-2 mb-3 shrink-0">
                 <div>
                     <h1 className="text-lg font-black uppercase text-slate-900 tracking-tighter leading-tight">Santa Casa<br/>De Misericórdia</h1>
-                    <h2 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mt-0.5">Salto de Pirapora</h2>
+                    <h2 className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mt-0.5">Salto de Pirapora</h2>
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] font-black italic text-slate-500 bg-slate-100 px-2 py-1 rounded">O SEU, O MEU, O NOSSO HOSPITAL!</p>
+                    <p className="text-[11px] font-black italic text-slate-500 bg-slate-100 px-2 py-1 rounded">O SEU, O MEU, O NOSSO HOSPITAL!</p>
                 </div>
             </div>
 
@@ -95,10 +95,10 @@ export const PreOpDocument = ({ surgery }) => {
                 </p>
                 
                 <div className="bg-slate-50 p-2 rounded border border-slate-200 mt-1.5">
-                    <p className="font-black underline underline-offset-2 mb-0.5 text-[11px]">
+                    <p className="font-black underline underline-offset-2 mb-0.5 text-xs">
                         Você deverá agendar seu retorno pós-cirúrgico assim que receber alta do hospital, pelo WhatsApp (15) 99763-0602.
                     </p>
-                    <p className="text-[10px] font-semibold text-slate-600 leading-tight">
+                    <p className="text-[11px] font-semibold text-slate-600 leading-tight">
                         Envie sua mensagem e aguarde. A demanda é grande, por isso não é necessário ligar. O atendimento é feito por mensagem de texto, mas você também pode enviar áudio, se preferir.
                     </p>
                 </div>
@@ -107,11 +107,11 @@ export const PreOpDocument = ({ surgery }) => {
             {/* Orientações Expandidas */}
             <div className="mb-1 flex-1 min-h-0">
                 <div className="mt-0">
-                    <h3 className="font-bold border-b border-slate-800 pb-1 mb-2.5 uppercase text-[11px]">
+                    <h3 className="font-bold border-b border-slate-800 pb-1 mb-2.5 uppercase text-xs">
                         Orientações para Cirurgia {surgery.tipoOrientacao ? `(${surgery.tipoOrientacao})` : ''}
                     </h3>
                     
-                    <div className="text-[10px] text-justify columns-2 gap-8">
+                    <div className="text-[11px] text-justify columns-2 gap-8">
                         {(surgery.textoOrientacao || 'Trazer todos os exames, documentos (RG, CPF e Cartão SUS). \nJejum absoluto de 8 horas.')
                             .split('\n')
                             .filter(linha => linha.trim() !== '') 
@@ -154,8 +154,8 @@ export const PreOpDocument = ({ surgery }) => {
 
             {/* Rodapé Micro/Compacto */}
             <div className="mt-auto border-t border-slate-300 pt-2 text-center text-slate-500 font-bold shrink-0 bg-white">
-                <p className="text-[9px] text-slate-800 font-black italic mb-1">Desejamos que tenha uma ótima cirurgia e que se recupere o mais breve possível.</p>
-                <p className="text-slate-700 font-black uppercase text-[8px]">Santa Casa de Misericórdia de Salto de Pirapora</p>
+                <p className="text-[10px] text-slate-800 font-black italic mb-1">Desejamos que tenha uma ótima cirurgia e que se recupere o mais breve possível.</p>
+                <p className="text-slate-700 font-black uppercase text-[9px]">Santa Casa de Misericórdia de Salto de Pirapora</p>
                 <p className="text-[7.5px] mt-0.5">Av. Carlos Chagas, 67 - Centro, Salto de Pirapora - SP, 18160-000</p>
                 <div className="flex justify-center items-center gap-2 mt-0.5 text-[7.5px]">
                     <span>(15) 3491-9211</span>

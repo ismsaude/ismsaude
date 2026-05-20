@@ -73,7 +73,7 @@ const Login = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-slate-800 uppercase ml-1">E-mail</label>
+                        <label className="text-[10px] font-bold text-slate-800 uppercase ml-1">E-mail</label>
                         <div className="relative">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                             <input
@@ -86,7 +86,7 @@ const Login = () => {
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-slate-800 uppercase ml-1">Senha de Acesso</label>
+                        <label className="text-[10px] font-bold text-slate-800 uppercase ml-1">Senha de Acesso</label>
                         <div className="relative">
                             <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                             <input
@@ -102,7 +102,7 @@ const Login = () => {
                         <button
                             type="button"
                             onClick={handleForgotPassword}
-                            className="text-[10px] font-bold text-blue-800 uppercase hover:text-blue-900 transition-colors drop-shadow-sm"
+                            className="text-[11px] font-bold text-blue-800 uppercase hover:text-blue-900 transition-colors drop-shadow-sm"
                         >
                             Esqueci minha senha
                         </button>
@@ -114,7 +114,7 @@ const Login = () => {
                 </form>
 
                 <div className="mt-8 pt-8 border-t border-slate-300/40 text-center">
-                    <p className="text-[10px] font-bold text-slate-800">
+                    <p className="text-[11px] font-bold text-slate-800">
                         Não tem acesso? <span className="text-blue-700 font-bold cursor-pointer hover:text-blue-800 transition-colors" onClick={() => navigate('/signup')}>Solicite seu cadastro</span>
                     </p>
                 </div>

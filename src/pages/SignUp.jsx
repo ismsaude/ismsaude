@@ -49,7 +49,7 @@ const SignUp = () => {
     return (
         <div className="min-h-full bg-slate-50 flex items-center justify-center p-4">
             <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100">
-                <button onClick={() => navigate('/login')} className="flex items-center gap-2 text-slate-400 mb-6 font-black text-[10px] uppercase">
+                <button onClick={() => navigate('/login')} className="flex items-center gap-2 text-slate-400 mb-6 font-black text-[11px] uppercase">
                     <ArrowLeft size={16} /> Voltar
                 </button>
                 <h2 className="text-2xl font-black text-slate-900 uppercase text-center mb-8">Solicitar Acesso</h2>

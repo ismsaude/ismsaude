@@ -24,8 +24,8 @@ export const UnitSelector = () => {
             >
                 <MapPin size={16} className={unidadeAtual ? "text-blue-600" : "text-rose-500"} />
                 <div className="flex flex-col items-start">
-                    <span className={`text-[8px] font-black uppercase tracking-widest leading-none ${unidadeAtual ? 'text-slate-400' : 'text-rose-400'}`}>Local Atual</span>
-                    <span className={`text-[10px] font-bold uppercase tracking-tighter leading-tight truncate max-w-[150px] ${unidadeAtual ? 'text-slate-700' : 'text-rose-600'}`}>
+                    <span className={`text-[9px] font-black uppercase tracking-widest leading-none ${unidadeAtual ? 'text-slate-400' : 'text-rose-400'}`}>Local Atual</span>
+                    <span className={`text-[11px] font-bold uppercase tracking-tighter leading-tight truncate max-w-[150px] ${unidadeAtual ? 'text-slate-700' : 'text-rose-600'}`}>
                         {unidadeAtual || 'SELECIONE O LOCAL'}
                     </span>
                 </div>
@@ -35,7 +35,7 @@ export const UnitSelector = () => {
             {isOpen && (
                 <div className="absolute top-full right-0 sm:left-0 mt-2 w-56 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 p-1.5 z-[999]">
                     <div className="p-2 border-b border-slate-100/50 mb-1">
-                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Selecione a Unidade</span>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Selecione a Unidade</span>
                     </div>
                     <div className="max-h-60 overflow-y-auto custom-scrollbar">
                         {unidades.map(u => (
@@ -45,7 +45,7 @@ export const UnitSelector = () => {
                                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all duration-300 ${unidadeAtual === u ? 'bg-white/80 text-blue-600 font-bold shadow-sm border border-white/50' : 'text-slate-500 hover:bg-white/60 hover:text-blue-600'}`}
                             >
                                 <Building2 size={14} className={unidadeAtual === u ? 'text-blue-600' : 'text-slate-400'} />
-                                <span className="text-[9px] font-bold uppercase tracking-tighter truncate">{u}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-tighter truncate">{u}</span>
                             </button>
                         ))}
                     </div>

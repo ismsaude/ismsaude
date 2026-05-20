@@ -105,7 +105,7 @@ export const QueueSelectionModal = ({ isOpen, onClose, slotInfo, onSelectSurgery
                         {canBlockAgenda && (
                             <button 
                                 onClick={() => setIsBlocking(!isBlocking)} 
-                                className={`px-4 py-2 text-[10px] font-black uppercase rounded-lg transition-all shadow-sm flex items-center gap-2 border ${isBlocking ? 'bg-rose-500 text-white border-rose-600' : 'bg-white text-rose-500 border-rose-100 hover:bg-rose-50'}`}
+                                className={`px-4 py-2 text-[11px] font-black uppercase rounded-lg transition-all shadow-sm flex items-center gap-2 border ${isBlocking ? 'bg-rose-500 text-white border-rose-600' : 'bg-white text-rose-500 border-rose-100 hover:bg-rose-50'}`}
                             >
                                 {isBlocking ? 'Cancelar Bloqueio' : 'Bloquear Horário'}
                             </button>
@@ -120,7 +120,7 @@ export const QueueSelectionModal = ({ isOpen, onClose, slotInfo, onSelectSurgery
                 {isBlocking && (
                     <div className="p-4 border-b border-rose-100 bg-rose-50/50 flex flex-col md:flex-row items-end animate-in collapse-in gap-3">
                         <div className="flex-1 w-full space-y-1">
-                            <label className="text-[10px] font-black text-rose-700 uppercase tracking-widest block">Motivo do Bloqueio</label>
+                            <label className="text-[11px] font-black text-rose-700 uppercase tracking-widest block">Motivo do Bloqueio</label>
                             <input 
                                 type="text"
                                 value={blockReason}
@@ -130,7 +130,7 @@ export const QueueSelectionModal = ({ isOpen, onClose, slotInfo, onSelectSurgery
                             />
                         </div>
                         <div className="w-full md:w-32 space-y-1">
-                            <label className="text-[10px] font-black text-rose-700 uppercase tracking-widest block">Hora Final</label>
+                            <label className="text-[11px] font-black text-rose-700 uppercase tracking-widest block">Hora Final</label>
                             <input 
                                 type="time"
                                 value={blockEnd}
@@ -148,7 +148,7 @@ export const QueueSelectionModal = ({ isOpen, onClose, slotInfo, onSelectSurgery
                                     if (duration <= 0) duration = 60; // fallback se for negativo/inválido
                                     onSelectSurgery({ isBlock: true, reason: blockReason, duration });
                                 }}
-                                className="w-full md:w-auto h-10 px-6 bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] uppercase rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="w-full md:w-auto h-10 px-6 bg-rose-600 hover:bg-rose-700 text-white font-black text-[11px] uppercase rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 Confirmar Bloqueio
                             </button>
@@ -179,7 +179,7 @@ export const QueueSelectionModal = ({ isOpen, onClose, slotInfo, onSelectSurgery
                     <select
                         value={filterCirurgiao}
                         onChange={(e) => setFilterCirurgiao(e.target.value)}
-                        className="w-[35%] lg:w-1/3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 px-3 uppercase"
+                        className="w-[35%] lg:w-1/3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 px-3 uppercase"
                     >
                         <option value="">Todos os Cirurgiões</option>
                         {uniqueCirurgioes.map(c => (
@@ -210,22 +210,22 @@ export const QueueSelectionModal = ({ isOpen, onClose, slotInfo, onSelectSurgery
                                         <span className="text-xs font-black text-slate-800 uppercase group-hover:text-blue-700 transition-colors">
                                             {surgery.nomePaciente || surgery.paciente || 'NOME NÃO INFORMADO'}
                                         </span>
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase mt-0.5">
+                                        <span className="text-[11px] font-bold text-slate-500 uppercase mt-0.5">
                                             {surgery.procedimento || 'PROCEDIMENTO NÃO INFORMADO'}
                                         </span>
                                         <div className="flex items-center gap-3 mt-2 flex-wrap">
-                                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-black uppercase">
+                                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-black uppercase">
                                                 Dr. {(surgery.cirurgiao || '').split(' ').slice(0, 2).join(' ')}
                                             </span>
-                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${surgery.prioridade === 'Urgência' || surgery.prioridade === 'Emergência' ? 'bg-rose-100 text-rose-700' : 'bg-blue-50 text-blue-600'}`}>
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${surgery.prioridade === 'Urgência' || surgery.prioridade === 'Emergência' ? 'bg-rose-100 text-rose-700' : 'bg-blue-50 text-blue-600'}`}>
                                                 {surgery.prioridade || 'ELETIVA'}
                                             </span>
                                             {(surgery.telefone1 || surgery.telefone) && (
-                                                <span className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                                                <span className="flex items-center gap-1 text-[11px] font-bold text-slate-500">
                                                     <Phone size={10} /> {surgery.telefone1 || surgery.telefone}
                                                 </span>
                                             )}
-                                            <span className="flex items-center gap-1 text-[10px] font-bold text-blue-500">
+                                            <span className="flex items-center gap-1 text-[11px] font-bold text-blue-500">
                                                 <Calendar size={10} /> Atend: {surgery.dataAtendimento ? surgery.dataAtendimento.split('-').reverse().join('/') : 'N/I'}
                                             </span>
                                         </div>
@@ -233,7 +233,7 @@ export const QueueSelectionModal = ({ isOpen, onClose, slotInfo, onSelectSurgery
                                     <div className="shrink-0">
                                         <button 
                                             onClick={() => onSelectSurgery(surgery)}
-                                            className="h-8 px-4 bg-blue-50 text-blue-600 font-bold text-[10px] uppercase rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
+                                            className="h-8 px-4 bg-blue-50 text-blue-600 font-bold text-[11px] uppercase rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
                                         >
                                             SELECIONAR
                                         </button>

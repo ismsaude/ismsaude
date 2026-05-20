@@ -124,7 +124,7 @@ const Pacientes = () => {
     };
 
     const inputStyle = "w-full h-9 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-800 placeholder:text-slate-400";
-    const labelStyle = "text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-wider";
+    const labelStyle = "text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-wider";
 
     return (
         <div className="px-4 lg:px-4 pr-4 py-4 sm:px-4 font-sans animate-in fade-in duration-700 text-slate-900 w-full min-h-full bg-slate-50/20 print:hidden">
@@ -163,7 +163,7 @@ const Pacientes = () => {
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-white/40">
-                                <tr className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                <tr className="text-left text-[11px] font-black text-slate-500 uppercase tracking-widest">
                                     <th className="py-1.5 px-3">Paciente</th>
                                     <th className="py-1.5 px-3">Documentos</th>
                                     <th className="py-1.5 px-3">Nascimento</th>
@@ -187,18 +187,18 @@ const Pacientes = () => {
                                         >
                                             <td className="px-3 py-1.5">
                                                 <div className="font-bold text-slate-800 text-xs uppercase">{paciente.nome}</div>
-                                                <div className="text-[9px] font-semibold text-slate-400 uppercase mt-0.5">{paciente.sexo || 'N/I'}</div>
+                                                <div className="text-[10px] font-semibold text-slate-400 uppercase mt-0.5">{paciente.sexo || 'N/I'}</div>
                                             </td>
                                             <td className="px-3 py-1.5">
-                                                <div className="text-[10px] font-bold text-slate-600">CPF: {paciente.cpf || '---'}</div>
-                                                <div className="text-[9px] font-semibold text-slate-400">CNS: {paciente.cns || '---'}</div>
+                                                <div className="text-[11px] font-bold text-slate-600">CPF: {paciente.cpf || '---'}</div>
+                                                <div className="text-[10px] font-semibold text-slate-400">CNS: {paciente.cns || '---'}</div>
                                             </td>
                                             <td className="px-3 py-1.5 text-xs font-bold text-slate-600">
                                                 {paciente.dataNascimento ? paciente.dataNascimento.split('-').reverse().join('/') : '---'}
                                             </td>
                                             <td className="px-3 py-1.5">
-                                                <div className="text-[10px] font-bold text-slate-600 flex items-center gap-1"><Phone size={12} className="text-emerald-500" /> {paciente.telefone || '---'}</div>
-                                                <div className="text-[9px] font-semibold text-slate-400 truncate max-w-[150px] mt-0.5"><MapPin size={10} className="inline mr-1" />{paciente.municipio}-{paciente.uf}</div>
+                                                <div className="text-[11px] font-bold text-slate-600 flex items-center gap-1"><Phone size={12} className="text-emerald-500" /> {paciente.telefone || '---'}</div>
+                                                <div className="text-[10px] font-semibold text-slate-400 truncate max-w-[150px] mt-0.5"><MapPin size={10} className="inline mr-1" />{paciente.municipio}-{paciente.uf}</div>
                                             </td>
                                             <td className="px-3 py-1.5 text-center">
                                                 <div className="flex justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">

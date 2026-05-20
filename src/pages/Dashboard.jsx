@@ -582,28 +582,28 @@ const Dashboard = () => {
                 <div className="flex flex-wrap items-center gap-3 bg-white/60 backdrop-blur-lg border border-white/50 shadow-sm p-2 rounded-xl filters-section">
                     
                     <div className="flex bg-white/40 backdrop-blur-md p-1 rounded-lg border border-white/50 shadow-sm">
-                        <button onClick={() => setPreset('todos')} className={`px-3 py-1.5 text-[11px] uppercase tracking-wide transition-all ${activeFilter === 'todos' ? 'bg-blue-600 text-white font-bold shadow-md rounded-md' : 'bg-transparent text-slate-800 hover:bg-white/60 rounded-md font-bold'}`}>Todos</button>
-                        <button onClick={() => setPreset('anterior')} className={`px-3 py-1.5 text-[11px] uppercase tracking-wide transition-all ${activeFilter === 'anterior' ? 'bg-blue-600 text-white font-bold shadow-md rounded-md' : 'bg-transparent text-slate-800 hover:bg-white/60 rounded-md font-bold'}`}>Mês Ant.</button>
-                        <button onClick={() => setPreset('atual')} className={`px-3 py-1.5 text-[11px] uppercase tracking-wide transition-all ${activeFilter === 'atual' ? 'bg-blue-600 text-white font-bold shadow-md rounded-md' : 'bg-transparent text-slate-800 hover:bg-white/60 rounded-md font-bold'}`}>Mês Atual</button>
+                        <button onClick={() => setPreset('todos')} className={`px-3 py-1.5 text-xs uppercase tracking-wide transition-all ${activeFilter === 'todos' ? 'bg-blue-600 text-white font-bold shadow-md rounded-md' : 'bg-transparent text-slate-800 hover:bg-white/60 rounded-md font-bold'}`}>Todos</button>
+                        <button onClick={() => setPreset('anterior')} className={`px-3 py-1.5 text-xs uppercase tracking-wide transition-all ${activeFilter === 'anterior' ? 'bg-blue-600 text-white font-bold shadow-md rounded-md' : 'bg-transparent text-slate-800 hover:bg-white/60 rounded-md font-bold'}`}>Mês Ant.</button>
+                        <button onClick={() => setPreset('atual')} className={`px-3 py-1.5 text-xs uppercase tracking-wide transition-all ${activeFilter === 'atual' ? 'bg-blue-600 text-white font-bold shadow-md rounded-md' : 'bg-transparent text-slate-800 hover:bg-white/60 rounded-md font-bold'}`}>Mês Atual</button>
                     </div>
 
                     <div className="flex items-center gap-2 px-3 bg-white/70 border border-slate-300 rounded-lg p-2 shadow-sm">
                         <Calendar size={16} className="text-slate-600" />
                         <input type="date" value={dateRange.start} onChange={(e) => { setDateRange({ ...dateRange, start: e.target.value }); setActiveFilter('manual'); }} className="bg-transparent text-xs font-extrabold text-slate-800 outline-none hover:text-blue-700 cursor-pointer uppercase w-28" />
-                        <span className="text-slate-500 font-extrabold text-[11px] uppercase">até</span>
+                        <span className="text-slate-500 font-extrabold text-xs uppercase">até</span>
                         <input type="date" value={dateRange.end} onChange={(e) => { setDateRange({ ...dateRange, end: e.target.value }); setActiveFilter('manual'); }} className="bg-transparent text-xs font-extrabold text-slate-800 outline-none hover:text-blue-700 cursor-pointer uppercase w-28" />
                     </div>
                     
                     <div className="h-6 w-px bg-slate-300 mx-1 hidden xl:block"></div>
 
-                    <button onClick={() => setShowAdvancedFilters(!showAdvancedFilters)} className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase flex items-center gap-2 transition-all shadow-sm border ${showAdvancedFilters ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-50'}`}>
+                    <button onClick={() => setShowAdvancedFilters(!showAdvancedFilters)} className={`px-4 py-2 rounded-lg text-xs font-black uppercase flex items-center gap-2 transition-all shadow-sm border ${showAdvancedFilters ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-50'}`}>
                         <Filter size={16} /> Filtros {Object.values(advancedFilters).some(v => v === true || v === 'Todas' || (typeof v === 'string' && v.length > 0)) && !showAdvancedFilters && <span className="w-2 h-2 rounded-full bg-rose-500"></span>}
                     </button>
                     
-                    <button onClick={resetFilters} className="px-3 py-2 rounded-lg text-[11px] font-black uppercase flex items-center gap-1.5 text-slate-600 hover:text-rose-600 transition-all border border-transparent hover:border-rose-200 hover:bg-rose-50" title="Limpar Tudo"><RotateCcw size={16} /> Limpar</button>
+                    <button onClick={resetFilters} className="px-3 py-2 rounded-lg text-xs font-black uppercase flex items-center gap-1.5 text-slate-600 hover:text-rose-600 transition-all border border-transparent hover:border-rose-200 hover:bg-rose-50" title="Limpar Tudo"><RotateCcw size={16} /> Limpar</button>
                     
                     {hasPermission('Acessar Relatórios') && (
-                        <button onClick={imprimirRelatorio} className="ml-2 bg-slate-900 text-white p-2 px-3 rounded-xl hover:bg-slate-800 transition-colors shadow-md shadow-slate-300 flex items-center gap-1.5 font-bold text-[11px] uppercase" title="Imprimir Relatório"><Printer size={16} /> Imprimir</button>
+                        <button onClick={imprimirRelatorio} className="ml-2 bg-slate-900 text-white p-2 px-3 rounded-xl hover:bg-slate-800 transition-colors shadow-md shadow-slate-300 flex items-center gap-1.5 font-bold text-xs uppercase" title="Imprimir Relatório"><Printer size={16} /> Imprimir</button>
                     )}
                 </div>
             </div>
@@ -618,7 +618,7 @@ const Dashboard = () => {
                             {['opme', 'aihPendente', 'autorizacaoPendente', 'apaPendente'].map((key) => {
                                 let label = key === 'opme' ? 'OPME' : key === 'aihPendente' ? 'AIH Pendente' : key === 'autorizacaoPendente' ? 'Autorização Pend.' : 'APA Pendente';
                                 return (
-                                    <label key={key} className="flex items-center gap-2 text-[11px] font-extrabold uppercase text-slate-700 cursor-pointer select-none hover:text-blue-700">
+                                    <label key={key} className="flex items-center gap-2 text-xs font-extrabold uppercase text-slate-700 cursor-pointer select-none hover:text-blue-700">
                                         <input type="checkbox" className="rounded text-blue-600 w-4 h-4 border-slate-300 shadow-sm" checked={advancedFilters[key]} onChange={(e) => setAdvancedFilters({ ...advancedFilters, [key]: e.target.checked })} /> {label}
                                     </label>
                                 )
@@ -646,13 +646,13 @@ const Dashboard = () => {
                                 <>
                                     <div className="fixed top-16 inset-x-0 bottom-0 z-40" onClick={() => setShowProcList(false)}></div>
                                     <ul className="absolute z-[100] w-[250px] bg-white/95 backdrop-blur-xl border border-slate-200 rounded-lg shadow-xl max-h-64 overflow-y-auto custom-scrollbar mt-1 animate-in fade-in zoom-in-95 duration-200">
-                                        <li className="px-4 py-2 hover:bg-slate-50 text-[10px] font-bold text-slate-500 cursor-pointer border-b border-slate-100" onClick={() => { setAdvancedFilters(prev => ({ ...prev, procedimento: '' })); setProcSearch(''); setShowProcList(false); }}>
+                                        <li className="px-4 py-2 hover:bg-slate-50 text-[11px] font-bold text-slate-500 cursor-pointer border-b border-slate-100" onClick={() => { setAdvancedFilters(prev => ({ ...prev, procedimento: '' })); setProcSearch(''); setShowProcList(false); }}>
                                             <span className="opacity-50">LIMPAR FILTRO / TODOS</span>
                                         </li>
                                         {procedures.filter(p => !procSearch || (p.nome && p.nome.toLowerCase().includes(procSearch.toLowerCase()))).slice(0, 50).map((p, i) => (
                                             <li key={p.id || p.codigo || i} className="px-4 py-2 hover:bg-blue-50 cursor-pointer border-b border-slate-50 last:border-0" onClick={() => { setAdvancedFilters(prev => ({ ...prev, procedimento: p.nome })); setProcSearch(p.nome); setShowProcList(false); }}>
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] font-extrabold text-slate-400">{p.codigo}</span>
+                                                    <span className="text-[11px] font-extrabold text-slate-400">{p.codigo}</span>
                                                     <span className="text-xs font-bold text-slate-800 uppercase leading-tight">{p.nome}</span>
                                                 </div>
                                             </li>
@@ -728,7 +728,7 @@ const Dashboard = () => {
                     <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col justify-center flex-1">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xs uppercase font-extrabold text-slate-800 flex items-center gap-2"><BarChart3 size={16} className="text-blue-600" /> Análise Visual</h3>
-                            <select value={chartDimension} onChange={(e) => setChartDimension(e.target.value)} className="bg-white border border-slate-300 text-[10px] font-extrabold uppercase rounded-lg text-slate-700 p-1.5 w-28 outline-none shadow-sm focus:ring-2 focus:ring-blue-500/50">
+                            <select value={chartDimension} onChange={(e) => setChartDimension(e.target.value)} className="bg-white border border-slate-300 text-[11px] font-extrabold uppercase rounded-lg text-slate-700 p-1.5 w-28 outline-none shadow-sm focus:ring-2 focus:ring-blue-500/50">
                                 <option value="status">Status</option>
                                 <option value="cirurgiao">Cirurgião</option>
                                 <option value="convenio">Convênio</option>
@@ -751,7 +751,7 @@ const Dashboard = () => {
                     <div className="overflow-x-auto flex-1 custom-scrollbar">
                         <table className="w-full text-left border-collapse relative">
                             <thead className="sticky top-0 bg-white/95 backdrop-blur z-20 shadow-sm">
-                                <tr className="border-b-2 border-slate-300 text-[10px] font-extrabold text-slate-800 uppercase tracking-widest">
+                                <tr className="border-b-2 border-slate-300 text-[11px] font-extrabold text-slate-800 uppercase tracking-widest">
                                     <th className="px-4 py-3 text-center">Status</th>
                                     <th className="px-4 py-3">Data</th>
                                     <th className="px-4 py-3">Horário</th>
@@ -762,11 +762,11 @@ const Dashboard = () => {
                                     <th className="px-4 py-3">Especialidade</th>
                                 </tr>
                             </thead>
-                        <tbody className="text-[10px] text-slate-600 divide-y divide-slate-100">
+                        <tbody className="text-[11px] text-slate-600 divide-y divide-slate-100">
                             {filteredData.map((surgery) => (
                                 <tr key={surgery.id} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-4 py-2.5 text-center">
-                                        <span className={`inline-block px-2.5 py-1 rounded-[4px] font-black text-[9px] uppercase tracking-wider border ${String(surgery.status || '').toUpperCase() === 'REALIZADO' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                        <span className={`inline-block px-2.5 py-1 rounded-[4px] font-black text-[10px] uppercase tracking-wider border ${String(surgery.status || '').toUpperCase() === 'REALIZADO' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                                             String(surgery.status || '').toUpperCase() === 'CANCELADO' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                                                 'bg-blue-50 text-blue-700 border-blue-200'
                                             }`}>{surgery.status || 'Agendado'}</span>
@@ -786,7 +786,7 @@ const Dashboard = () => {
                                         </div>
                                     </td>
                                     <td className="px-4 py-2.5 font-bold text-slate-700 truncate max-w-[200px]" title={surgery.procedimento}>{(surgery.procedimento || '-').toUpperCase()}</td>
-                                    <td className="px-4 py-2.5 font-mono font-bold text-slate-600 text-[10px]">{getSigtapCode(surgery.procedimento)}</td>
+                                    <td className="px-4 py-2.5 font-mono font-bold text-slate-600 text-[11px]">{getSigtapCode(surgery.procedimento)}</td>
                                     <td className="px-4 py-2.5 font-bold text-slate-700 truncate max-w-[150px]">{(surgery.cirurgiao || '-').toUpperCase()}</td>
                                     <td className="px-4 py-2.5 font-bold text-slate-700 truncate max-w-[100px]">{(surgery.especialidade || '-').toUpperCase()}</td>
                                 </tr>

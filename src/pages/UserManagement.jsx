@@ -205,7 +205,7 @@ const UnidadesSelection = ({ selected, onChange }) => {
 
     return (
         <div className="mt-4 p-4 border border-white/60 bg-white/30 rounded-xl space-y-3">
-            <h4 className="text-[10px] font-black text-slate-500 uppercase">Acesso de Unidades</h4>
+            <h4 className="text-[11px] font-black text-slate-500 uppercase">Acesso de Unidades</h4>
             <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={isAll} onChange={e => handleToggleAll(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500"/>
                 <span className="text-xs font-bold text-slate-800">Acesso Total (Ver todas as unidades)</span>
@@ -302,7 +302,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nome Completo</label>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome Completo</label>
                         <input
                             value={formData.name}
                             onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -311,7 +311,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Email Corporativo</label>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email Corporativo</label>
                         <input
                             value={formData.email}
                             onChange={e => setFormData({ ...formData, email: e.target.value })}
@@ -320,7 +320,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Senha Provisória</label>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Senha Provisória</label>
                         <div className="flex gap-2">
                             <input
                                 value={formData.password}
@@ -333,7 +333,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                         </div>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Perfil de Acesso</label>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Perfil de Acesso</label>
                         <select
                             value={formData.role}
                             onChange={e => setFormData({ ...formData, role: e.target.value })}
@@ -343,7 +343,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Gênero</label>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Gênero</label>
                         <select
                             value={formData.sexo}
                             onChange={e => setFormData({ ...formData, sexo: e.target.value })}
@@ -359,7 +359,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                         <div className="space-y-4">
                             <div className="flex gap-4">
                                 <div className="flex-1">
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">CRM *</label>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">CRM *</label>
                                     <input
                                         value={formData.crm}
                                         onChange={e => setFormData({ ...formData, crm: e.target.value })}
@@ -368,7 +368,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                                     />
                                 </div>
                                 <div className="flex-1">
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">RQE (Opcional)</label>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">RQE (Opcional)</label>
                                     <input
                                         value={formData.rqe}
                                         onChange={e => setFormData({ ...formData, rqe: e.target.value })}
@@ -378,7 +378,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                                 </div>
                             </div>
                             <div className="mt-4">
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">CPF *</label>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">CPF *</label>
                                 <input
                                     value={formData.cpf}
                                     onChange={e => setFormData({ ...formData, cpf: maskCPF(e.target.value) })}
@@ -482,7 +482,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                 <div className="space-y-4">
                     {/* Name Input */}
                     <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wide mb-2">
+                        <label className="block text-[11px] font-black text-slate-400 uppercase tracking-wide mb-2">
                             Nome
                         </label>
                         <input
@@ -496,7 +496,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
 
                     {/* Role Dropdown */}
                     <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wide mb-2">
+                        <label className="block text-[11px] font-black text-slate-400 uppercase tracking-wide mb-2">
                             Perfil de Acesso
                         </label>
                         <select
@@ -512,7 +512,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
 
                     {/* Sexo Dropdown */}
                     <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wide mb-2">
+                        <label className="block text-[11px] font-black text-slate-400 uppercase tracking-wide mb-2">
                             Gênero
                         </label>
                         <select
@@ -530,7 +530,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                         <div className="space-y-4">
                             <div className="flex gap-4">
                                 <div className="flex-1">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wide mb-2">CRM *</label>
+                                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-wide mb-2">CRM *</label>
                                     <input
                                         type="text"
                                         value={formData.crm}
@@ -540,7 +540,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                                     />
                                 </div>
                                 <div className="flex-1">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wide mb-2">RQE (Opcional)</label>
+                                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-wide mb-2">RQE (Opcional)</label>
                                     <input
                                         type="text"
                                         value={formData.rqe}
@@ -551,7 +551,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                                 </div>
                             </div>
                             <div className="mt-4">
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wide mb-2">CPF *</label>
+                                <label className="block text-[11px] font-black text-slate-400 uppercase tracking-wide mb-2">CPF *</label>
                                 <input
                                     value={formData.cpf}
                                     onChange={e => setFormData({ ...formData, cpf: maskCPF(e.target.value) })}
@@ -567,7 +567,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
 
                     {/* Status Toggle */}
                     <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wide mb-2">
+                        <label className="block text-[11px] font-black text-slate-400 uppercase tracking-wide mb-2">
                             Status
                         </label>
                         <div className="flex gap-2">
@@ -630,6 +630,7 @@ const UserManagement = ({ isEmbedded = false }) => {
     const [editingUser, setEditingUser] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+    const [activeFilter, setActiveFilter] = useState('todos'); // 'todos', 'medicos', 'administrativo'
     const { currentUser } = useAuth();
 
     const loadUsers = async () => {
@@ -674,32 +675,66 @@ const UserManagement = ({ isEmbedded = false }) => {
             'Administrador': 'bg-blue-50 text-blue-600 border-blue-100',
             'Operador': 'bg-blue-50 text-blue-600 border-blue-100',
             'Visualizador': 'bg-slate-50 text-slate-600 border-slate-100',
-            'Médico': 'bg-emerald-50 text-emerald-600 border-emerald-100'
+            'Médico': 'bg-emerald-50 text-emerald-600 border-emerald-100',
+            'Médico Autorizador': 'bg-emerald-50 text-emerald-600 border-emerald-100'
         };
         return colors[role] || colors['Visualizador'];
     };
 
+    const medicosRoles = ['Médico', 'Médico Autorizador'];
+    
+    const filteredUsers = users.filter(user => {
+        if (activeFilter === 'todos') return true;
+        if (activeFilter === 'medicos') return medicosRoles.includes(user.role);
+        if (activeFilter === 'administrativo') return !medicosRoles.includes(user.role);
+        return true;
+    });
+
     const content = (
         <div className="flex flex-col h-full bg-white/60 backdrop-blur-lg rounded-lg border border-white/50 shadow-sm overflow-hidden animate-in fade-in duration-500">
             {/* Header Actions */}
-            <div className="p-4 border-b border-white/60 flex flex-col md:flex-row justify-between items-center gap-4 bg-white/40 backdrop-blur-md">
-                <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-black text-slate-700 uppercase tracking-wide">
-                        Todos os Usuários <span className="text-slate-400 font-medium ml-1">({users.length})</span>
-                    </h3>
+            <div className="p-4 md:p-6 border-b border-white/60 flex flex-col gap-5 bg-white/40 backdrop-blur-md">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-black text-slate-800 uppercase tracking-tighter">
+                            Gestão de Acessos
+                        </h3>
+                    </div>
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                        <button
+                            onClick={() => setShowPermissionsModal(true)}
+                            className="flex-1 md:flex-none px-4 py-2 border border-white/60 bg-white/50 text-slate-600 rounded-lg text-xs font-bold uppercase hover:bg-white/80 hover:border-purple-300 hover:text-purple-600 transition-all flex items-center justify-center gap-2 backdrop-blur-md shadow-sm"
+                        >
+                            <Shield size={14} /> Permissões
+                        </button>
+                        <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="flex-1 md:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-black uppercase hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+                        >
+                            <UserPlus size={14} strokeWidth={3} /> Novo Usuário
+                        </button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2 w-full md:w-auto">
-                    <button
-                        onClick={() => setShowPermissionsModal(true)}
-                        className="flex-1 md:flex-none px-4 py-2 border border-white/60 bg-white/50 text-slate-600 rounded-lg text-xs font-bold uppercase hover:bg-white/80 hover:border-purple-300 hover:text-purple-600 transition-all flex items-center justify-center gap-2 backdrop-blur-md"
+
+                {/* TABS PREMIUM */}
+                <div className="flex gap-2 bg-slate-100/50 p-1.5 rounded-xl border border-white/60 self-start">
+                    <button 
+                        onClick={() => setActiveFilter('todos')} 
+                        className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === 'todos' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                        <Shield size={14} /> Permissões
+                        Todos <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'todos' ? 'bg-slate-100 text-slate-500' : 'bg-slate-200/50'}`}>{users.length}</span>
                     </button>
-                    <button
-                        onClick={() => setShowCreateModal(true)}
-                        className="flex-1 md:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase hover:bg-blue-700 shadow-sm shadow-blue-200 transition-all flex items-center justify-center gap-2"
+                    <button 
+                        onClick={() => setActiveFilter('medicos')} 
+                        className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === 'medicos' ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                        <UserPlus size={14} /> Novo Usuário
+                        Corpo Clínico <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'medicos' ? 'bg-white/20 text-white' : 'bg-slate-200/50'}`}>{users.filter(u => medicosRoles.includes(u.role)).length}</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveFilter('administrativo')} 
+                        className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === 'administrativo' ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        Administrativo <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'administrativo' ? 'bg-white/20 text-white' : 'bg-slate-200/50'}`}>{users.filter(u => !medicosRoles.includes(u.role)).length}</span>
                     </button>
                 </div>
             </div>
@@ -709,15 +744,15 @@ const UserManagement = ({ isEmbedded = false }) => {
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-white/40 backdrop-blur-md sticky top-0 z-10 shadow-sm border-b border-white/50">
                         <tr>
-                            <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Nome</th>
-                            <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Email</th>
-                            <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Perfil</th>
-                            <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Status</th>
-                            <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-center">Ações</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Nome</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Email</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Perfil</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Status</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/50">
-                        {users.map((user) => {
+                        {filteredUsers.map((user) => {
                             const isDeveloper = user.role === 'Desenvolvedor';
                             // Blindagem: Apenas o PRÓPRIO desenvolvedor pode editar sua conta
                             const isProtectedRole = isDeveloper && currentUser?.id !== user.id;
@@ -725,18 +760,18 @@ const UserManagement = ({ isEmbedded = false }) => {
                             return (
                                 <tr key={user.id} className="hover:bg-white/40 transition-colors group">
                                     <td className="px-4 py-2.5">
-                                        <div className="text-xs font-bold text-slate-700 uppercase">{user.name || '---'}</div>
+                                        <div className="text-sm font-bold text-slate-700 uppercase">{user.name || '---'}</div>
                                     </td>
                                     <td className="px-4 py-2.5">
-                                        <div className="text-xs font-medium text-slate-500">{user.email}</div>
+                                        <div className="text-sm font-medium text-slate-500">{user.email}</div>
                                     </td>
                                     <td className="px-4 py-2.5">
-                                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${getRoleBadgeColor(user.role)}`}>
+                                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase border ${getRoleBadgeColor(user.role)}`}>
                                             {user.role}
                                         </span>
                                     </td>
                                     <td className="px-4 py-2.5">
-                                        <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase ${user.status === 'Ativo' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                        <span className={`flex items-center gap-1.5 text-xs font-bold uppercase ${user.status === 'Ativo' ? 'text-emerald-600' : 'text-slate-400'}`}>
                                             <div className={`w-1.5 h-1.5 rounded-full ${user.status === 'Ativo' ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
                                             {user.status || 'Inativo'}
                                         </span>
@@ -775,10 +810,10 @@ const UserManagement = ({ isEmbedded = false }) => {
                                 </tr>
                             );
                         })}
-                        {users.length === 0 && (
+                        {filteredUsers.length === 0 && (
                             <tr>
-                                <td colSpan="5" className="py-12 text-center text-slate-400 text-xs italic">
-                                    Nenhum usuário encontrado.
+                                <td colSpan="5" className="py-12 text-center text-slate-400 text-[11px] uppercase font-bold tracking-widest">
+                                    Nenhum usuário encontrado nesta aba.
                                 </td>
                             </tr>
                         )}
@@ -789,7 +824,7 @@ const UserManagement = ({ isEmbedded = false }) => {
             {/* Footer Compacto com Legenda */}
             <div className="border-t border-white/60 bg-white/40 backdrop-blur-md p-2 flex gap-3 overflow-x-auto">
                 {ROLES.filter(r => r !== 'Desenvolvedor' || currentUser?.role === 'Desenvolvedor').map(role => (
-                    <span key={role} className="flex items-center gap-1 text-[9px] font-bold text-slate-400 uppercase whitespace-nowrap">
+                    <span key={role} className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">
                         <div className={`w-1.5 h-1.5 rounded-full ${getRoleBadgeColor(role).split(' ')[0].replace('bg-', 'bg-').replace('-50', '-400')}`}></div>
                         {role}
                     </span>

@@ -135,7 +135,7 @@ export default function Recepcao() {
                         <div className="p-2 bg-blue-100 text-blue-600 rounded-xl"><UserPlus size={22} /></div>
                         <div>
                             <h1 className="text-lg font-black text-slate-800 uppercase tracking-tighter">Recepção & Triagem</h1>
-                            <div className="flex items-center gap-2 text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">
+                            <div className="flex items-center gap-2 text-[11px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">
                                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                 {unidadeAtual}
                             </div>
@@ -165,19 +165,19 @@ export default function Recepcao() {
                                     <div className="flex justify-between items-start mb-3">
                                         <div>
                                             <div className="text-xs font-black text-slate-800 uppercase tracking-tight">{pac.nomePaciente}</div>
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Idade: {pac.idadeInfo || '--'}</div>
+                                            <div className="text-[11px] font-bold text-slate-400 uppercase mt-0.5">Idade: {pac.idadeInfo || '--'}</div>
                                         </div>
-                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md border ${manchesterColors[pac.classificacaoRisco || 'Não Classificado']}`}>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md border ${manchesterColors[pac.classificacaoRisco || 'Não Classificado']}`}>
                                             {pac.classificacaoRisco || 'Aguardando Triagem'}
                                         </span>
                                     </div>
 
                                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-50">
-                                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase">
                                             <Clock size={12} />
                                             {pac.dataChegada ? new Date(pac.dataChegada).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                                         </div>
-                                        <div className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-300 px-2 py-1 rounded-md">
+                                        <div className="text-[11px] font-black uppercase tracking-widest text-blue-600 bg-blue-300 px-2 py-1 rounded-md">
                                             {pac.status}
                                         </div>
                                     </div>
@@ -219,7 +219,7 @@ export default function Recepcao() {
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block">Encaminhar para *</label>
+                                    <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">Encaminhar para *</label>
                                     <select required value={formTriagem.medico_destino} onChange={e => setFormTriagem({...formTriagem, medico_destino: e.target.value})} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500/30">
                                         <option value="">Selecione o Consultório...</option>
                                         <option value="DR. CARLOS">Consultório 1 - DR. CARLOS</option>
@@ -229,30 +229,30 @@ export default function Recepcao() {
 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block">PA (mmHg)</label>
+                                        <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">PA (mmHg)</label>
                                         <input type="text" value={formTriagem.pa} onChange={e => setFormTriagem({...formTriagem, pa: e.target.value})} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 120x80" />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block">FC (bpm)</label>
+                                        <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">FC (bpm)</label>
                                         <input type="text" value={formTriagem.fc} onChange={e => setFormTriagem({...formTriagem, fc: e.target.value})} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 85" />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block">Temp (ºC)</label>
+                                        <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">Temp (ºC)</label>
                                         <input type="text" value={formTriagem.tax} onChange={e => setFormTriagem({...formTriagem, tax: e.target.value})} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 37.5" />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block">SpO2 (%)</label>
+                                        <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">SpO2 (%)</label>
                                         <input type="text" value={formTriagem.spo2} onChange={e => setFormTriagem({...formTriagem, spo2: e.target.value})} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 98" />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block">Queixa Principal / Breve Histórico</label>
+                                    <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">Queixa Principal / Breve Histórico</label>
                                     <textarea value={formTriagem.queixa} onChange={e => setFormTriagem({...formTriagem, queixa: e.target.value})} required className="w-full h-20 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500/30 resize-none" placeholder="Relato do paciente..."></textarea>
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-2 block">Classificação de Risco (Manchester)</label>
+                                    <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-2 block">Classificação de Risco (Manchester)</label>
                                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                                         {[
                                             { cor: 'Emergência', bg: 'bg-red-500', text: 'text-white' },
@@ -261,7 +261,7 @@ export default function Recepcao() {
                                             { cor: 'Pouco Urgente', bg: 'bg-green-500', text: 'text-white' },
                                             { cor: 'Não Urgente', bg: 'bg-blue-500', text: 'text-white' }
                                         ].map(btn => (
-                                            <button type="button" key={btn.cor} onClick={() => setFormTriagem({...formTriagem, classificacao: btn.cor})} className={`h-12 rounded-xl text-[10px] font-black uppercase transition-all border-2 ${formTriagem.classificacao === btn.cor ? `border-slate-800 scale-105 shadow-lg ${btn.bg} ${btn.text}` : `border-transparent opacity-60 hover:opacity-100 ${btn.bg} ${btn.text}`}`}>
+                                            <button type="button" key={btn.cor} onClick={() => setFormTriagem({...formTriagem, classificacao: btn.cor})} className={`h-12 rounded-xl text-[11px] font-black uppercase transition-all border-2 ${formTriagem.classificacao === btn.cor ? `border-slate-800 scale-105 shadow-lg ${btn.bg} ${btn.text}` : `border-transparent opacity-60 hover:opacity-100 ${btn.bg} ${btn.text}`}`}>
                                                 {btn.cor}
                                             </button>
                                         ))}

@@ -527,7 +527,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
     };
 
     const inputStyle = "w-full h-8 px-2 py-1 bg-white/50 border border-white/60 rounded-lg text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100";
-    const labelStyle = "text-[9px] font-black text-slate-600 uppercase ml-1 mb-0.5 block";
+    const labelStyle = "text-[10px] font-black text-slate-600 uppercase ml-1 mb-0.5 block";
     const sectionStyle = "bg-white/60 backdrop-blur-lg p-3.5 rounded-xl shadow-sm border border-white/50";
 
     return (
@@ -546,7 +546,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                             <h3 className="font-bold text-lg text-slate-900 uppercase tracking-tight">
                                 {surgery.id ? 'Edição de Prontuário' : 'INSERIR NA FILA'}
                             </h3>
-                            <p className="text-[10px] text-slate-600 font-semibold uppercase mt-0.5">Base unificada</p>
+                            <p className="text-[11px] text-slate-600 font-semibold uppercase mt-0.5">Base unificada</p>
                         </div>
                         <button onClick={onClose} className="p-2 hover:bg-rose-50 rounded-lg text-slate-600 hover:text-rose-600"><X size={20} /></button>
                     </div>
@@ -568,12 +568,12 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                             {filteredPacientes.length > 0 ? filteredPacientes.map(p => (
                                                 <div key={p.id} onClick={() => handleSelectPaciente(p)} className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors">
                                                     <div className="text-xs font-bold uppercase text-slate-800">{p.nome}</div>
-                                                    <div className="text-[10px] font-semibold text-slate-500 uppercase mt-0.5">CPF: {p.cpf || '---'}</div>
+                                                    <div className="text-[11px] font-semibold text-slate-500 uppercase mt-0.5">CPF: {p.cpf || '---'}</div>
                                                 </div>
                                             )) : (
                                                 <div className="p-3 bg-slate-50 flex flex-col items-center text-center gap-2 border-t border-slate-100">
-                                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Nenhum paciente encontrado.</span>
-                                                    <button type="button" onClick={() => { setShowModalNovoPaciente(true); setShowPacientes(false); }} className="text-[10px] font-black text-blue-600 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg uppercase transition-colors flex items-center gap-1">
+                                                    <span className="text-[11px] font-bold text-slate-500 uppercase">Nenhum paciente encontrado.</span>
+                                                    <button type="button" onClick={() => { setShowModalNovoPaciente(true); setShowPacientes(false); }} className="text-[11px] font-black text-blue-600 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg uppercase transition-colors flex items-center gap-1">
                                                         <Plus size={12} /> Deseja adicionar um novo cadastro?
                                                     </button>
                                                 </div>
@@ -603,7 +603,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
 
                         {/* 2. PROCEDIMENTO (SIGTAP) */}
                         <div className={`${sectionStyle} relative z-[60]`}>
-                            <h3 className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-3 flex items-center gap-3"><Stethoscope size={16} /> Procedimento</h3>
+                            <h3 className="text-xs font-black text-emerald-600 uppercase tracking-[0.2em] mb-3 flex items-center gap-3"><Stethoscope size={16} /> Procedimento</h3>
                             <div className={`grid grid-cols-1 md:grid-cols-12 gap-3 ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
                                 <div className="md:col-span-8 relative">
                                     <label className={labelStyle}>Descrição da Cirurgia (SIGTAP) <span className="text-red-500 ml-1">*</span></label>
@@ -625,14 +625,14 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                         {/* 3. ADMINISTRATIVO SUS */}
                         <div className={`${sectionStyle} relative z-[40]`}>
                             <div className="flex flex-wrap items-center justify-between mb-3 gap-3">
-                                <h3 className="text-[11px] font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-3">
+                                <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-3">
                                     <ShieldCheck size={16} /> Controle Administrativo
                                 </h3>
                                 <button
                                     type="button"
                                     onClick={handleManualSync}
                                     disabled={isSyncing || isLocked}
-                                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100 hover:border-blue-200 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all shadow-sm disabled:opacity-50"
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100 hover:border-blue-200 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-sm disabled:opacity-50"
                                     title="Vasculhar sistema por AIHs e APAs deste paciente"
                                 >
                                     <RefreshCw size={12} className={isSyncing ? "animate-spin" : ""} />
@@ -648,7 +648,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                             </div>
                             <div className={`grid grid-cols-2 md:grid-cols-4 gap-2 ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
                                 {['aih', 'autorizada', 'apa', 'opme'].map(field => (
-                                    <button key={field} type="button" disabled={disableInputs} onClick={podeEditar ? () => setFormData({ ...formData, [field]: !formData[field] }) : undefined} className={`py-2 px-3 rounded-xl border flex items-center justify-between transition-all ${formData[field] ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-400'} ${!podeEditar ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-blue-300'}`}><span className="text-[10px] font-bold uppercase">{field.toUpperCase()}</span><CheckCircle2 size={14} className={formData[field] ? 'opacity-100' : 'opacity-30'} /></button>
+                                    <button key={field} type="button" disabled={disableInputs} onClick={podeEditar ? () => setFormData({ ...formData, [field]: !formData[field] }) : undefined} className={`py-2 px-3 rounded-xl border flex items-center justify-between transition-all ${formData[field] ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-400'} ${!podeEditar ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-blue-300'}`}><span className="text-[11px] font-bold uppercase">{field.toUpperCase()}</span><CheckCircle2 size={14} className={formData[field] ? 'opacity-100' : 'opacity-30'} /></button>
                                 ))}
                             </div>
                         </div>
@@ -656,7 +656,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                         {/* 4. STATUS E DOCUMENTOS (ATUALIZADO) */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className={`${sectionStyle} flex flex-col justify-between ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
-                                <h3 className="text-[11px] font-black text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-2"><Activity size={16} /> Status e Notas</h3>
+                                <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-2"><Activity size={16} /> Status e Notas</h3>
                                 <div className="space-y-6">
                                     <div>
                                         <div className="flex justify-between items-center mb-1">
@@ -670,7 +670,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                         
                                         {formData.status?.toUpperCase() === 'SUSPENSA' && (
                                             <div className="mt-4 p-4 bg-rose-50 border border-rose-200 rounded-xl animate-in fade-in slide-in-from-top-2">
-                                                <label className="text-[10px] font-black text-rose-700 uppercase tracking-widest mb-2 block">Motivo da Suspensão <span className="text-red-500">*</span></label>
+                                                <label className="text-[11px] font-black text-rose-700 uppercase tracking-widest mb-2 block">Motivo da Suspensão <span className="text-red-500">*</span></label>
                                                 <select 
                                                     value={formData.motivo_suspensao_id || ''} 
                                                     onChange={(e) => setFormData({...formData, motivo_suspensao_id: e.target.value})}
@@ -694,7 +694,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                             <span className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
                                                 📝 Observações e Evolução
                                             </span>
-                                            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{isObsOpen ? 'Ocultar ▲' : 'Expandir ▼'}</span>
+                                            <span className="text-slate-400 text-[11px] font-bold uppercase tracking-widest">{isObsOpen ? 'Ocultar ▲' : 'Expandir ▼'}</span>
                                         </div>
                                         
                                         {isObsOpen && (
@@ -724,7 +724,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                                             setNovaObs('');
                                                         }}
                                                         disabled={!novaObs.trim() || disableInputs}
-                                                        className="self-end h-8 px-4 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors shadow-sm"
+                                                        className="self-end h-8 px-4 bg-slate-800 text-white text-[11px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors shadow-sm"
                                                     >
                                                         Adicionar à Ficha
                                                     </button>
@@ -736,7 +736,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                             </div>
 
                             <div className={`${sectionStyle} flex flex-col justify-between ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
-                                <div><h3 className="text-[11px] font-black uppercase tracking-widest mb-2 text-slate-600 flex items-center gap-2"><Paperclip size={16} /> Central de Documentos</h3></div>
+                                <div><h3 className="text-xs font-black uppercase tracking-widest mb-2 text-slate-600 flex items-center gap-2"><Paperclip size={16} /> Central de Documentos</h3></div>
 
                                 {/* LISTA DE ARQUIVOS E GUIAS VIRTUAIS */}
                                 <div className="space-y-2 mb-4 max-h-32 overflow-y-auto custom-scrollbar bg-white/40 p-2 rounded-2xl border border-white/50">
@@ -744,7 +744,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                         <div key={idx} className={`flex justify-between items-center p-2 rounded-xl shadow-sm backdrop-blur-md ${file.isVirtual ? 'bg-sky-50/70 border border-sky-200' : 'bg-white/60 border border-white/60'}`}>
                                             <div className="flex items-center gap-2 overflow-hidden">
                                                 <div className={`p-1.5 rounded-lg ${file.isVirtual ? 'bg-sky-100' : 'bg-blue-50/50'}`}><FileText size={14} className={file.isVirtual ? 'text-sky-600' : 'text-blue-600'} /></div>
-                                                <span className={`text-[9px] font-bold truncate max-w-[150px] ${file.isVirtual ? 'text-sky-800' : 'text-slate-700'}`}>{file.name || 'Documento Anexo'}</span>
+                                                <span className={`text-[10px] font-bold truncate max-w-[150px] ${file.isVirtual ? 'text-sky-800' : 'text-slate-700'}`}>{file.name || 'Documento Anexo'}</span>
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 {file.isVirtual ? (
@@ -769,7 +769,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                             </div>
                                         </div>
                                     )) : (
-                                        <div className="text-center py-4 text-[10px] text-slate-500 italic">Nenhum documento ou guia vinculada.</div>
+                                        <div className="text-center py-4 text-[11px] text-slate-500 italic">Nenhum documento ou guia vinculada.</div>
                                     )}
                                 </div>
 
@@ -781,7 +781,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                         {/* Botão de Adicionar */}
                                         <div onClick={() => fileInputRef.current.click()} className="p-4 border-2 border-dashed border-white/60 rounded-2xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-white/50 hover:border-blue-300 transition-all group backdrop-blur-md">
                                             <Paperclip size={18} className="text-slate-400 group-hover:text-blue-600 transition-colors" />
-                                            <span className="text-[9px] font-black uppercase text-slate-500 group-hover:text-blue-600 transition-colors">Anexar Mais Arquivos</span>
+                                            <span className="text-[10px] font-black uppercase text-slate-500 group-hover:text-blue-600 transition-colors">Anexar Mais Arquivos</span>
                                         </div>
                                     </>
                                 )}
@@ -789,10 +789,10 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                 {/* Lista de Novos Arquivos (Pré-save) */}
                                 {newFiles.length > 0 && (
                                     <div className="mt-2 space-y-1">
-                                        <p className="text-[8px] font-black text-emerald-500 uppercase ml-1">Para enviar:</p>
+                                        <p className="text-[9px] font-black text-emerald-500 uppercase ml-1">Para enviar:</p>
                                         {newFiles.map((file, idx) => (
                                             <div key={idx} className="flex justify-between items-center bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                                                <span className="text-[9px] font-bold text-emerald-700 truncate">{file.name}</span>
+                                                <span className="text-[10px] font-bold text-emerald-700 truncate">{file.name}</span>
                                                 <button type="button" onClick={() => removeNewFile(idx)} className="text-emerald-300 hover:text-rose-500"><X size={12} /></button>
                                             </div>
                                         ))}
@@ -1140,7 +1140,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                         <ClipboardList size={28} className="text-blue-600" />
                         <div>
                             <h1 className="text-2xl font-black text-slate-800 tracking-tight">Fila Cirúrgica</h1>
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Gestão de Espera</div>
+                            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Gestão de Espera</div>
                         </div>
                     </div>
                 </div>
@@ -1152,11 +1152,11 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                 <div className="flex flex-col md:flex-row gap-3 items-center">
                     <div className="relative w-full md:flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                        <input type="text" placeholder="Pesquisar paciente ou CNS..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-9 pl-9 pr-4 bg-white border border-slate-200/60 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 font-bold text-[11px] text-slate-700 placeholder:text-slate-400 shadow-sm transition-all" />
+                        <input type="text" placeholder="Pesquisar paciente ou CNS..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-9 pl-9 pr-4 bg-white border border-slate-200/60 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 font-bold text-xs text-slate-700 placeholder:text-slate-400 shadow-sm transition-all" />
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0 justify-end">
-                        <button onClick={resetFilters} className="h-9 px-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-all flex items-center gap-1.5 font-black text-[9px] uppercase border border-slate-200/60 bg-white shadow-sm"><FilterX size={14} /> Limpar</button>
+                        <button onClick={resetFilters} className="h-9 px-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-all flex items-center gap-1.5 font-black text-[10px] uppercase border border-slate-200/60 bg-white shadow-sm"><FilterX size={14} /> Limpar</button>
                         
                         {hasPermission('Criar Agendamentos') && (
                             <button onClick={() => setEditingSurgery({
@@ -1165,7 +1165,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                 prioridade: 'ELETIVA',
                                 convenio: settings.convenios?.[0] || 'SUS',
                                 municipio: settings.cidades?.[0] || 'Porto Feliz'
-                            })} className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase text-[9px] tracking-widest transition-all flex items-center gap-1.5 shadow-md shadow-blue-500/20">
+                            })} className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center gap-1.5 shadow-md shadow-blue-500/20">
                                 <Plus size={14} /> Novo Paciente
                             </button>
                         )}
@@ -1173,22 +1173,22 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                 </div>
                 
                 <div className="grid grid-cols-2 lg:grid-cols-6 gap-2">
-                    <select value={filters.status?.toUpperCase() || ''} onChange={e => setFilters({ ...filters, status: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[9px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Status: Todos</option>{settings.status?.map(s => <option key={s} value={s.toUpperCase()}>{s.toUpperCase()}</option>)}</select>
-                    <select value={filters.procedimento} onChange={e => setFilters({ ...filters, procedimento: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[9px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Cirurgia: Todas</option>{uniqueProcedures.map(p => <option key={p} value={p}>{p}</option>)}</select>
-                    <select value={filters.cirurgiao} onChange={e => setFilters({ ...filters, cirurgiao: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[9px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Cirurgião: Todos</option>{settings.cirurgioes?.map((c, idx) => { const label = typeof c === 'string' ? c : c.nome; return <option key={idx} value={String(label).toUpperCase()}>{label}</option>; })}</select>
-                    <select value={filters.especialidade} onChange={e => setFilters({ ...filters, especialidade: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[9px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Especialidade: Todas</option>{settings.especialidades?.map(e => <option key={e} value={String(e).toUpperCase()}>{e}</option>)}</select>
-                    <select value={filters.convenio} onChange={e => setFilters({ ...filters, convenio: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[9px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Convênio: Todos</option>{settings.convenios?.map(c => <option key={c} value={c}>{c}</option>)}</select>
-                    <select value={filters.prioridade} onChange={e => setFilters({ ...filters, prioridade: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[9px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Class.: Todas</option>{settings.prioridades?.map(p => <option key={p} value={p}>{p}</option>)}</select>
+                    <select value={filters.status?.toUpperCase() || ''} onChange={e => setFilters({ ...filters, status: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Status: Todos</option>{settings.status?.map(s => <option key={s} value={s.toUpperCase()}>{s.toUpperCase()}</option>)}</select>
+                    <select value={filters.procedimento} onChange={e => setFilters({ ...filters, procedimento: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Cirurgia: Todas</option>{uniqueProcedures.map(p => <option key={p} value={p}>{p}</option>)}</select>
+                    <select value={filters.cirurgiao} onChange={e => setFilters({ ...filters, cirurgiao: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Cirurgião: Todos</option>{settings.cirurgioes?.map((c, idx) => { const label = typeof c === 'string' ? c : c.nome; return <option key={idx} value={String(label).toUpperCase()}>{label}</option>; })}</select>
+                    <select value={filters.especialidade} onChange={e => setFilters({ ...filters, especialidade: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Especialidade: Todas</option>{settings.especialidades?.map(e => <option key={e} value={String(e).toUpperCase()}>{e}</option>)}</select>
+                    <select value={filters.convenio} onChange={e => setFilters({ ...filters, convenio: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Convênio: Todos</option>{settings.convenios?.map(c => <option key={c} value={c}>{c}</option>)}</select>
+                    <select value={filters.prioridade} onChange={e => setFilters({ ...filters, prioridade: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Class.: Todas</option>{settings.prioridades?.map(p => <option key={p} value={p}>{p}</option>)}</select>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-blue-100/50">
                     {['atend', 'autoriz', 'agend'].map((type) => (
                         <div key={type} className="flex flex-col gap-1">
-                            <span className="text-[8px] font-black text-blue-800/60 uppercase pl-1">{type === 'atend' ? 'Atendimento' : type === 'autoriz' ? 'Autorização' : 'Agendamento'}</span>
+                            <span className="text-[9px] font-black text-blue-800/60 uppercase pl-1">{type === 'atend' ? 'Atendimento' : type === 'autoriz' ? 'Autorização' : 'Agendamento'}</span>
                             <div className="flex items-center bg-white rounded-xl p-1 gap-1 border border-slate-200/60 shadow-sm h-8">
-                                <input type="date" value={filters[`${type}Inicio`]} onChange={e => setFilters({ ...filters, [`${type}Inicio`]: e.target.value })} className="bg-transparent text-[9px] font-black text-slate-700 outline-none flex-1 text-center w-full" />
+                                <input type="date" value={filters[`${type}Inicio`]} onChange={e => setFilters({ ...filters, [`${type}Inicio`]: e.target.value })} className="bg-transparent text-[10px] font-black text-slate-700 outline-none flex-1 text-center w-full" />
                                 <span className="text-slate-300">➜</span>
-                                <input type="date" value={filters[`${type}Fim`]} onChange={e => setFilters({ ...filters, [`${type}Fim`]: e.target.value })} className="bg-transparent text-[9px] font-black text-slate-700 outline-none flex-1 text-center w-full" />
+                                <input type="date" value={filters[`${type}Fim`]} onChange={e => setFilters({ ...filters, [`${type}Fim`]: e.target.value })} className="bg-transparent text-[10px] font-black text-slate-700 outline-none flex-1 text-center w-full" />
                             </div>
                         </div>
                     ))}
@@ -1197,7 +1197,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                 {!isSimplifiedContract && (
                     <div className="flex flex-wrap gap-2 pt-3 border-t border-blue-100/50">
                         {['aih', 'autorizada', 'apa', 'opme'].map(f => (
-                            <label key={f} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[8px] font-black uppercase cursor-pointer transition-all shadow-sm ${filters[f] ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200/60 text-slate-500 hover:bg-blue-50 hover:text-blue-600'}`}><input type="checkbox" className="hidden" checked={filters[f]} onChange={e => setFilters({ ...filters, [f]: e.target.checked })} /> {f}</label>
+                            <label key={f} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase cursor-pointer transition-all shadow-sm ${filters[f] ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200/60 text-slate-500 hover:bg-blue-50 hover:text-blue-600'}`}><input type="checkbox" className="hidden" checked={filters[f]} onChange={e => setFilters({ ...filters, [f]: e.target.checked })} /> {f}</label>
                         ))}
                     </div>
                 )}
@@ -1207,7 +1207,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-100">
                         <thead className="bg-slate-50/80">
-                            <tr className="text-left text-[9px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-200">
+                            <tr className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-200">
                                 <th className="py-3 px-4 w-[22%] cursor-pointer hover:text-blue-600 transition-colors" onClick={() => toggleSort('nomePaciente')}>Dados do Paciente {sortConfig.field === 'nomePaciente' && (sortConfig.direction === 'asc' ? <ArrowUp size={11} className="inline ml-1" /> : <ArrowDown size={11} className="inline ml-1" />)}</th>
                                 <th className="py-3 px-4 w-[22%]">Procedimento / Cirurgião</th>
                                 <th className="py-3 px-4 w-[28%] cursor-pointer hover:text-blue-600 transition-colors" onClick={() => toggleSort('dataAutorizacao')}>Datas e Observações {sortConfig.field === 'dataAutorizacao' && (sortConfig.direction === 'asc' ? <ArrowUp size={11} className="inline ml-1" /> : <ArrowDown size={11} className="inline ml-1" />)}</th>
@@ -1229,22 +1229,22 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                     <tr key={item.id} className="hover:bg-blue-50/20 transition-all group border-b last:border-none">
                                         <td className="px-4 py-3 align-top">
                                             <div className="text-[12px] font-black text-slate-900 uppercase tracking-tighter leading-tight" title={item.nomePaciente || item.paciente}>{item.nomePaciente || item.paciente}</div>
-                                            <div className="text-[9px] font-bold text-slate-400 mt-1.5 space-y-1">
+                                            <div className="text-[10px] font-bold text-slate-400 mt-1.5 space-y-1">
                                                 <div className="flex items-center gap-1.5 font-black text-blue-500"><ClipboardCheck size={11} className="text-blue-400" /> {item.cns?.replace(/[^\d]/g, '') || '--- CNS NÃO INF. ---'}</div>
                                                 <div className="flex items-center gap-1.5 text-slate-700 font-bold"><Calendar size={11} className="text-slate-300" /> {calculateAge(item.dataNascimento || item.nascimento)} (DN: {(item.dataNascimento || item.nascimento)?.split('-').reverse().join('/') || '--'})</div>
-                                                <div className="flex items-center gap-1.5 font-black uppercase text-[9px] text-slate-500"><Phone size={11} className="text-emerald-400" /> {item.telefone1 || item.telefone}</div>
+                                                <div className="flex items-center gap-1.5 font-black uppercase text-[10px] text-slate-500"><Phone size={11} className="text-emerald-400" /> {item.telefone1 || item.telefone}</div>
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 align-top">
                                             <div className="flex items-start gap-2">
                                                 <Stethoscope size={14} className="text-blue-500 shrink-0 mt-0.5" />
                                                 <div className="space-y-1 w-full">
-                                                    <div className="text-[10px] font-black text-slate-800 uppercase leading-snug line-clamp-2" title={item.procedimento || 'NÃO INFORMADO'}>{item.procedimento || 'NÃO INFORMADO'}</div>
-                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter truncate">DR(A). {item.cirurgiao || '---'} {item.especialidade ? `(${item.especialidade})` : ''}</div>
+                                                    <div className="text-[11px] font-black text-slate-800 uppercase leading-snug line-clamp-2" title={item.procedimento || 'NÃO INFORMADO'}>{item.procedimento || 'NÃO INFORMADO'}</div>
+                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter truncate">DR(A). {item.cirurgiao || '---'} {item.especialidade ? `(${item.especialidade})` : ''}</div>
                                                     <div className="flex flex-wrap gap-1 mt-1">
-                                                        <span className="text-[8px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 uppercase">A: {item.anestesia || 'Não Inf.'}</span>
-                                                        <span className="text-[8px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 uppercase">{item.convenio || 'SUS'}</span>
-                                                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase border ${PRIORITY_COLORS[item.prioridade] || 'bg-slate-100 text-slate-400'}`}>{item.prioridade}</span>
+                                                        <span className="text-[9px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 uppercase">A: {item.anestesia || 'Não Inf.'}</span>
+                                                        <span className="text-[9px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 uppercase">{item.convenio || 'SUS'}</span>
+                                                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border ${PRIORITY_COLORS[item.prioridade] || 'bg-slate-100 text-slate-400'}`}>{item.prioridade}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1254,13 +1254,13 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                 <div className="flex flex-col gap-2 w-full">
                                                     <div className="flex flex-wrap gap-1">
                                                         {['aih', 'autorizada', 'apa', 'opme'].map(tag => (
-                                                            <button key={tag} disabled={!podeEditar} onClick={podeEditar ? () => handleQuickUpdate(item, tag, !item[tag]) : undefined} className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase border transition-all ${podeEditar ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-not-allowed'} ${item[tag] ? 'bg-emerald-100 text-emerald-700 border-emerald-200 shadow-sm' : 'bg-white text-slate-300 border-slate-200 shadow-sm'}`}>{tag}</button>
+                                                            <button key={tag} disabled={!podeEditar} onClick={podeEditar ? () => handleQuickUpdate(item, tag, !item[tag]) : undefined} className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border transition-all ${podeEditar ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-not-allowed'} ${item[tag] ? 'bg-emerald-100 text-emerald-700 border-emerald-200 shadow-sm' : 'bg-white text-slate-300 border-slate-200 shadow-sm'}`}>{tag}</button>
                                                         ))}
                                                     </div>
                                                     <div className="flex flex-col md:flex-row gap-2 w-full">
-                                                        <div className="flex justify-between items-center bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-sm flex-1"><span className="text-[8px] font-black text-slate-400 uppercase shrink-0">Atend:</span><span className="text-[10px] font-black text-slate-700">{item.dataAtendimento?.split('-').reverse().join('/') || '---'}</span></div>
+                                                        <div className="flex justify-between items-center bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-sm flex-1"><span className="text-[9px] font-black text-slate-400 uppercase shrink-0">Atend:</span><span className="text-[11px] font-black text-slate-700">{item.dataAtendimento?.split('-').reverse().join('/') || '---'}</span></div>
                                                         <div className="flex justify-between items-center bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 shadow-sm flex-1">
-                                                            <span className="text-[8px] font-black text-emerald-500 uppercase shrink-0 mr-1">Autoriz:</span>
+                                                            <span className="text-[9px] font-black text-emerald-500 uppercase shrink-0 mr-1">Autoriz:</span>
                                                             <input
                                                                 type="date"
                                                                 disabled={!podeEditar}
@@ -1269,21 +1269,21 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                                 onBlur={(e) => {
                                                                     if (e.target.value !== (item.dataAutorizacao || '')) handleQuickUpdate(item, 'dataAutorizacao', e.target.value);
                                                                 }}
-                                                                className={`bg-transparent text-[9px] font-black text-emerald-700 outline-none w-[80px] text-right ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
+                                                                className={`bg-transparent text-[10px] font-black text-emerald-700 outline-none w-[80px] text-right ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
                                                             />
                                                         </div>
                                                     </div>
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm w-fit mb-2">
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase shrink-0 mr-2">Data Consulta:</span>
-                                                    <span className="text-[10px] font-black text-slate-700">{item.dataAtendimento?.split('-').reverse().join('/') || '---'}</span>
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase shrink-0 mr-2">Data Consulta:</span>
+                                                    <span className="text-[11px] font-black text-slate-700">{item.dataAtendimento?.split('-').reverse().join('/') || '---'}</span>
                                                 </div>
                                             )}
 
                                             {isSimplifiedContract && (
                                                 <div className="bg-amber-50/60 p-2 rounded-xl border border-amber-200/60 hover:bg-amber-50/90 transition-all shadow-sm w-full mt-2">
-                                                    <div className="flex items-center gap-1 text-[8px] font-black text-amber-600 uppercase mb-1"><MessageSquare size={10} /> Notas SISGESP:</div>
+                                                    <div className="flex items-center gap-1 text-[9px] font-black text-amber-600 uppercase mb-1"><MessageSquare size={10} /> Notas SISGESP:</div>
                                                     <textarea
                                                         key={`obs-${item.id}-${item.obs || item.observacoes}`}
                                                         disabled={!podeEditar}
@@ -1292,14 +1292,14 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                             if (e.target.value !== (item.obs || item.observacoes || '')) handleQuickUpdate(item, 'observacoes', e.target.value);
                                                         }}
                                                         placeholder="Nenhuma nota adicionada..."
-                                                        className={`bg-transparent text-[9px] font-bold text-amber-900 italic leading-snug w-full outline-none resize-none border-none overflow-hidden ${podeEditar ? '' : 'cursor-not-allowed opacity-80'} min-h-[40px]`}
+                                                        className={`bg-transparent text-[10px] font-bold text-amber-900 italic leading-snug w-full outline-none resize-none border-none overflow-hidden ${podeEditar ? '' : 'cursor-not-allowed opacity-80'} min-h-[40px]`}
                                                         rows="3"
                                                     />
                                                 </div>
                                             )}
                                         </td>
                                         <td className="px-4 py-3 align-top">
-                                            <select disabled={!podeEditar} value={item.status?.toUpperCase() || ''} onChange={(e) => handleQuickUpdate(item, 'status', e.target.value)} className={`px-2 py-1.5 text-[9px] font-black rounded-lg border uppercase outline-none mb-2 w-full max-w-[150px] truncate shadow-sm ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'} ${getStatusStyle(item.status)}`}>
+                                            <select disabled={!podeEditar} value={item.status?.toUpperCase() || ''} onChange={(e) => handleQuickUpdate(item, 'status', e.target.value)} className={`px-2 py-1.5 text-[10px] font-black rounded-lg border uppercase outline-none mb-2 w-full max-w-[150px] truncate shadow-sm ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'} ${getStatusStyle(item.status)}`}>
                                                 {settings.status?.map(opt => <option key={opt} value={opt.toUpperCase()}>{opt.toUpperCase()}</option>)}
                                                 {item.status && !settings.status?.some(s => s.toUpperCase() === String(item.status).toUpperCase()) && (
                                                     <option value={String(item.status).toUpperCase()}>{String(item.status).toUpperCase()}</option>
@@ -1309,7 +1309,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                             {item.status === 'Aguardando Autorização' ? (
                                                 <div className="bg-rose-50 px-2 py-2 rounded-xl border border-dashed border-rose-200 text-center w-full max-w-[150px]">
                                                     <ShieldCheck size={14} className="text-rose-400 mx-auto opacity-50 mb-1" />
-                                                    <div className="text-[8px] font-black text-rose-600 uppercase">Sem Cobertura</div>
+                                                    <div className="text-[9px] font-black text-rose-600 uppercase">Sem Cobertura</div>
                                                 </div>
                                             ) : (
                                                 <div className="space-y-1.5 bg-white p-2 rounded-xl border border-slate-200 shadow-sm w-full max-w-[150px]">
@@ -1323,7 +1323,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                             onBlur={(e) => {
                                                                 if (e.target.value !== (item.dataAgendado || '')) handleQuickUpdate(item, 'dataAgendado', e.target.value);
                                                             }}
-                                                            className={`bg-transparent text-[9px] font-black outline-none flex-1 w-full ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
+                                                            className={`bg-transparent text-[10px] font-black outline-none flex-1 w-full ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
                                                         />
                                                     </div>
                                                     <div className="flex items-center gap-1.5 text-blue-500 font-extrabold border-t border-slate-100 pt-1.5">
@@ -1336,12 +1336,12 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                             onBlur={(e) => {
                                                                 if (e.target.value !== (item.horario || '')) handleQuickUpdate(item, 'horario', e.target.value);
                                                             }}
-                                                            className={`bg-transparent text-[9px] font-black outline-none flex-1 w-full ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
+                                                            className={`bg-transparent text-[10px] font-black outline-none flex-1 w-full ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
                                                         />
                                                     </div>
                                                     <div className="flex items-center gap-1.5 text-slate-500 font-bold border-t border-slate-100 pt-1.5">
                                                         <MapPin size={11} className="text-slate-300" />
-                                                        <select disabled={!podeEditar} value={String(item.sala || '').toUpperCase()} onChange={(e) => handleQuickUpdate(item, 'sala', e.target.value)} className={`bg-transparent text-[9px] uppercase font-black outline-none flex-1 truncate max-w-[90px] ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}>
+                                                        <select disabled={!podeEditar} value={String(item.sala || '').toUpperCase()} onChange={(e) => handleQuickUpdate(item, 'sala', e.target.value)} className={`bg-transparent text-[10px] uppercase font-black outline-none flex-1 truncate max-w-[90px] ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}>
                                                             <option value="">NÃO DEF</option>
                                                             {settings.locais?.map(l => <option key={l} value={String(l).toUpperCase()}>{l.toUpperCase()}</option>)}
                                                         </select>
@@ -1351,7 +1351,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
 
                                             {!isSimplifiedContract && (
                                                 <div className="mt-2 bg-amber-50/60 p-2 rounded-xl border border-amber-200/60 hover:bg-amber-50/90 transition-all shadow-sm w-full max-w-[150px]">
-                                                    <div className="flex items-center gap-1 text-[8px] font-black text-amber-600 uppercase mb-1"><MessageSquare size={10} /> Notas SISGESP:</div>
+                                                    <div className="flex items-center gap-1 text-[9px] font-black text-amber-600 uppercase mb-1"><MessageSquare size={10} /> Notas SISGESP:</div>
                                                     <textarea
                                                         key={`obs-${item.id}-${item.obs || item.observacoes}`}
                                                         disabled={!podeEditar}
@@ -1360,7 +1360,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                             if (e.target.value !== (item.obs || item.observacoes || '')) handleQuickUpdate(item, 'observacoes', e.target.value);
                                                         }}
                                                         placeholder="Sua nota..."
-                                                        className={`bg-transparent text-[9px] font-bold text-amber-900 italic leading-snug w-full outline-none resize-none border-none overflow-hidden ${podeEditar ? '' : 'cursor-not-allowed opacity-80'}`}
+                                                        className={`bg-transparent text-[10px] font-bold text-amber-900 italic leading-snug w-full outline-none resize-none border-none overflow-hidden ${podeEditar ? '' : 'cursor-not-allowed opacity-80'}`}
                                                         rows="3"
                                                     />
                                                 </div>
@@ -1373,7 +1373,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                         href={item.externalExamUrl || item.arquivoUrl || item.arquivos?.[0]?.url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded text-[8px] font-black uppercase tracking-wide no-underline shadow-sm"
+                                                        className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded text-[9px] font-black uppercase tracking-wide no-underline shadow-sm"
                                                     >
                                                         <Paperclip size={10} /> DOCs
                                                     </a>
@@ -1390,7 +1390,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                     <button 
                                                         disabled={isUnavailable}
                                                         onClick={() => onSelectForScheduling(item)} 
-                                                        className={`mt-1 w-full py-2 px-2 font-black text-[9px] uppercase rounded-lg transition-all shadow-sm flex items-center justify-center gap-1 ${
+                                                        className={`mt-1 w-full py-2 px-2 font-black text-[10px] uppercase rounded-lg transition-all shadow-sm flex items-center justify-center gap-1 ${
                                                             isUnavailable 
                                                             ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
                                                             : 'bg-indigo-600 hover:bg-indigo-700 text-white'
@@ -1425,7 +1425,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                 <h2 className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
                                     <Calendar size={20} className="text-blue-400" /> Selecione um Paciente para Agendar
                                 </h2>
-                                <p className="text-slate-400 text-[10px] font-bold uppercase mt-0.5 tracking-wider">
+                                <p className="text-slate-400 text-[11px] font-bold uppercase mt-0.5 tracking-wider">
                                     Destino: <span className="text-blue-400">Sala {slotInfo.sala}</span> • {slotInfo.data?.split('-').reverse().join('/')} às {slotInfo.horario}
                                 </p>
                             </div>
@@ -1433,7 +1433,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                 {hasPermission('Acao: Bloquear Agenda') && (
                                     <button 
                                         onClick={() => onSelectForScheduling({ isBlock: true, reason: 'MANUTENÇÃO', duration: 60 })} 
-                                        className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
+                                        className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm"
                                     >
                                         🔒 Bloquear Horário
                                     </button>
@@ -1447,7 +1447,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                 <h2 className="text-lg font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                                     <ClipboardList size={20} className="text-blue-600" /> Fila Cirúrgica Interativa
                                 </h2>
-                                <p className="text-slate-400 text-[10px] font-bold uppercase mt-0.5 tracking-wider">
+                                <p className="text-slate-400 text-[11px] font-bold uppercase mt-0.5 tracking-wider">
                                     Consulta e Gestão Rápida
                                 </p>
                             </div>

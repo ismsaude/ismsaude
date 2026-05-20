@@ -153,7 +153,7 @@ const Sidebar = () => {
                                             }`}
                                     >
                                         <item.icon size={20} className="mb-1" strokeWidth={isOpen ? 2.5 : 2} />
-                                        <span className="text-[9px] font-bold uppercase tracking-tighter text-center leading-[1]">{item.label}</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-tighter text-center leading-[1]">{item.label}</span>
 
 
                                     </button>
@@ -171,7 +171,7 @@ const Sidebar = () => {
                                                         className="z-10 group w-[64px] ml-1 py-2 flex flex-col items-center justify-center rounded-xl transition-all duration-300 bg-white/30 text-slate-500 opacity-50 cursor-not-allowed"
                                                     >
                                                         <sub.icon size={16} className="mb-1" strokeWidth={2} />
-                                                        <span className="text-[8px] font-bold uppercase tracking-tighter text-center leading-[1]">{sub.label}</span>
+                                                        <span className="text-[9px] font-bold uppercase tracking-tighter text-center leading-[1]">{sub.label}</span>
                                                         <span className="text-[6px] text-amber-500 font-black tracking-widest uppercase mt-0.5">BREVE</span>
                                                     </div>
                                                 ) : (
@@ -185,7 +185,7 @@ const Sidebar = () => {
                                                             }`}
                                                     >
                                                         <sub.icon size={16} className="mb-1" strokeWidth={isActive(sub.path) ? 2.5 : 2} />
-                                                        <span className="text-[8px] font-bold uppercase tracking-tighter text-center leading-[1]">{sub.label}</span>
+                                                        <span className="text-[9px] font-bold uppercase tracking-tighter text-center leading-[1]">{sub.label}</span>
                                                     </Link>
                                                 )
                                             ))}
@@ -206,7 +206,7 @@ const Sidebar = () => {
                                     }`}
                             >
                                 <item.icon size={20} className="mb-1" strokeWidth={isActive(item.path) ? 2.5 : 2} />
-                                <span className="text-[9px] font-bold uppercase tracking-tighter text-center leading-[1]">{item.label}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-tighter text-center leading-[1]">{item.label}</span>
 
 
                             </Link>
@@ -222,7 +222,7 @@ const Sidebar = () => {
                         className="w-[72px] mx-auto py-2.5 flex flex-col items-center justify-center rounded-xl text-slate-500 hover:bg-slate-200/50 hover:text-indigo-600 transition-all duration-300 group shadow-sm border border-transparent hover:border-slate-300 preserve-color"
                     >
                         <Moon size={20} className="mb-1" />
-                        <span className="text-[9px] font-bold uppercase tracking-tighter text-center leading-[1]">Tema</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter text-center leading-[1]">Tema</span>
                     </button>
                     <button
                         title="Meu Perfil"
@@ -230,7 +230,7 @@ const Sidebar = () => {
                         className="w-[72px] mx-auto py-2.5 flex flex-col items-center justify-center rounded-xl text-slate-500 hover:bg-white/60 hover:text-blue-600 transition-all duration-300 group shadow-sm border border-transparent hover:border-white/50"
                     >
                         <User size={20} className="mb-1" />
-                        <span className="text-[9px] font-bold uppercase tracking-tighter text-center leading-[1]">Perfil</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter text-center leading-[1]">Perfil</span>
                     </button>
                     <button
                         title="Sair"
@@ -238,7 +238,7 @@ const Sidebar = () => {
                         className="w-[72px] mx-auto py-2.5 flex flex-col items-center justify-center rounded-xl text-slate-500 hover:bg-rose-500/20 hover:text-rose-600 transition-all duration-300 group"
                     >
                         <LogOut size={20} className="mb-1" />
-                        <span className="text-[9px] font-bold uppercase tracking-tighter text-center leading-[1]">Sair</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter text-center leading-[1]">Sair</span>
                     </button>
                 </div>
             </aside>
@@ -254,7 +254,7 @@ const Sidebar = () => {
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-black text-slate-800 uppercase tracking-tighter leading-none">Meu Perfil</h2>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Gerencie sua conta</p>
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Gerencie sua conta</p>
                                 </div>
                             </div>
                             <button onClick={() => setIsProfileOpen(false)} className="text-slate-400 hover:text-rose-500 bg-white p-2 rounded-full shadow-sm hover:shadow transition-all"><X size={18} /></button>
@@ -263,27 +263,27 @@ const Sidebar = () => {
                             {/* Info do Usuário */}
                             <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                                 <div className="col-span-2">
-                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Nome Completo</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nome Completo</label>
                                     <div className="text-sm font-bold text-slate-800 uppercase">{currentUser?.name || currentUser?.displayName || '---'}</div>
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">E-mail</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">E-mail</label>
                                     <div className="text-xs font-semibold text-slate-600">{currentUser?.email}</div>
                                 </div>
                                 <div>
-                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Perfil</label>
-                                    <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase rounded">{currentUser?.role || '---'}</span>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Perfil</label>
+                                    <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-[11px] font-black uppercase rounded">{currentUser?.role || '---'}</span>
                                 </div>
                                 {(currentUser?.crm || currentUser?.cpf) && (
                                     <div>
-                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Documento</label>
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Documento</label>
                                         <div className="text-xs font-bold text-slate-700">{currentUser?.crm || currentUser?.cpf}</div>
                                     </div>
                                 )}
                             </div>
                             {/* Trocar Senha */}
                             <form onSubmit={handleUpdatePassword} className="space-y-4 pt-2">
-                                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                                <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
                                     <Lock size={12} /> Alterar Senha
                                 </h3>
                                 <div>

@@ -90,12 +90,16 @@ export const AuthProvider = ({ children }) => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN') {
                 sessionStorage.setItem('login_timestamp', Date.now().toString());
+                fetchProfile(session?.user ?? null);
             } else if (event === 'SIGNED_OUT') {
                 sessionStorage.removeItem('login_timestamp');
                 sessionStorage.removeItem('apa_draft_state');
                 sessionStorage.removeItem('@sisgesp_unidade_sessao');
+                setCurrentUser(null);
+            } else if (event === 'USER_UPDATED') {
+                fetchProfile(session?.user ?? null);
             }
-            fetchProfile(session?.user ?? null);
+            // Ignoramos TOKEN_REFRESHED para não causar re-render e piscar a tela ao trocar de aba
         });
 
         // Hard Timeout Check: a cada 5 minutos

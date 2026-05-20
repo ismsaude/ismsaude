@@ -102,7 +102,7 @@ const ProcedureManager = () => {
                         <h1 className="text-xl font-black text-slate-900 uppercase tracking-tighter">
                             Gestão de Tempos
                         </h1>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                             {loading ? 'Sincronizando...' : `${procedures.length} procedimentos`}
                         </p>
                     </div>
@@ -131,10 +131,10 @@ const ProcedureManager = () => {
                         {/* Cabeçalho da Tabela Sticky */}
                         <thead className="bg-white/40 sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-32">Código SUS</th>
-                                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Nome do Procedimento</th>
-                                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Duração (Min)</th>
-                                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-center w-32">Status</th>
+                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-32">Código SUS</th>
+                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Nome do Procedimento</th>
+                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Duração (Min)</th>
+                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-center w-32">Status</th>
                             </tr>
                         </thead>
 
@@ -146,7 +146,7 @@ const ProcedureManager = () => {
                                     <td colSpan="4" className="py-20 text-center">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <Loader2 className="animate-spin text-blue-500" size={32} />
-                                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Carregando...</span>
+                                            <span className="text-[11px] font-bold text-slate-300 uppercase tracking-widest">Carregando...</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -157,7 +157,7 @@ const ProcedureManager = () => {
 
                                         {/* Coluna Código */}
                                         <td className="px-4 py-2 align-middle">
-                                            <span className="font-mono font-bold text-[10px] text-slate-600 bg-white/50 px-2 py-0.5 rounded border border-white/60 group-hover:bg-white/80 group-hover:border-blue-200 transition-colors">
+                                            <span className="font-mono font-bold text-[11px] text-slate-600 bg-white/50 px-2 py-0.5 rounded border border-white/60 group-hover:bg-white/80 group-hover:border-blue-200 transition-colors">
                                                 {item.codigo || '---'}
                                             </span>
                                         </td>
@@ -194,7 +194,7 @@ const ProcedureManager = () => {
                                             {editingTimes[item.id] ? (
                                                 <button
                                                     onClick={() => handleSave(item.id, item.nome)}
-                                                    className="bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-700 transition-all flex items-center gap-1 mx-auto font-bold text-[9px] uppercase tracking-wide animate-in zoom-in duration-200"
+                                                    className="bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-700 transition-all flex items-center gap-1 mx-auto font-bold text-[10px] uppercase tracking-wide animate-in zoom-in duration-200"
                                                 >
                                                     <Save size={12} /> Salvar
                                                 </button>

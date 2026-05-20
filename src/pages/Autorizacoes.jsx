@@ -261,13 +261,13 @@ export default function Autorizacoes() {
                     {/* Linha 1: Pesquisa e Filtros Principais */}
                     <div className="flex flex-wrap gap-3 items-end">
                         <div className="flex-1 min-w-[250px] relative">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Buscar Paciente</label>
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Buscar Paciente</label>
                             <Search className="absolute left-2.5 bottom-2 text-slate-400" size={14} />
-                            <input type="text" placeholder="Nome ou CNS..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-8 pr-2 py-1.5 bg-white/80 border border-slate-200 rounded-lg text-[10px] outline-none focus:border-blue-500 font-semibold" />
+                            <input type="text" placeholder="Nome ou CNS..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-8 pr-2 py-1.5 bg-white/80 border border-slate-200 rounded-lg text-[11px] outline-none focus:border-blue-500 font-semibold" />
                         </div>
                         <div className="w-full md:w-auto">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Status</label>
-                            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[10px] text-slate-700 outline-none focus:border-blue-500 font-bold uppercase">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Status</label>
+                            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[11px] text-slate-700 outline-none focus:border-blue-500 font-bold uppercase">
                                 <option value="todos">Todos os Status</option>
                                 <option value="pendente">Pendentes</option>
                                 <option value="autorizada">Autorizadas</option>
@@ -276,20 +276,20 @@ export default function Autorizacoes() {
                         </div>
                         <div className="w-full md:w-auto flex items-center gap-2">
                             <div>
-                                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Data Início</label>
-                                <input type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)} className="py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[10px] text-slate-700 outline-none focus:border-blue-500 font-bold" />
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Data Início</label>
+                                <input type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)} className="py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[11px] text-slate-700 outline-none focus:border-blue-500 font-bold" />
                             </div>
                             <span className="text-slate-300 mt-4">-</span>
                             <div>
-                                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Data Fim</label>
-                                <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} className="py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[10px] text-slate-700 outline-none focus:border-blue-500 font-bold" />
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Data Fim</label>
+                                <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} className="py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[11px] text-slate-700 outline-none focus:border-blue-500 font-bold" />
                             </div>
                         </div>
                         <div className="flex gap-1 w-full md:w-auto items-center">
                             <button onClick={() => navegarMes(-1)} className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-colors shadow-sm" title="Mês Anterior">
                                 <ChevronLeft size={16} strokeWidth={3} />
                             </button>
-                            <button onClick={() => navegarMes(0)} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase hover:bg-blue-100 transition-colors shadow-sm">
+                            <button onClick={() => navegarMes(0)} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black uppercase hover:bg-blue-100 transition-colors shadow-sm">
                                 Mês Atual
                             </button>
                             <button onClick={() => navegarMes(1)} className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-colors shadow-sm" title="Próximo Mês">
@@ -300,22 +300,22 @@ export default function Autorizacoes() {
                     {/* Linha 2: Filtros Secundários e Limpar */}
                     <div className="flex flex-wrap gap-3 items-end pt-2 border-t border-slate-200/50">
                         <div className="flex-1 min-w-[200px]">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Especialidade</label>
-                            <select value={especialidadeFilter} onChange={e => setEspecialidadeFilter(e.target.value)} className="w-full py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[10px] text-slate-700 outline-none focus:border-blue-500 font-semibold uppercase">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Especialidade</label>
+                            <select value={especialidadeFilter} onChange={e => setEspecialidadeFilter(e.target.value)} className="w-full py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[11px] text-slate-700 outline-none focus:border-blue-500 font-semibold uppercase">
                                 <option value="todos">Todas as Especialidades</option>
                                 {especialidades.map(esp => <option key={esp} value={esp}>{esp}</option>)}
                             </select>
                         </div>
                         <div className="flex-1 min-w-[200px]">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Médico</label>
-                            <select value={cirurgiaoFilter} onChange={e => setCirurgiaoFilter(e.target.value)} className="w-full py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[10px] text-slate-700 outline-none focus:border-blue-500 font-semibold uppercase">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Médico</label>
+                            <select value={cirurgiaoFilter} onChange={e => setCirurgiaoFilter(e.target.value)} className="w-full py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[11px] text-slate-700 outline-none focus:border-blue-500 font-semibold uppercase">
                                 <option value="todos">Todos os Médicos</option>
                                 {cirurgioes.map(cir => <option key={cir} value={cir}>{cir}</option>)}
                             </select>
                         </div>
                         <div className="flex-1 min-w-[200px]">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Procedimento</label>
-                            <select value={procedimentoFilter} onChange={e => setProcedimentoFilter(e.target.value)} className="w-full py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[10px] text-slate-700 outline-none focus:border-blue-500 font-semibold uppercase">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Procedimento</label>
+                            <select value={procedimentoFilter} onChange={e => setProcedimentoFilter(e.target.value)} className="w-full py-1.5 px-2 bg-white/80 border border-slate-200 rounded-lg text-[11px] text-slate-700 outline-none focus:border-blue-500 font-semibold uppercase">
                                 <option value="todos">Todos os Procedimentos</option>
                                 {procedimentos.map(proc => <option key={proc} value={proc}>{proc}</option>)}
                             </select>
@@ -323,7 +323,7 @@ export default function Autorizacoes() {
                         <div className="w-full md:w-auto mt-2 md:mt-0 ml-auto">
                             <button
                                 onClick={limparFiltros}
-                                className="w-full md:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-black uppercase hover:bg-rose-50 hover:text-rose-600 transition-colors shadow-sm border border-transparent hover:border-rose-200"
+                                className="w-full md:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-[11px] font-black uppercase hover:bg-rose-50 hover:text-rose-600 transition-colors shadow-sm border border-transparent hover:border-rose-200"
                                 title="Limpar todos os filtros"
                             >
                                 <FilterX size={14} /> Limpar
@@ -337,7 +337,7 @@ export default function Autorizacoes() {
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-white/40">
-                                <tr className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                <tr className="text-left text-[11px] font-black text-slate-500 uppercase tracking-widest">
                                     <th className="py-1.5 px-3">Data</th>
                                     <th className="py-1.5 px-3">Paciente</th>
                                     <th className="py-1.5 px-3">Procedimento</th>
@@ -357,35 +357,35 @@ export default function Autorizacoes() {
                                             </td>
                                             <td className="px-3 py-1">
                                                 <div className="font-bold text-slate-800 text-xs uppercase">{aih.pacienteNome || 'NÃO INFORMADO'}</div>
-                                                <div className="text-[9px] font-semibold text-slate-400 uppercase mt-0.5">CNS: {aih.cns || '---'}</div>
+                                                <div className="text-[10px] font-semibold text-slate-400 uppercase mt-0.5">CNS: {aih.cns || '---'}</div>
                                             </td>
                                             <td className="px-3 py-1">
-                                                <div className="text-[10px] font-bold text-slate-700 uppercase line-clamp-1" title={aih.procedimento}>{aih.procedimento || '---'}</div>
+                                                <div className="text-[11px] font-bold text-slate-700 uppercase line-clamp-1" title={aih.procedimento}>{aih.procedimento || '---'}</div>
                                             </td>
                                             <td className="px-3 py-1">
-                                                <div className="text-[10px] font-bold text-slate-700 uppercase line-clamp-1" title={aih.medicoSolicitante || aih.cirurgiao}>
+                                                <div className="text-[11px] font-bold text-slate-700 uppercase line-clamp-1" title={aih.medicoSolicitante || aih.cirurgiao}>
                                                     {aih.medicoSolicitante || aih.cirurgiao || '---'}
                                                 </div>
                                             </td>
                                             <td className="px-3 py-1">
                                                 {/* Etiqueta de Status Inteligente */}
                                                 {aih.status === 'autorizada' ? (
-                                                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-black rounded uppercase tracking-wider inline-block">Autorizada</span>
+                                                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded uppercase tracking-wider inline-block">Autorizada</span>
                                                 ) : aih.status === 'negada' || aih.status === 'devolvida' ? (
-                                                    <span className="px-2 py-0.5 bg-rose-100 text-rose-700 text-[9px] font-black rounded uppercase tracking-wider inline-block">Devolvida</span>
+                                                    <span className="px-2 py-0.5 bg-rose-100 text-rose-700 text-[10px] font-black rounded uppercase tracking-wider inline-block">Devolvida</span>
                                                 ) : (
-                                                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-black rounded uppercase tracking-wider inline-flex items-center gap-1 shadow-sm border border-amber-200">
+                                                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded uppercase tracking-wider inline-flex items-center gap-1 shadow-sm border border-amber-200">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Pendente
                                                     </span>
                                                 )}
                                             </td>
                                             <td className="px-3 py-1 text-center">
                                                 {aih.status === 'pendente' ? (
-                                                    <button onClick={() => { setAihSelecionada(aih); setTipoAcao(''); setModalAberto(true); }} className="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-sm text-[9px] font-bold uppercase flex items-center gap-1.5 mx-auto">
+                                                    <button onClick={() => { setAihSelecionada(aih); setTipoAcao(''); setModalAberto(true); }} className="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-sm text-[10px] font-bold uppercase flex items-center gap-1.5 mx-auto">
                                                         <Eye size={12} /> Analisar
                                                     </button>
                                                 ) : (
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Analisada</span>
+                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Analisada</span>
                                                 )}
                                             </td>
                                         </tr>
@@ -412,20 +412,20 @@ export default function Autorizacoes() {
                                 <div className="space-y-5 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                                     <h3 className="text-xs font-black text-slate-700 uppercase flex items-center gap-2 border-b border-slate-100 pb-2"><User size={14} className="text-blue-500" /> Dados Clínicos</h3>
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Paciente</p>
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase mb-0.5">Paciente</p>
                                         <p className="text-sm font-black text-slate-800 uppercase leading-tight">{aihSelecionada.pacienteNome}</p>
                                         <p className="text-xs text-slate-500 font-bold mt-1">CNS: {aihSelecionada.cns}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Procedimento Solicitado</p>
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase mb-0.5">Procedimento Solicitado</p>
                                         <p className="text-xs font-black text-slate-700 uppercase leading-snug">{aihSelecionada.procedimento}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Diagnóstico / CID</p>
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase mb-0.5">Diagnóstico / CID</p>
                                         <p className="text-xs font-bold text-slate-700 uppercase">{aihSelecionada.diagnosticoInicial || 'NÃO INFORMADO'} <br /><span className="inline-block mt-1 text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded font-black">{aihSelecionada.cid10 || ''}</span></p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Médico Solicitante</p>
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase mb-0.5">Médico Solicitante</p>
                                         <p className="text-xs font-bold text-slate-700 uppercase">{aihSelecionada.medicoSolicitante || aihSelecionada.cirurgiao || '---'}</p>
                                     </div>
                                 </div>
@@ -437,16 +437,16 @@ export default function Autorizacoes() {
                                             historicoPaciente.map(hist => (
                                                 <div key={hist.id} className="p-3 rounded-lg border border-slate-100 bg-slate-50 text-left">
                                                     <div className="flex justify-between items-start mb-1">
-                                                        <span className="text-[10px] font-black text-slate-500"><Calendar size={10} className="inline mr-1" /> {hist.dataEmissao ? new Date(hist.dataEmissao).toLocaleDateString('pt-BR') : '---'}</span>
-                                                        <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${hist.status === 'autorizada' ? 'bg-emerald-100 text-emerald-700' : hist.status === 'devolvida' || hist.status === 'negada' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>{hist.status}</span>
+                                                        <span className="text-[11px] font-black text-slate-500"><Calendar size={10} className="inline mr-1" /> {hist.dataEmissao ? new Date(hist.dataEmissao).toLocaleDateString('pt-BR') : '---'}</span>
+                                                        <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded ${hist.status === 'autorizada' ? 'bg-emerald-100 text-emerald-700' : hist.status === 'devolvida' || hist.status === 'negada' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>{hist.status}</span>
                                                     </div>
-                                                    <p className="text-[10px] font-bold text-slate-800 uppercase line-clamp-2">{hist.procedimento}</p>
+                                                    <p className="text-[11px] font-bold text-slate-800 uppercase line-clamp-2">{hist.procedimento}</p>
                                                 </div>
                                             ))
                                         ) : (
                                             <div className="flex flex-col items-center justify-center h-full text-slate-400 opacity-60">
                                                 <Activity size={32} className="mb-2" />
-                                                <p className="text-[10px] uppercase font-bold text-center">Nenhum histórico anterior localizado para este CNS.</p>
+                                                <p className="text-[11px] uppercase font-bold text-center">Nenhum histórico anterior localizado para este CNS.</p>
                                             </div>
                                         )}
                                     </div>
@@ -461,7 +461,7 @@ export default function Autorizacoes() {
                                     </div>
                                     {tipoAcao && (
                                         <div className="animate-in fade-in slide-in-from-top-4 flex-1 flex flex-col bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                                            <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">
                                                 {tipoAcao === 'aprovar' ? 'Número da Autorização (SES/SUS)' : 'Motivo da Devolução'}
                                             </label>
                                             <div className="relative mb-6">

@@ -371,12 +371,12 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                 {DAYS.map(day => (
                     <div key={`head-${day.id}`} className={`flex-1 flex flex-col border-r border-slate-200 last:border-0 ${isPrint ? 'min-w-[150px]' : 'min-w-[300px]'}`}>
                         <div className={`flex items-center justify-center border-b border-slate-200 ${isPrint ? 'py-1' : 'py-2.5'}`}>
-                            <span className={`${isPrint ? 'text-[9px]' : 'text-xs'} font-black uppercase tracking-widest text-slate-700`}>{day.label}</span>
+                            <span className={`${isPrint ? 'text-[10px]' : 'text-xs'} font-black uppercase tracking-widest text-slate-700`}>{day.label}</span>
                         </div>
                         <div className="flex">
                             {rooms.map((room, idx) => (
                                 <div key={`h-${day.id}-${room}`} className={`flex-1 flex items-center justify-center bg-slate-100 ${isPrint ? 'py-0.5' : 'py-1.5'} ${idx !== rooms.length - 1 ? 'border-r border-slate-200' : ''}`}>
-                                    <span className={`${isPrint ? 'text-[7px]' : 'text-[9px]'} font-black tracking-tight text-slate-500 truncate`}>SALA {room}</span>
+                                    <span className={`${isPrint ? 'text-[7px]' : 'text-[10px]'} font-black tracking-tight text-slate-500 truncate`}>SALA {room}</span>
                                 </div>
                             ))}
                         </div>
@@ -390,7 +390,7 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                     
                     {/* Título da Semana (Coluna Lateral) */}
                     <div className={`shrink-0 border-r border-slate-200 flex flex-col items-center justify-center bg-slate-50 ${isPrint ? 'w-10 py-1' : 'w-16 py-4'}`}>
-                        <span className={`${isPrint ? 'text-[8px]' : 'text-[10px]'} font-black uppercase text-slate-400 tracking-widest rotate-180`} style={{ writingMode: 'vertical-rl' }}>Semana {week}</span>
+                        <span className={`${isPrint ? 'text-[9px]' : 'text-[11px]'} font-black uppercase text-slate-400 tracking-widest rotate-180`} style={{ writingMode: 'vertical-rl' }}>Semana {week}</span>
                     </div>
 
                     {/* Células dos Dias */}
@@ -402,7 +402,7 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                             <div key={`cell-${week}-${day.id}`} className={`flex-1 flex flex-col border-r border-slate-100 last:border-0 ${isPrint ? 'min-w-[150px] p-0.5 gap-0.5' : 'min-w-[300px] p-1.5 gap-1.5'} ${!isCurrentMonth ? 'bg-slate-50 opacity-50' : 'bg-white'}`}>
                                 
                                 {/* DATA DO DIA */}
-                                <div className={`w-full text-center ${isPrint ? 'text-[7px] pb-0.5' : 'text-[10px] pb-1'} font-black uppercase tracking-wider ${!isCurrentMonth ? 'text-slate-300' : 'text-slate-400'}`}>
+                                <div className={`w-full text-center ${isPrint ? 'text-[7px] pb-0.5' : 'text-[11px] pb-1'} font-black uppercase tracking-wider ${!isCurrentMonth ? 'text-slate-300' : 'text-slate-400'}`}>
                                     {format(cellDate, "dd 'de' MMM", { locale: ptBR })}
                                 </div>
                                 
@@ -421,19 +421,19 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                                                         onClick={() => !isPrint && handleBlockEditClick(block, week, room)}
                                                         className={`w-full rounded border ${!isPrint ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative ${colorTheme.class} ${isPrint ? 'p-1' : 'p-1.5'}`}
                                                     >
-                                                        <div className={`${isPrint ? 'text-[7px] mb-0' : 'text-[9px] mb-0.5'} font-black tracking-tight opacity-80 flex items-center justify-between`}>
+                                                        <div className={`${isPrint ? 'text-[7px] mb-0' : 'text-[10px] mb-0.5'} font-black tracking-tight opacity-80 flex items-center justify-between`}>
                                                             <span>{block.startHour} - {block.endHour}</span>
                                                         </div>
-                                                        <div className={`${isPrint ? 'text-[8px]' : 'text-[10px]'} font-black uppercase leading-tight line-clamp-2`}>
+                                                        <div className={`${isPrint ? 'text-[9px]' : 'text-[11px]'} font-black uppercase leading-tight line-clamp-2`}>
                                                             {block.especialidade}
                                                         </div>
                                                         {block.medico && (
-                                                            <div className={`${isPrint ? 'text-[6px]' : 'text-[8px]'} font-bold mt-0.5 uppercase truncate opacity-80 flex items-center gap-1`}>
+                                                            <div className={`${isPrint ? 'text-[6px]' : 'text-[9px]'} font-bold mt-0.5 uppercase truncate opacity-80 flex items-center gap-1`}>
                                                                 <User size={10} /> {block.medico}
                                                             </div>
                                                         )}
                                                         {block.observacoes && (
-                                                            <div className={`${isPrint ? 'text-[6px] border-black/5 mt-0.5 pt-0.5' : 'text-[8px] border-black/10 mt-1 pt-1'} font-semibold uppercase italic opacity-75 line-clamp-2 leading-tight border-t`}>
+                                                            <div className={`${isPrint ? 'text-[6px] border-black/5 mt-0.5 pt-0.5' : 'text-[9px] border-black/10 mt-1 pt-1'} font-semibold uppercase italic opacity-75 line-clamp-2 leading-tight border-t`}>
                                                                 Obs: {block.observacoes}
                                                             </div>
                                                         )}
@@ -485,7 +485,7 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                             <button onClick={handlePrevMonth} className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600 transition-colors"><ChevronLeft size={16} strokeWidth={3} /></button>
                             <div className="px-3 flex flex-col items-center justify-center min-w-[140px] relative group cursor-pointer">
                                 <span className="text-xs font-black text-slate-700 uppercase tracking-widest leading-none mt-1">{format(parse(selectedMonth, 'yyyy-MM', new Date()), 'MMMM', { locale: ptBR })}</span>
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{format(parse(selectedMonth, 'yyyy-MM', new Date()), 'yyyy', { locale: ptBR })}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{format(parse(selectedMonth, 'yyyy-MM', new Date()), 'yyyy', { locale: ptBR })}</span>
                                 <input type="month" value={selectedMonth} onChange={handleMonthChange} className="absolute inset-0 opacity-0 cursor-pointer w-full" />
                             </div>
                             <button onClick={handleNextMonth} className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600 transition-colors"><ChevronRight size={16} strokeWidth={3} /></button>
@@ -493,23 +493,23 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                         
                         <div className="h-6 w-px bg-slate-200 shrink-0"></div>
 
-                        <button onClick={handleReplicateToNextMonth} disabled={loading} className="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 transition-all shrink-0">
+                        <button onClick={handleReplicateToNextMonth} disabled={loading} className="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-black text-[11px] uppercase flex items-center gap-2 transition-all shrink-0">
                             <Copy size={16} /> <span className="hidden sm:inline">Replicar P/ Próx. Mês</span> <span className="sm:hidden">Copiar</span>
                         </button>
 
-                        <button onClick={handleClearMonth} disabled={loading} className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 transition-all shrink-0">
+                        <button onClick={handleClearMonth} disabled={loading} className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-black text-[11px] uppercase flex items-center gap-2 transition-all shrink-0">
                             <Trash2 size={16} /> <span className="hidden sm:inline">Limpar Mês</span> <span className="sm:hidden">Limpar</span>
                         </button>
                         
                         <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-2 rounded-xl border border-emerald-100/50 shrink-0">
                             {saving ? (
-                                <><Loader2 size={14} className="animate-spin" /> <span className="text-[10px] font-bold uppercase tracking-widest">Salvando...</span></>
+                                <><Loader2 size={14} className="animate-spin" /> <span className="text-[11px] font-bold uppercase tracking-widest">Salvando...</span></>
                             ) : (
-                                <><CheckCircle2 size={14} /> <span className="text-[10px] font-bold uppercase tracking-widest">Salvo Auto</span></>
+                                <><CheckCircle2 size={14} /> <span className="text-[11px] font-bold uppercase tracking-widest">Salvo Auto</span></>
                             )}
                         </div>
 
-                        <button onClick={handleExportPdf} disabled={isPrinting || loading} className="p-2.5 sm:px-5 sm:py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 shrink-0">
+                        <button onClick={handleExportPdf} disabled={isPrinting || loading} className="p-2.5 sm:px-5 sm:py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl font-black text-[11px] uppercase flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 shrink-0">
                             {isPrinting ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
                             <span className="hidden sm:inline">Exportar PDF</span>
                         </button>
@@ -558,7 +558,7 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                                 </div>
                                 <div>
                                     <h3 className="font-black text-slate-800 uppercase text-lg tracking-tighter leading-none">Bloco Fixo</h3>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1">
                                         Semana {editingBlock.week} • Sala {editingBlock.room}
                                     </p>
                                 </div>
@@ -569,17 +569,17 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                         <div className="p-5 space-y-4">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Início</label>
+                                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1">Início</label>
                                     <input type="time" required value={editingBlock.startHour} onChange={e => setEditingBlock({...editingBlock, startHour: e.target.value})} className="w-full text-sm font-bold p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none" />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Fim</label>
+                                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1">Fim</label>
                                     <input type="time" required value={editingBlock.endHour} onChange={e => setEditingBlock({...editingBlock, endHour: e.target.value})} className="w-full text-sm font-bold p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none" />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block mb-1">Especialidade / Serviço</label>
+                                <label className="text-[11px] font-black uppercase tracking-widest text-emerald-600 block mb-1">Especialidade / Serviço</label>
                                 {settingsData.especialidades.length > 0 ? (
                                     <select required value={editingBlock.especialidade} onChange={e => setEditingBlock({...editingBlock, especialidade: e.target.value})} className="w-full text-xs font-bold uppercase p-2 border border-emerald-200 bg-emerald-50 rounded-lg outline-none">
                                         <option value="">SELECIONE...</option>
@@ -595,7 +595,7 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-blue-600 block mb-1">Médico Titular (Opcional)</label>
+                                <label className="text-[11px] font-black uppercase tracking-widest text-blue-600 block mb-1">Médico Titular (Opcional)</label>
                                 {settingsData.cirurgioes.length > 0 ? (
                                     <select value={editingBlock.medico} onChange={e => setEditingBlock({...editingBlock, medico: e.target.value})} className="w-full text-xs font-bold uppercase p-2 border border-blue-200 bg-blue-50 rounded-lg outline-none">
                                         <option value="">A DEFINIR / ROTATIVO...</option>
@@ -611,7 +611,7 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Observações (Opcional)</label>
+                                <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1">Observações (Opcional)</label>
                                 <textarea 
                                     value={editingBlock.observacoes || ''} 
                                     onChange={e => setEditingBlock({...editingBlock, observacoes: e.target.value})} 
@@ -621,7 +621,7 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-2">Cor do Bloco</label>
+                                <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-2">Cor do Bloco</label>
                                 <div className="flex flex-wrap gap-2">
                                     {COLORS.map(c => (
                                         <button
@@ -637,17 +637,17 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
 
                         <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50 gap-2">
                             {editingBlock.id && scheduleData[editingBlock.week] && scheduleData[editingBlock.week][editingBlock.room] && scheduleData[editingBlock.week][editingBlock.room].some(b => b.id === editingBlock.id) ? (
-                                <button type="button" onClick={deleteBlock} className="p-2.5 text-rose-500 hover:bg-rose-100 rounded-xl transition-colors flex items-center gap-1 text-[10px] font-bold uppercase">
+                                <button type="button" onClick={deleteBlock} className="p-2.5 text-rose-500 hover:bg-rose-100 rounded-xl transition-colors flex items-center gap-1 text-[11px] font-bold uppercase">
                                     <Trash2 size={16} /> Excluir
                                 </button>
                             ) : (
                                 <div />
                             )}
                             <div className="flex gap-2">
-                                <button type="button" onClick={replicateBlock} className="px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl transition-colors flex items-center gap-2 text-[9px] font-black uppercase">
+                                <button type="button" onClick={replicateBlock} className="px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl transition-colors flex items-center gap-2 text-[10px] font-black uppercase">
                                     <Layers size={14} /> Replicar Mensal
                                 </button>
-                                <button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors flex items-center gap-2 text-[10px] font-bold uppercase shadow-sm shadow-blue-500/20">
+                                <button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors flex items-center gap-2 text-[11px] font-bold uppercase shadow-sm shadow-blue-500/20">
                                     <Save size={16} /> Salvar Neste Dia
                                 </button>
                             </div>

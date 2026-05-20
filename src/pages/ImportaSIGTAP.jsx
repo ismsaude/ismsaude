@@ -127,7 +127,7 @@ const SigtapUploader = () => {
                                 style={{ width: `${(progress / total) * 100}%` }}
                             ></div>
                         </div>
-                        <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest">
                             <span>{progress} processados</span>
                             <span>{total} total</span>
                         </div>
@@ -142,13 +142,13 @@ const SigtapUploader = () => {
                     <div className="bg-emerald-50 text-emerald-600 p-6 rounded-3xl border border-emerald-100 flex flex-col items-center gap-2 font-black animate-in zoom-in duration-300">
                         <CheckCircle size={32} />
                         <span className="uppercase text-sm tracking-widest">Importação Finalizada!</span>
-                        <span className="text-[10px] opacity-70 font-bold">Pode fechar esta tela agora.</span>
+                        <span className="text-[11px] opacity-70 font-bold">Pode fechar esta tela agora.</span>
                     </div>
                 )}
 
                 <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 flex items-start gap-3 text-left">
                     <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
-                    <p className="text-[10px] text-amber-700 font-bold leading-relaxed">
+                    <p className="text-[11px] text-amber-700 font-bold leading-relaxed">
                         ATENÇÃO: Este processo pode levar alguns minutos pois o arquivo do governo é grande. Não feche a janela até a barra completar.
                     </p>
                 </div>

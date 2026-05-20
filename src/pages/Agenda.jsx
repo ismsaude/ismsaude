@@ -425,6 +425,7 @@ const Agenda = () => {
 
     const handleDeleteAgendamento = async (id) => {
         try {
+            const consulta = consultas.find(c => c.id === id);
             const { error } = await supabase.from('consultas').delete().eq('id', id);
             if (error) {
                 if (error.code === '23503' || String(error.message).includes('foreign key') || String(error).includes('409') || error.code === '409') {
@@ -432,6 +433,9 @@ const Agenda = () => {
                     return;
                 }
                 throw error;
+            }
+            if (consulta) {
+                await logAction('EXCLUSÃO DE AGENDAMENTO', `Agendamento do paciente ${consulta.paciente_nome || 'Desconhecido'} do dia ${consulta.data_agendamento} excluído.`);
             }
             toast.success("Agendamento excluído definitivamente!");
             fetchConsultas();
@@ -630,8 +634,12 @@ const Agenda = () => {
             : (isSubReserva ? "Deseja remover essa sub-reserva?" : "Deseja remover esse bloco médico? Apenas a restrição será apagada, os agendamentos já contidos nele permanecerão intactos.");
         if (!window.confirm(msg)) return;
         try {
+            const consulta = consultas.find(c => c.id === id);
             const { error } = await supabase.from('consultas').delete().eq('id', id);
             if (error) throw error;
+            if (consulta) {
+                await logAction('EXCLUSÃO DE GRADE/BLOQUEIO', `Grade/Bloqueio: ${consulta.paciente_nome || 'Desconhecido'} do dia ${consulta.data_agendamento} removido.`);
+            }
             toast.success("Bloco removido!");
             fetchConsultas();
         } catch (error) { toast.error("Erro ao deletar."); }
@@ -639,7 +647,7 @@ const Agenda = () => {
 
     const hojePuro = paramDateStr(now);
     const inputStyle = "w-full h-9 px-3 bg-white border border-slate-300 rounded text-xs outline-none focus:border-blue-500 text-slate-800";
-    const labelStyle = "text-[10px] font-semibold text-slate-500 uppercase ml-1 block mb-1";
+    const labelStyle = "text-[11px] font-semibold text-slate-500 uppercase ml-1 block mb-1";
 
     if (!unidadeAtual) return <UnitPrompt />;
 
@@ -658,10 +666,10 @@ const Agenda = () => {
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                         <input type="text" placeholder="Buscar Paciente..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-8 pl-8 pr-3 bg-slate-100 border-none rounded text-xs outline-none focus:ring-1 focus:ring-blue-500 transition-all font-medium" />
                     </div>
-                    <button onClick={() => setIsConfigModalOpen(true)} className="h-8 px-3 bg-slate-50 border border-slate-200 text-slate-600 hover:text-blue-600 rounded text-[10px] font-bold uppercase transition-all flex items-center gap-1.5 shadow-sm" title="Personalizar visualização da grade neste dispositivo">
+                    <button onClick={() => setIsConfigModalOpen(true)} className="h-8 px-3 bg-slate-50 border border-slate-200 text-slate-600 hover:text-blue-600 rounded text-[11px] font-bold uppercase transition-all flex items-center gap-1.5 shadow-sm" title="Personalizar visualização da grade neste dispositivo">
                         <Settings size={14} /> Ajustar Grade
                     </button>
-                    <button onClick={() => abrirNovoAgendamento(hojePuro, '08:00', '')} className="h-8 px-3 bg-blue-600 text-white rounded text-[10px] font-bold uppercase shadow-sm hover:bg-blue-700 transition-all flex items-center gap-1.5">
+                    <button onClick={() => abrirNovoAgendamento(hojePuro, '08:00', '')} className="h-8 px-3 bg-blue-600 text-white rounded text-[11px] font-bold uppercase shadow-sm hover:bg-blue-700 transition-all flex items-center gap-1.5">
                         <Plus size={14} /> Agendar
                     </button>
                 </div>
@@ -675,9 +683,9 @@ const Agenda = () => {
                         {weekDays[0].getDate()}/{weekDays[0].getMonth() + 1} - {weekDays[4].getDate()}/{weekDays[4].getMonth() + 1}
                     </div>
                     <button onClick={nextWeek} className="p-1 hover:bg-slate-200 text-slate-600 rounded"><ChevronRight size={16} /></button>
-                    <button onClick={() => setReferenceDate(new Date(new Date().setHours(12, 0, 0, 0)))} className="ml-2 px-3 py-1 bg-white border border-slate-300 text-[10px] font-bold text-slate-600 uppercase rounded hover:bg-slate-100 hover:text-slate-800 transition shadow-sm">Hoje</button>
+                    <button onClick={() => setReferenceDate(new Date(new Date().setHours(12, 0, 0, 0)))} className="ml-2 px-3 py-1 bg-white border border-slate-300 text-[11px] font-bold text-slate-600 uppercase rounded hover:bg-slate-100 hover:text-slate-800 transition shadow-sm">Hoje</button>
                 </div>
-                <div className="flex items-center gap-4 text-[9px] font-semibold text-slate-500 uppercase tracking-widest hidden sm:flex">
+                <div className="flex items-center gap-4 text-[10px] font-semibold text-slate-500 uppercase tracking-widest hidden sm:flex">
                     <span className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-400 border border-blue-600"></div> Agendado</span>
                     <span className="flex items-center gap-1"><div className="w-2 h-2 bg-amber-400 border border-amber-600"></div> Recepção</span>
                     <span className="flex items-center gap-1"><div className="w-2 h-2 bg-purple-400 border border-purple-600"></div> Cons.</span>
@@ -697,7 +705,7 @@ const Agenda = () => {
                             const isToday = paramDateStr(dayObj) === hojePuro;
                             return (
                                 <div key={i} className={`flex-1 min-w-0 border-r border-slate-200 h-10 flex flex-col items-center justify-center relative ${isToday ? 'bg-[#fffae6]' : 'bg-white'}`}>
-                                    <span className={`text-[11px] font-bold uppercase tracking-tight ${isToday ? 'text-blue-600' : 'text-slate-700'}`}>
+                                    <span className={`text-xs font-bold uppercase tracking-tight ${isToday ? 'text-blue-600' : 'text-slate-700'}`}>
                                         {DIAS_NOME[i]} {dayObj.getDate().toString().padStart(2, '0')}/{String(dayObj.getMonth() + 1).padStart(2, '0')}
                                     </span>
                                     {isToday && <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
@@ -726,8 +734,8 @@ const Agenda = () => {
                                         {Array.from({ length: steps }).map((_, stepIdx) => {
                                             const min = stepIdx * gradeConfig.intervalo;
                                             return (
-                                                <div key={stepIdx} className="w-full flex justify-center items-start pt-1 text-[9px] font-semibold text-slate-400 border-r border-slate-100" style={{ height: `${stepPx}px` }}>
-                                                    <div className={`${stepIdx === 0 ? 'text-[10px] font-bold text-slate-500' : 'opacity-60 text-[8.5px]'} px-1 leading-none uppercase`}>
+                                                <div key={stepIdx} className="w-full flex justify-center items-start pt-1 text-[10px] font-semibold text-slate-400 border-r border-slate-100" style={{ height: `${stepPx}px` }}>
+                                                    <div className={`${stepIdx === 0 ? 'text-[11px] font-bold text-slate-500' : 'opacity-60 text-[8.5px]'} px-1 leading-none uppercase`}>
                                                         {String(h).padStart(2, '0')}:{String(min).padStart(2, '0')}
                                                     </div>
                                                 </div>
@@ -775,14 +783,14 @@ const Agenda = () => {
                                             >
                                                 <div className={`absolute left-[-4px] right-[-1px] pointer-events-auto flex flex-col shadow-sm border ${color.border} border-l-[4px] ${color.borderL} rounded-t-lg z-20`} style={{ transform: 'translateY(-100%)', top: '0px', backgroundColor: 'white' }}>
                                                     <div className={`${color.headerBg} px-2 py-0.5 flex justify-between items-center border-b ${color.border} rounded-t-lg backdrop-blur-sm`}>
-                                                        <div className={`text-[10px] font-black uppercase tracking-tight flex items-center gap-1.5 ${color.text}`}>
+                                                        <div className={`text-[11px] font-black uppercase tracking-tight flex items-center gap-1.5 ${color.text}`}>
                                                             <CalendarCheck size={10} className={color.icon} />
                                                             {grade.medico}
                                                         </div>
                                                         <button onClick={(eb) => { eb.stopPropagation(); handleDeleteGrade(grade.id); }} className={`p-0.5 text-slate-400 hover:text-rose-500 rounded pointer-events-auto transition-colors focus:outline-none`} title="Apagar Bloco de Horário"><X size={12} /></button>
                                                     </div>
                                                     {grade.observacoes && grade.observacoes.replace(/\[DUR:\d+\]/, '').trim() && (
-                                                        <div className={`px-2 py-1 text-[9px] font-bold uppercase flex-1 leading-tight ${color.text} opacity-80`}>
+                                                        <div className={`px-2 py-1 text-[10px] font-bold uppercase flex-1 leading-tight ${color.text} opacity-80`}>
                                                             {grade.observacoes.replace(/\[DUR:\d+\]/, '').trim()}
                                                         </div>
                                                     )}
@@ -802,11 +810,11 @@ const Agenda = () => {
                                                 backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,0,0,0.02), rgba(0,0,0,0.02) 10px, transparent 10px, transparent 20px)'
                                             }}
                                         >
-                                            <div className="text-[10px] font-black uppercase text-slate-500 flex items-center gap-1 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-200">
+                                            <div className="text-[11px] font-black uppercase text-slate-500 flex items-center gap-1 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-200">
                                                 <AlertCircle size={10} /> BLOQUEADO
                                             </div>
                                             {bloq.observacoes && bloq.observacoes.replace(/\[DUR:\d+\]/, '').trim() && (
-                                                <div className="text-[9px] font-bold text-slate-500 mt-1 uppercase text-center bg-white px-1.5 py-0.5 rounded max-w-full truncate border border-slate-100">
+                                                <div className="text-[10px] font-bold text-slate-500 mt-1 uppercase text-center bg-white px-1.5 py-0.5 rounded max-w-full truncate border border-slate-100">
                                                     {bloq.observacoes.replace(/\[DUR:\d+\]/, '').trim()}
                                                 </div>
                                             )}
@@ -824,11 +832,11 @@ const Agenda = () => {
                                                 height: `${subr.height}px`
                                             }}
                                         >
-                                            <div className="text-[10px] font-black uppercase text-cyan-800 flex items-center gap-1 bg-white/90 px-2 py-0.5 rounded shadow-sm border border-cyan-200">
+                                            <div className="text-[11px] font-black uppercase text-cyan-800 flex items-center gap-1 bg-white/90 px-2 py-0.5 rounded shadow-sm border border-cyan-200">
                                                 <CalendarClock size={10} /> {subr.paciente_nome.replace('[SUB-RESERVA: ', '').replace(']', '').replace('[SUB-RESERVA]', 'Sub-Reserva')}
                                             </div>
                                             {subr.observacoes && subr.observacoes.replace(/\[DUR:\d+\]/, '').trim() && (
-                                                <div className="text-[9px] font-bold text-cyan-700 mt-1 uppercase text-center bg-white/80 px-1.5 py-0.5 rounded max-w-full truncate border border-cyan-100">
+                                                <div className="text-[10px] font-bold text-cyan-700 mt-1 uppercase text-center bg-white/80 px-1.5 py-0.5 rounded max-w-full truncate border border-cyan-100">
                                                     {subr.observacoes.replace(/\[DUR:\d+\]/, '').trim()}
                                                 </div>
                                             )}
@@ -848,15 +856,15 @@ const Agenda = () => {
                                             >
                                                 <div className="flex justify-between items-start">
                                                     <div className="flex-1 min-w-0">
-                                                        <div className={`text-[9px] font-bold leading-none flex items-center gap-1 mt-0.5 ${agend.status === 'Cancelado' || agend.status === 'Faltou' || agend.status === 'Desistiu' ? 'opacity-60 text-slate-700' : 'text-slate-800'}`}>
-                                                            <span className="bg-white/60 text-slate-600 px-1 py-[1px] rounded text-[8px] font-black tracking-tight shrink-0">{agend.rawTime}</span>
+                                                        <div className={`text-[10px] font-bold leading-none flex items-center gap-1 mt-0.5 ${agend.status === 'Cancelado' || agend.status === 'Faltou' || agend.status === 'Desistiu' ? 'opacity-60 text-slate-700' : 'text-slate-800'}`}>
+                                                            <span className="bg-white/60 text-slate-600 px-1 py-[1px] rounded text-[9px] font-black tracking-tight shrink-0">{agend.rawTime}</span>
                                                             <span className={`truncate flex-1 min-w-0 ${agend.status === 'Cancelado' || agend.status === 'Desistiu' ? 'line-through' : ''}`} title={agend.paciente_nome}>
                                                                 {agend.paciente_nome}
                                                             </span>
-                                                            <span className="opacity-70 shrink-0 font-semibold tracking-tighter text-[8px]">({agend.paciente_telefone || 'S/ Fone'})</span>
+                                                            <span className="opacity-70 shrink-0 font-semibold tracking-tighter text-[9px]">({agend.paciente_telefone || 'S/ Fone'})</span>
                                                         </div>
                                                         {agend.height >= 30 && (
-                                                            <div className={`text-[8px] font-bold ${agend.status === 'Agendado' ? 'text-blue-600/80' : 'text-slate-500'} mt-[3px] truncate flex items-center gap-1 uppercase leading-tight tracking-tight`}>
+                                                            <div className={`text-[9px] font-bold ${agend.status === 'Agendado' ? 'text-blue-600/80' : 'text-slate-500'} mt-[3px] truncate flex items-center gap-1 uppercase leading-tight tracking-tight`}>
                                                                 {agend.convenio} {agend.medico && `• ${agend.medico.split(' ')[0]}`}
                                                             </div>
                                                         )}
@@ -899,9 +907,9 @@ const Agenda = () => {
                     >
                         <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex justify-between items-start">
                             <div>
-                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-tight">Data e Horário Referência</div>
+                                <div className="text-[11px] font-black text-slate-400 uppercase tracking-tight">Data e Horário Referência</div>
                                 <div className="text-xs font-bold text-blue-900 mt-0.5">{actionMenu.dataStr.split('-').reverse().join('/')} às {actionMenu.horario}</div>
-                                {actionMenu.preMedico && <div className="text-[9px] font-bold text-blue-600 mt-0.5 uppercase bg-blue-100 px-1 inline-block rounded">Bloco: {actionMenu.preMedico}</div>}
+                                {actionMenu.preMedico && <div className="text-[10px] font-bold text-blue-600 mt-0.5 uppercase bg-blue-100 px-1 inline-block rounded">Bloco: {actionMenu.preMedico}</div>}
                             </div>
                             <button onClick={() => setActionMenu(null)} className="text-slate-400 hover:bg-slate-200 rounded p-0.5"><X size={14} /></button>
                         </div>
@@ -954,7 +962,7 @@ const Agenda = () => {
                         <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex justify-between items-start">
                             <div className="flex-1 min-w-0 pr-2">
                                 <div className="flex items-center gap-1.5">
-                                    <div className={`text-[10px] font-black uppercase flex-1 truncate ${STATUS_COLORS[quickPatient.agend.status]?.text || 'text-slate-500'}`} title={quickPatient.agend.paciente_nome}>{quickPatient.agend.paciente_nome}</div>
+                                    <div className={`text-[11px] font-black uppercase flex-1 truncate ${STATUS_COLORS[quickPatient.agend.status]?.text || 'text-slate-500'}`} title={quickPatient.agend.paciente_nome}>{quickPatient.agend.paciente_nome}</div>
                                     <button onClick={() => {
                                         setFormData({
                                             id: quickPatient.agend.id,
@@ -979,7 +987,7 @@ const Agenda = () => {
                                     }} className="text-slate-400 hover:text-amber-500 shrink-0 transition-colors" title="Editar Agendamento"><Pencil size={10} strokeWidth={3} /></button>
                                     <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Agendado', false); setQuickPatient(null); }} className="text-slate-400 shrink-0 hover:text-blue-600 transition-colors" title="Limpar todos os status (Voltar p/ Agendado)"><RefreshCw size={10} strokeWidth={3} /></button>
                                 </div>
-                                <div className="text-[9px] font-bold text-slate-400 mt-0.5 truncate" title={`${quickPatient.agend.paciente_cidade || 'Sem Cidade'} • ${quickPatient.agend.medico?.split(' ')[0]}`}>{quickPatient.agend.paciente_cidade || 'Sem Cidade'} • {quickPatient.agend.medico?.split(' ')[0]}</div>
+                                <div className="text-[10px] font-bold text-slate-400 mt-0.5 truncate" title={`${quickPatient.agend.paciente_cidade || 'Sem Cidade'} • ${quickPatient.agend.medico?.split(' ')[0]}`}>{quickPatient.agend.paciente_cidade || 'Sem Cidade'} • {quickPatient.agend.medico?.split(' ')[0]}</div>
                             </div>
                             <button onClick={() => setQuickPatient(null)} className="text-slate-400 hover:bg-slate-200 rounded p-0.5 shrink-0"><X size={14} /></button>
                         </div>
@@ -1055,7 +1063,7 @@ const Agenda = () => {
                         <span className="text-sm font-medium">Selecione o novo horário na Agenda para <strong className="text-amber-400 font-bold uppercase">{reschedulingMode.paciente_nome}</strong></span>
                     </div>
                     <div className="h-6 w-px bg-slate-700"></div>
-                    <button onClick={() => setReschedulingMode(null)} className="text-[10px] font-black text-slate-400 hover:text-white uppercase px-2 hover:bg-slate-800 rounded py-1 transition-colors">Cancelar</button>
+                    <button onClick={() => setReschedulingMode(null)} className="text-[11px] font-black text-slate-400 hover:text-white uppercase px-2 hover:bg-slate-800 rounded py-1 transition-colors">Cancelar</button>
                 </div>
             )}
 
@@ -1126,7 +1134,7 @@ const Agenda = () => {
                             <button onClick={() => setIsConfigModalOpen(false)} className="text-slate-400 hover:text-slate-700"><X size={16} /></button>
                         </div>
                         <form onSubmit={(e) => { e.preventDefault(); setIsConfigModalOpen(false); toast.success("Configuração Salva"); }} className="p-5 space-y-4">
-                            <div className="bg-amber-50 p-2 text-[10px] font-bold text-amber-800 border border-amber-200 rounded">
+                            <div className="bg-amber-50 p-2 text-[11px] font-bold text-amber-800 border border-amber-200 rounded">
                                 Estas configurações são salvas apenas neste dispositivo (PC atual) para permitir que diferentes recepções configurem a agenda como preferirem.
                             </div>
 
@@ -1164,7 +1172,7 @@ const Agenda = () => {
                                 <input autoFocus required type="text" value={buscaPaciente || formData.paciente_nome} onChange={e => { setBuscaPaciente(cleanText(e.target.value)); setFormData({ ...formData, paciente_nome: cleanText(e.target.value), paciente_id: null }); }} className={`${inputStyle} pl-8 shadow-sm`} placeholder="BUSCAR OU NOME DO PACIENTE" />
                                 {!formData.paciente_id && buscaPaciente.length >= 3 && (
                                     <div className="absolute w-full mt-1 bg-white border rounded shadow-lg max-h-40 overflow-auto">
-                                        {resultadosPacientes.map(p => <div key={p.id} onClick={() => selecionarPaciente(p)} className="p-2 border-b text-xs hover:bg-blue-50 cursor-pointer uppercase font-semibold">{p.nome} <span className="text-[9px] text-slate-400 ml-2">{p.cpf}</span></div>)}
+                                        {resultadosPacientes.map(p => <div key={p.id} onClick={() => selecionarPaciente(p)} className="p-2 border-b text-xs hover:bg-blue-50 cursor-pointer uppercase font-semibold">{p.nome} <span className="text-[10px] text-slate-400 ml-2">{p.cpf}</span></div>)}
                                         {resultadosPacientes.length === 0 && !buscandoPacientes && (
                                             <div
                                                 onClick={() => {
@@ -1218,7 +1226,7 @@ const Agenda = () => {
                                 <label className={labelStyle}>Anexar Arquivo do Computador (PDF, Imagens)</label>
                                 <input type="file" onChange={(e) => setSelectedFile(e.target.files[0])} className={`${inputStyle} file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 p-[3px]`} />
                                 {formData.link_anexo && !selectedFile && (
-                                    <div className="text-[10px] text-emerald-600 mt-1 font-bold">✓ Já possui anexo(s) salvo(s) (você pode carregar mais arquivos para esse agendamento).</div>
+                                    <div className="text-[11px] text-emerald-600 mt-1 font-bold">✓ Já possui anexo(s) salvo(s) (você pode carregar mais arquivos para esse agendamento).</div>
                                 )}
                             </div>
 
@@ -1241,7 +1249,7 @@ const Agenda = () => {
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-sm">
                         <div className="bg-blue-600 p-3 flex justify-between rounded-t-lg"><h3 className="text-white text-xs font-bold uppercase">Reagendar</h3><button onClick={() => setIsReagendarModalOpen(false)} className="text-white"><X size={16} /></button></div>
                         <form onSubmit={handleReagendar} className="p-4 space-y-3">
-                            <div className="mb-2"><div className="text-[10px] text-slate-500 font-bold uppercase">Paciente</div><div className="text-xs font-bold">{consultaToReagendar.paciente_nome}</div></div>
+                            <div className="mb-2"><div className="text-[11px] text-slate-500 font-bold uppercase">Paciente</div><div className="text-xs font-bold">{consultaToReagendar.paciente_nome}</div></div>
                             <div><label className={labelStyle}>Data</label><input required type="date" value={formData.data_agendamento} onChange={e => setFormData({ ...formData, data_agendamento: e.target.value })} className={inputStyle} /></div>
                             <div><label className={labelStyle}>Hora</label><input required type="time" value={formData.horario} onChange={e => setFormData({ ...formData, horario: e.target.value })} className={inputStyle} /></div>
                             <button type="submit" className="w-full h-8 bg-blue-600 text-white font-bold text-xs uppercase rounded">Salvar Reagendamento</button>

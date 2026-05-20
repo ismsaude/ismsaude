@@ -329,7 +329,7 @@ const NewSurgery = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {[{ id: 'aih', label: 'AIH' }, { id: 'autorizada', label: 'Autorizada' }, { id: 'apa', label: 'APA' }, { id: 'opme', label: 'OPME' }].map(check => (
                             <button key={check.id} type="button" onClick={() => setFormData({ ...formData, [check.id]: !formData[check.id] })} className={`h-9 px-4 rounded-lg border flex items-center justify-between transition-all group ${formData[check.id] ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-300'}`}>
-                                <span className="text-[10px] font-bold uppercase tracking-wide">{check.label}</span>
+                                <span className="text-[11px] font-bold uppercase tracking-wide">{check.label}</span>
                                 <CheckCircle2 size={16} className={`transition-all ${formData[check.id] ? 'opacity-100 scale-110' : 'opacity-30 group-hover:opacity-50'}`} />
                             </button>
                         ))}
@@ -339,7 +339,7 @@ const NewSurgery = () => {
                 {/* --- BLOCO 4: STATUS E ANEXOS MULTIPLOS (ATUALIZADO) --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="bg-white/60 backdrop-blur-lg p-8 rounded-[3rem] shadow-sm border border-white/50 flex flex-col justify-between">
-                        <h3 className="text-[11px] font-black text-slate-600 uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-6 flex items-center gap-2">
                             <Activity size={16} /> Status e Observação
                         </h3>
 
@@ -355,7 +355,7 @@ const NewSurgery = () => {
 
                     <div className="bg-white/60 backdrop-blur-lg border border-white/50 p-8 rounded-[3rem] shadow-sm flex flex-col justify-between">
                         <div>
-                            <h3 className="text-[11px] font-black uppercase tracking-widest mb-2 text-slate-600 flex items-center gap-2">
+                            <h3 className="text-xs font-black uppercase tracking-widest mb-2 text-slate-600 flex items-center gap-2">
                                 <Paperclip size={16} /> Documentação
                             </h3>
                             <p className="text-xs font-bold text-slate-400">Anexe pedidos, laudos e exames.</p>
@@ -379,7 +379,7 @@ const NewSurgery = () => {
                                 <div className="p-3 bg-white/50 backdrop-blur-md rounded-full shadow-sm ring-1 ring-white/50 group-hover:ring-blue-100">
                                     <Paperclip size={20} className="text-slate-500 group-hover:text-blue-600" />
                                 </div>
-                                <span className="text-[10px] font-black uppercase text-slate-500 group-hover:text-blue-600">
+                                <span className="text-[11px] font-black uppercase text-slate-500 group-hover:text-blue-600">
                                     Adicionar Arquivos
                                 </span>
                             </div>
@@ -391,7 +391,7 @@ const NewSurgery = () => {
                                         <div key={index} className="flex justify-between items-center bg-blue-50 p-3 rounded-xl border border-blue-100">
                                             <div className="flex items-center gap-2 overflow-hidden">
                                                 <FileText size={16} className="text-blue-500 shrink-0" />
-                                                <span className="text-[10px] font-bold text-blue-700 truncate">{file.name}</span>
+                                                <span className="text-[11px] font-bold text-blue-700 truncate">{file.name}</span>
                                             </div>
                                             <button
                                                 type="button"

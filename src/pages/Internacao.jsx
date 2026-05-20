@@ -203,7 +203,7 @@ const Internacao = () => {
                     </div>
                     <div>
                         <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight">Mapa de Leitos</h1>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Gestão de Internações</p>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Gestão de Internações</p>
                     </div>
                 </div>
 
@@ -221,28 +221,28 @@ const Internacao = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <div className="bg-white/60 backdrop-blur-lg p-4 rounded-2xl shadow-sm border border-white/50 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total de Leitos</p>
+                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Total de Leitos</p>
                         <h3 className="text-2xl font-black text-slate-800">{stats.total}</h3>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><Bed size={20}/></div>
                 </div>
                 <div className="bg-emerald-50/60 backdrop-blur-lg p-4 rounded-2xl shadow-sm border border-emerald-100 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-black text-emerald-600/70 uppercase tracking-widest">Leitos Livres</p>
+                        <p className="text-[11px] font-black text-emerald-600/70 uppercase tracking-widest">Leitos Livres</p>
                         <h3 className="text-2xl font-black text-emerald-700">{stats.livres}</h3>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-emerald-200/50 flex items-center justify-center text-emerald-600"><CheckCircle2 size={20}/></div>
                 </div>
                 <div className="bg-blue-50/60 backdrop-blur-lg p-4 rounded-2xl shadow-sm border border-blue-100 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-black text-blue-600/70 uppercase tracking-widest">Ocupados</p>
+                        <p className="text-[11px] font-black text-blue-600/70 uppercase tracking-widest">Ocupados</p>
                         <h3 className="text-2xl font-black text-blue-700">{stats.ocupados}</h3>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-blue-200/50 flex items-center justify-center text-blue-600"><User size={20}/></div>
                 </div>
                 <div className="bg-amber-50/60 backdrop-blur-lg p-4 rounded-2xl shadow-sm border border-amber-100 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-black text-amber-600/70 uppercase tracking-widest">Taxa Ocupação</p>
+                        <p className="text-[11px] font-black text-amber-600/70 uppercase tracking-widest">Taxa Ocupação</p>
                         <h3 className="text-2xl font-black text-amber-700">
                             {stats.total > 0 ? Math.round((stats.ocupados / stats.total) * 100) : 0}%
                         </h3>
@@ -280,11 +280,11 @@ const Internacao = () => {
                                             <h4 className="text-sm font-black uppercase tracking-tight truncate">{leito.identificacao}</h4>
                                             
                                             {leito.status === 'Ocupado' ? (
-                                                <p className="text-[9px] font-bold uppercase mt-1 truncate px-1 bg-white/50 rounded text-blue-800">
+                                                <p className="text-[10px] font-bold uppercase mt-1 truncate px-1 bg-white/50 rounded text-blue-800">
                                                     {leito.internacao?.paciente_nome?.split(' ')[0] || 'Desconhecido'}
                                                 </p>
                                             ) : (
-                                                <p className="text-[9px] font-bold uppercase mt-1 opacity-70">{leito.status}</p>
+                                                <p className="text-[10px] font-bold uppercase mt-1 opacity-70">{leito.status}</p>
                                             )}
                                         </div>
                                     </div>
@@ -298,7 +298,7 @@ const Internacao = () => {
                     {mapa.length === 0 && (
                         <div className="text-center py-10 text-slate-400">
                             <AlertCircle size={32} className="mx-auto mb-2 opacity-30"/>
-                            <p className="text-[10px] font-bold uppercase tracking-widest">Nenhum setor cadastrado no sistema.</p>
+                            <p className="text-[11px] font-bold uppercase tracking-widest">Nenhum setor cadastrado no sistema.</p>
                         </div>
                     )}
                 </div>
@@ -318,7 +318,7 @@ const Internacao = () => {
 
                             <form onSubmit={handleSalvarAdmissao} className="p-6 space-y-5">
                                 <div className="relative">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-widest">Buscar Paciente *</label>
+                                    <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-widest">Buscar Paciente *</label>
                                     <input required type="text" value={buscaPaciente} onChange={(e) => { setBuscaPaciente(e.target.value); setFormData({...formData, paciente_id: null, paciente_nome: e.target.value}); }} className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-700" placeholder="Digite o nome do paciente..." />
                                     {buscandoPacientes && <Loader2 size={14} className="absolute right-3 top-8 text-teal-500 animate-spin" />}
                                     
@@ -335,7 +335,7 @@ const Internacao = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-widest">Leito Destino *</label>
+                                        <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-widest">Leito Destino *</label>
                                         <select required value={formData.leito_id} onChange={e => setFormData({...formData, leito_id: e.target.value})} className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-700">
                                             <option value="">Selecione um leito livre...</option>
                                             {mapa.map(setor => (
@@ -348,13 +348,13 @@ const Internacao = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-widest">Médico Responsável</label>
+                                        <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-widest">Médico Responsável</label>
                                         <input type="text" value={formData.medico_responsavel} onChange={e => setFormData({...formData, medico_responsavel: e.target.value})} className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-700" placeholder="Ex: Dr. Carlos..." />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-widest">Diagnóstico / Motivo da Internação</label>
+                                    <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-widest">Diagnóstico / Motivo da Internação</label>
                                     <textarea value={formData.diagnostico} onChange={e => setFormData({...formData, diagnostico: e.target.value})} className="w-full h-20 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-700 resize-none" placeholder="Motivo da admissão..."></textarea>
                                 </div>
 
@@ -391,8 +391,8 @@ const Internacao = () => {
                                             <h4 className="text-xs font-black text-blue-800 uppercase tracking-widest mb-2 flex items-center gap-2"><User size={14}/> Paciente Internado</h4>
                                             <p className="text-sm font-black text-slate-800 uppercase">{leitoSelecionado.internacao.paciente_nome}</p>
                                             <div className="mt-3 space-y-1">
-                                                <p className="text-[10px] font-bold text-slate-500 uppercase">Admissão: <span className="text-slate-700">{new Date(leitoSelecionado.internacao.data_admissao).toLocaleDateString('pt-BR')}</span></p>
-                                                <p className="text-[10px] font-bold text-slate-500 uppercase">Médico: <span className="text-slate-700">{leitoSelecionado.internacao.medico_responsavel || 'Não informado'}</span></p>
+                                                <p className="text-[11px] font-bold text-slate-500 uppercase">Admissão: <span className="text-slate-700">{new Date(leitoSelecionado.internacao.data_admissao).toLocaleDateString('pt-BR')}</span></p>
+                                                <p className="text-[11px] font-bold text-slate-500 uppercase">Médico: <span className="text-slate-700">{leitoSelecionado.internacao.medico_responsavel || 'Não informado'}</span></p>
                                             </div>
                                         </div>
                                         <button onClick={handleAltaPaciente} disabled={saving} className="w-full h-12 bg-rose-500 hover:bg-rose-600 text-white font-black text-xs uppercase rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50">
@@ -403,15 +403,15 @@ const Internacao = () => {
                                     /* SE LIVRE/LIMPEZA/MANUTENÇÃO: MOSTRA BOTÕES DE STATUS */
                                     <div className="space-y-4">
                                         <div className="text-center p-4 bg-slate-50 border border-slate-100 rounded-xl mb-4">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Atual do Leito</p>
+                                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status Atual do Leito</p>
                                             <p className={`text-lg font-black uppercase mt-1 ${leitoSelecionado.status === 'Livre' ? 'text-emerald-600' : leitoSelecionado.status === 'Limpeza' ? 'text-amber-600' : 'text-slate-600'}`}>
                                                 {leitoSelecionado.status}
                                             </p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <button onClick={() => handleMudarStatusLeito('Livre')} disabled={saving || leitoSelecionado.status === 'Livre'} className="h-10 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-[10px] uppercase rounded-lg transition-all disabled:opacity-50">🟢 Marcar Livre</button>
-                                            <button onClick={() => handleMudarStatusLeito('Limpeza')} disabled={saving || leitoSelecionado.status === 'Limpeza'} className="h-10 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold text-[10px] uppercase rounded-lg transition-all disabled:opacity-50">🟡 Em Limpeza</button>
-                                            <button onClick={() => handleMudarStatusLeito('Manutenção')} disabled={saving || leitoSelecionado.status === 'Manutenção'} className="h-10 bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-300 font-bold text-[10px] uppercase rounded-lg transition-all disabled:opacity-50 col-span-2">⚪ Em Manutenção</button>
+                                            <button onClick={() => handleMudarStatusLeito('Livre')} disabled={saving || leitoSelecionado.status === 'Livre'} className="h-10 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-[11px] uppercase rounded-lg transition-all disabled:opacity-50">🟢 Marcar Livre</button>
+                                            <button onClick={() => handleMudarStatusLeito('Limpeza')} disabled={saving || leitoSelecionado.status === 'Limpeza'} className="h-10 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold text-[11px] uppercase rounded-lg transition-all disabled:opacity-50">🟡 Em Limpeza</button>
+                                            <button onClick={() => handleMudarStatusLeito('Manutenção')} disabled={saving || leitoSelecionado.status === 'Manutenção'} className="h-10 bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-300 font-bold text-[11px] uppercase rounded-lg transition-all disabled:opacity-50 col-span-2">⚪ Em Manutenção</button>
                                         </div>
                                     </div>
                                 )}

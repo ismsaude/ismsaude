@@ -26,6 +26,7 @@ import Recepcao from './pages/Recepcao';
 import Agenda from './pages/Agenda';
 import Internacao from './pages/Internacao';
 import PEP from './pages/PEP';
+import Escala from './pages/Escala';
 
 const AppLayout = ({ children }) => {
   const { currentUser } = useAuth();
@@ -141,6 +142,12 @@ const App = () => {
                     <Route path="/internacao" element={
                       <PermissionRoute>
                         <Internacao />
+                      </PermissionRoute>
+                    } />
+
+                    <Route path="/escala" element={
+                      <PermissionRoute>
+                        <Escala />
                       </PermissionRoute>
                     } />
 

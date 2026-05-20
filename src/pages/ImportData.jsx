@@ -355,7 +355,7 @@ const ImportData = () => {
                             {/* Table */}
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-sm">
-                                    <thead className="bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                                    <thead className="bg-slate-50 text-[11px] font-black uppercase text-slate-400 tracking-wider">
                                         <tr>
                                             <th className="px-6 py-4">Paciente / CNS</th>
                                             <th className="px-6 py-4">Nascimento</th>
@@ -368,7 +368,7 @@ const ImportData = () => {
                                             <tr key={index} className="hover:bg-blue-50/30 transition-colors group">
                                                 <td className="px-6 py-4 align-top">
                                                     <div className="font-bold text-slate-700 group-hover:text-blue-700 transition-colors uppercase text-xs">{row.nomePaciente}</div>
-                                                    <div className="text-[10px] text-slate-400 font-bold mt-1 bg-slate-100 px-1.5 py-0.5 rounded inline-block">CNS: {row.cns || '---'}</div>
+                                                    <div className="text-[11px] text-slate-400 font-bold mt-1 bg-slate-100 px-1.5 py-0.5 rounded inline-block">CNS: {row.cns || '---'}</div>
                                                 </td>
                                                 <td className="px-6 py-4 font-bold text-slate-500 text-xs">
                                                     {row.nascimento || '---'}
@@ -378,11 +378,11 @@ const ImportData = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     {row.arquivoUrl ? (
-                                                        <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 w-fit">
+                                                        <div className="flex items-center gap-2 text-emerald-600 font-black text-[11px] uppercase bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 w-fit">
                                                             <CheckCircle size={14} /> Link OK
                                                         </div>
                                                     ) : (
-                                                        <span className="text-slate-300 text-[10px] uppercase font-bold">-</span>
+                                                        <span className="text-slate-300 text-[11px] uppercase font-bold">-</span>
                                                     )}
                                                 </td>
                                             </tr>
@@ -393,7 +393,7 @@ const ImportData = () => {
 
                             {/* Footer */}
                             {allData.length > 5 && (
-                                <div className="p-4 bg-slate-50 text-center border-t border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <div className="p-4 bg-slate-50 text-center border-t border-slate-100 text-[11px] font-black text-slate-400 uppercase tracking-widest">
                                     ... e mais {allData.length - previewData.length} registros não exibidos
                                 </div>
                             )}

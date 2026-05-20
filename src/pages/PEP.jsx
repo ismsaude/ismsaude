@@ -181,7 +181,7 @@ const PEP = () => {
                     <div className="p-3 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-500/30"><FileSignature size={24} /></div>
                     <div>
                         <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight">Prontuário Eletrónico</h1>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Painel Clínico - {medicoLogado}</p>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Painel Clínico - {medicoLogado}</p>
                     </div>
                 </div>
             </div>
@@ -192,7 +192,7 @@ const PEP = () => {
                     <div className="p-4 border-b border-white/60 bg-white/40"><h3 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2"><ClipboardList size={16} /> Fila de Espera</h3></div>
                     <div className="p-3 overflow-y-auto custom-scrollbar flex-1 space-y-2">
                         {loading ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-indigo-500" size={24}/></div> 
-                        : fila.length === 0 ? <div className="text-center py-10 text-slate-400"><User size={32} className="mx-auto mb-2 opacity-30"/><p className="text-[10px] font-bold uppercase tracking-widest">Nenhum doente a aguardar.</p></div> 
+                        : fila.length === 0 ? <div className="text-center py-10 text-slate-400"><User size={32} className="mx-auto mb-2 opacity-30"/><p className="text-[11px] font-bold uppercase tracking-widest">Nenhum doente a aguardar.</p></div> 
                         : fila.map(consulta => (
                             <div key={consulta.id} className={`p-3 rounded-xl border-2 transition-all cursor-pointer group ${pacienteAtivo?.id === consulta.id ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-transparent hover:border-slate-200 shadow-sm'}`} onClick={() => setPacienteAtivo(consulta)}>
                                 <div className="flex justify-between items-start mb-1 gap-2">
@@ -201,23 +201,23 @@ const PEP = () => {
                                     </div>
                                     
                                     {consulta.tipo_atendimento === 'Demanda Espontânea' ? (
-                                        <span className={`text-[9px] px-2 py-0.5 rounded font-black uppercase tracking-wider shrink-0 border ${CORES_RISCO[consulta.classificacao_risco] || CORES_RISCO['Não Classificado']}`} title={`Triagem: ${consulta.classificacao_risco}`}>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase tracking-wider shrink-0 border ${CORES_RISCO[consulta.classificacao_risco] || CORES_RISCO['Não Classificado']}`} title={`Triagem: ${consulta.classificacao_risco}`}>
                                             {consulta.classificacao_risco}
                                         </span>
                                     ) : (
-                                        <span className="bg-indigo-100 text-indigo-700 border border-indigo-200 text-[9px] px-2 py-0.5 rounded font-black uppercase tracking-wider shrink-0" title="Consultório / Agendado">
+                                        <span className="bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] px-2 py-0.5 rounded font-black uppercase tracking-wider shrink-0" title="Consultório / Agendado">
                                             AGENDA
                                         </span>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500 uppercase mt-2">
+                                <div className="flex items-center gap-3 text-[11px] font-bold text-slate-500 uppercase mt-2">
                                     <span className="flex items-center gap-1"><Clock size={12} className={consulta.status === 'Aguardando' ? 'text-amber-500' : 'text-purple-500'} /> {consulta.horario?.substring(0,5) || '--:--'}</span>
                                     <span className="w-1 h-1 rounded-full bg-slate-300"></span><span className="text-blue-500">{consulta.convenio}</span>
                                 </div>
                                 {consulta.status === 'Aguardando' && pacienteAtivo?.id !== consulta.id && (
-                                    <button onClick={(e) => { e.stopPropagation(); handleChamarPaciente(consulta); }} className="w-full mt-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white border border-amber-200 rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1"><Play size={10} /> Chamar</button>
+                                    <button onClick={(e) => { e.stopPropagation(); handleChamarPaciente(consulta); }} className="w-full mt-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white border border-amber-200 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1"><Play size={10} /> Chamar</button>
                                 )}
-                                {consulta.status === 'Em Atendimento' && <div className="mt-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-[9px] font-black uppercase tracking-widest text-center border border-purple-200">Em Atendimento</div>}
+                                {consulta.status === 'Em Atendimento' && <div className="mt-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-[10px] font-black uppercase tracking-widest text-center border border-purple-200">Em Atendimento</div>}
                             </div>
                         ))}
                     </div>
@@ -237,11 +237,11 @@ const PEP = () => {
                                         <span>CPF: {pacienteAtivo.paciente_cpf || 'Não inf.'}</span>
                                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-200"></span>
                                         {pacienteAtivo.tipo_atendimento === 'Demanda Espontânea' ? (
-                                            <span className="px-2 py-1 bg-rose-100 text-rose-700 border border-rose-200 text-[10px] rounded-md font-black uppercase tracking-widest flex items-center gap-1">
+                                            <span className="px-2 py-1 bg-rose-100 text-rose-700 border border-rose-200 text-[11px] rounded-md font-black uppercase tracking-widest flex items-center gap-1">
                                                 🚨 Pronto Atendimento
                                             </span>
                                         ) : (
-                                            <span className="px-2 py-1 bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] rounded-md font-black uppercase tracking-widest flex items-center gap-1">
+                                            <span className="px-2 py-1 bg-indigo-100 text-indigo-700 border border-indigo-200 text-[11px] rounded-md font-black uppercase tracking-widest flex items-center gap-1">
                                                 🗓️ Agendado
                                             </span>
                                         )}
@@ -255,7 +255,7 @@ const PEP = () => {
                                 {/* PAINEL PRINCIPAL */}
                                 {activeTab === 'painel' && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4">
-                                        <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Ações Clínicas Rápidas</h3>
+                                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Ações Clínicas Rápidas</h3>
                                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                                             {[
                                                 { id: 'evo', icon: FileText, label: 'Evolução', desc: 'Anotações clínicas', color: 'text-blue-500', bg: 'bg-blue-50', border: 'hover:border-blue-300' },
@@ -265,7 +265,7 @@ const PEP = () => {
                                             ].map(btn => (
                                                 <button key={btn.id} onClick={() => setActiveTab(btn.id)} className={`p-5 rounded-2xl border-2 border-transparent bg-white shadow-sm transition-all group text-left ${btn.border}`}>
                                                     <div className={`w-10 h-10 rounded-xl ${btn.bg} ${btn.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}><btn.icon size={20} /></div>
-                                                    <h4 className="text-sm font-black uppercase text-slate-800">{btn.label}</h4><p className="text-[10px] font-bold text-slate-400 uppercase mt-1">{btn.desc}</p>
+                                                    <h4 className="text-sm font-black uppercase text-slate-800">{btn.label}</h4><p className="text-[11px] font-bold text-slate-400 uppercase mt-1">{btn.desc}</p>
                                                 </button>
                                             ))}
                                         </div>
@@ -282,7 +282,7 @@ const PEP = () => {
                                         </div>
                                         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                                             {loadingHistorico ? <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin text-slate-400" /></div> : historicoEvo.map((evo) => (
-                                                <div key={evo.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-3"><div className="flex justify-between mb-2"><span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{evo.medico}</span><span className="text-[10px] font-bold text-slate-400">{new Date(evo.created_at).toLocaleString()}</span></div><p className="text-sm text-slate-600 whitespace-pre-wrap">{evo.texto}</p></div>
+                                                <div key={evo.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-3"><div className="flex justify-between mb-2"><span className="text-[11px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{evo.medico}</span><span className="text-[11px] font-bold text-slate-400">{new Date(evo.created_at).toLocaleString()}</span></div><p className="text-sm text-slate-600 whitespace-pre-wrap">{evo.texto}</p></div>
                                             ))}
                                         </div>
                                     </div>
@@ -297,7 +297,7 @@ const PEP = () => {
                                             <div className="flex justify-end mt-3"><button onClick={() => { salvarRegistro('prontuario_receitas', textoReceita, setTextoReceita, setSalvandoReceita, () => buscarHistorico('prontuario_receitas', setHistoricoRec)); imprimirReceitaPdf(pacienteAtivo, textoReceita, medicoLogado); }} disabled={salvandoReceita} className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black uppercase tracking-wide shadow-md transition-all flex items-center gap-2"><Printer size={16} /> Guardar e Imprimir</button></div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                                            {historicoRec.map((rec) => (<div key={rec.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100"><div className="flex justify-between mb-2"><span className="text-[10px] font-bold text-slate-400">{new Date(rec.created_at).toLocaleDateString()}</span><button onClick={() => imprimirReceitaPdf(pacienteAtivo, rec.texto, rec.medico)} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Reimprimir Receita"><Printer size={14}/></button></div><p className="text-xs text-slate-600">{rec.texto}</p></div>))}
+                                            {historicoRec.map((rec) => (<div key={rec.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100"><div className="flex justify-between mb-2"><span className="text-[11px] font-bold text-slate-400">{new Date(rec.created_at).toLocaleDateString()}</span><button onClick={() => imprimirReceitaPdf(pacienteAtivo, rec.texto, rec.medico)} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Reimprimir Receita"><Printer size={14}/></button></div><p className="text-xs text-slate-600">{rec.texto}</p></div>))}
                                         </div>
                                     </div>
                                 )}
@@ -311,7 +311,7 @@ const PEP = () => {
                                             <div className="flex justify-end mt-3"><button onClick={() => { salvarRegistro('prontuario_exames', textoExame, setTextoExame, setSalvandoExame, () => buscarHistorico('prontuario_exames', setHistoricoExa)); imprimirExamePdf(pacienteAtivo, textoExame, medicoLogado); }} disabled={salvandoExame} className="px-6 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs font-black uppercase tracking-wide shadow-md transition-all flex items-center gap-2"><Printer size={16} /> Imprimir Pedido</button></div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                                            {historicoExa.map((exa) => (<div key={exa.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100"><div className="flex justify-between mb-2"><span className="text-[10px] font-bold text-slate-400">{new Date(exa.created_at).toLocaleDateString()}</span><Printer size={14} className="text-slate-400 cursor-pointer" onClick={() => imprimirExamePdf(pacienteAtivo, exa.texto, exa.medico)} /></div><p className="text-xs text-slate-600">{exa.texto}</p></div>))}
+                                            {historicoExa.map((exa) => (<div key={exa.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100"><div className="flex justify-between mb-2"><span className="text-[11px] font-bold text-slate-400">{new Date(exa.created_at).toLocaleDateString()}</span><Printer size={14} className="text-slate-400 cursor-pointer" onClick={() => imprimirExamePdf(pacienteAtivo, exa.texto, exa.medico)} /></div><p className="text-xs text-slate-600">{exa.texto}</p></div>))}
                                         </div>
                                     </div>
                                 )}

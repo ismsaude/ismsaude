@@ -99,14 +99,14 @@ export default function ApaPrintTemplate({ data }) {
     const Checkbox = ({ label, checked }) => (
         <label className="flex items-center gap-1 text-[8.5px] text-gray-800 font-medium">
             <div className={`w-3 h-3 border border-gray-400 flex flex-shrink-0 items-center justify-center rounded-[2px] ${checked ? 'bg-[#002776] border-[#002776]' : 'bg-white'}`}>
-                {checked && <span className="text-white text-[8px] font-bold leading-none">✓</span>}
+                {checked && <span className="text-white text-[9px] font-bold leading-none">✓</span>}
             </div>
             <span>{label}</span>
         </label>
     );
 
     const sectionClass = "mb-1.5 border border-gray-400 rounded-[2px] p-1 print:break-inside-avoid w-full";
-    const titleClass = "font-bold text-gray-800 bg-gray-200 px-1 py-0.5 mb-1 text-[9px] uppercase";
+    const titleClass = "font-bold text-gray-800 bg-gray-200 px-1 py-0.5 mb-1 text-[10px] uppercase";
     const labelClass = "text-[7.5px] text-gray-500 uppercase font-semibold leading-none";
     const valueClass = "text-[9.5px] font-bold text-[#002776] uppercase leading-snug";
 
@@ -169,7 +169,7 @@ export default function ApaPrintTemplate({ data }) {
     }
 
     return (
-        <div className="w-full max-w-[210mm] mx-auto bg-white text-slate-800 text-[10px] leading-tight font-sans tracking-tight" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+        <div className="w-full max-w-[210mm] mx-auto bg-white text-slate-800 text-[11px] leading-tight font-sans tracking-tight" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
             <style type="text/css" media="print">
                 {`
                     @page { size: A4 portrait; margin: 10mm; }
@@ -182,7 +182,7 @@ export default function ApaPrintTemplate({ data }) {
             <div className="flex justify-between items-end border-b-2 border-gray-800 pb-1.5 mb-2 print:break-inside-avoid">
                 <div className="flex flex-col justify-end w-1/3">
                     {theme.logoUrl && <img src={theme.logoUrl} alt="Logo" className="h-[32px] w-[auto] object-contain object-left mb-1" onError={(e) => e.target.style.display = 'none'} />}
-                    <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wide mt-1">
+                    <div className="text-[11px] text-gray-500 font-bold uppercase tracking-wide mt-1">
                         {/* Linha 1: Título Inteligente + Nome */}
                         <div>
                             {data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}
@@ -195,7 +195,7 @@ export default function ApaPrintTemplate({ data }) {
                     </div>
                 </div>
                 <div className="flex flex-col items-center w-1/3 text-center">
-                    <h1 className="text-[11px] font-black tracking-widest text-gray-900 m-0 leading-tight">AVALIAÇÃO PRÉ-ANESTÉSICA</h1>
+                    <h1 className="text-xs font-black tracking-widest text-gray-900 m-0 leading-tight">AVALIAÇÃO PRÉ-ANESTÉSICA</h1>
                     <div className="text-[7.5px] text-gray-500 font-medium mt-0.5">Conforme Resolução CFM 2.174/2017</div>
                 </div>
                 <div className="flex flex-col items-end w-1/3 text-[8.5px] text-gray-700 font-medium mb-1">
@@ -372,7 +372,7 @@ export default function ApaPrintTemplate({ data }) {
                             const isSelected = data?.mallampati === grade;
                             return (
                                 <div key={grade} className={`border rounded-[2px] p-1 flex flex-col items-center justify-center text-center ${isSelected ? 'border-[#002776] bg-blue-50' : 'border-gray-200 opacity-50'}`}>
-                                    <div className={`text-[10px] font-black ${isSelected ? 'text-[#002776]' : 'text-gray-400'}`}>{grade}</div>
+                                    <div className={`text-[11px] font-black ${isSelected ? 'text-[#002776]' : 'text-gray-400'}`}>{grade}</div>
                                     <div className={`text-[6px] leading-tight mt-0.5 ${isSelected ? 'text-[#002776] font-bold' : 'text-gray-400'}`}>{desc}</div>
                                 </div>
                             );
@@ -404,7 +404,7 @@ export default function ApaPrintTemplate({ data }) {
                         <div className="text-[14px] font-black text-blue-900 tracking-wide uppercase">ASA {data?.asa ? data.asa.replace('ASA ', '') : '--'}</div>
                     </div>
                     {data?.asa_e === 'true' || data?.asa_e === true ? (
-                        <div className="px-2 py-0.5 bg-red-100 text-red-700 font-black border border-red-300 text-[9px] rounded-sm uppercase tracking-widest">
+                        <div className="px-2 py-0.5 bg-red-100 text-red-700 font-black border border-red-300 text-[10px] rounded-sm uppercase tracking-widest">
                             Emergência (E)
                         </div>
                     ) : null}
@@ -415,7 +415,7 @@ export default function ApaPrintTemplate({ data }) {
             <SectionBlock title="11. Exames Complementares">
                 <div className="mb-1.5 border border-slate-200 p-1">
                     <div className="flex justify-between items-center mb-1 border-b border-slate-100 pb-0.5">
-                        <span className="text-[8px] font-bold text-slate-700 uppercase">Exames Laboratoriais</span>
+                        <span className="text-[9px] font-bold text-slate-700 uppercase">Exames Laboratoriais</span>
                         {data?.ex_data_lab && <span className="text-[7px] font-bold text-slate-500 uppercase">Data do Exame: {formatDate(data.ex_data_lab)}</span>}
                     </div>
                     <div className="grid grid-cols-4 gap-x-2 gap-y-1 mb-1">
@@ -445,7 +445,7 @@ export default function ApaPrintTemplate({ data }) {
                 <div className="grid grid-cols-2 gap-2 mb-1.5">
                     <div className="border border-slate-200 p-1">
                         <div className="flex justify-between items-center mb-1 border-b border-slate-100 pb-0.5">
-                            <span className="text-[8px] font-bold text-slate-700 uppercase">Exames Cardíacos</span>
+                            <span className="text-[9px] font-bold text-slate-700 uppercase">Exames Cardíacos</span>
                             {data?.ex_data_cardio && <span className="text-[7px] font-bold text-slate-500 uppercase">Data do Exame: {formatDate(data.ex_data_cardio)}</span>}
                         </div>
                         <div className="grid grid-cols-1 gap-x-2 gap-y-1">
@@ -456,7 +456,7 @@ export default function ApaPrintTemplate({ data }) {
                     
                     <div className="border border-slate-200 p-1">
                         <div className="flex justify-between items-center mb-1 border-b border-slate-100 pb-0.5">
-                            <span className="text-[8px] font-bold text-slate-700 uppercase">Exames de Imagem</span>
+                            <span className="text-[9px] font-bold text-slate-700 uppercase">Exames de Imagem</span>
                             {data?.ex_data_imagem && <span className="text-[7px] font-bold text-slate-500 uppercase">Data do Exame: {formatDate(data.ex_data_imagem)}</span>}
                         </div>
                         <div className="grid grid-cols-1 gap-x-2 gap-y-1">
@@ -474,7 +474,7 @@ export default function ApaPrintTemplate({ data }) {
             {/* 12. JEJUM */}
             <SectionBlock title="12. Jejum Pré-Operatório">
                 {['2h', '4h', '6h', '6h (Fórmula)', '8h'].includes(data?.jejum_orientacao) ? (
-                    <table className="w-full text-left border border-gray-300 mb-1.5 text-[8px]">
+                    <table className="w-full text-left border border-gray-300 mb-1.5 text-[9px]">
                         <thead>
                             <tr className="bg-gray-100">
                                 <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase">Orientação de Jejum Mínimo Recomendada</th>
@@ -487,7 +487,7 @@ export default function ApaPrintTemplate({ data }) {
                         </tbody>
                     </table>
                 ) : (data?.jejum_orientacao === 'Padrão ASA' || data?.jejum_orientacao === '') && (data?.jejum_liquidos || data?.jejum_leite || data?.jejum_formula || data?.jejum_leve || data?.jejum_completa) ? (
-                    <table className="w-full text-left border border-gray-300 mb-1.5 text-[8px]">
+                    <table className="w-full text-left border border-gray-300 mb-1.5 text-[9px]">
                         <thead>
                             <tr className="bg-gray-100">
                                 <th className="p-1 border border-gray-300 font-bold text-gray-700 uppercase">Tipo de Ingesta</th>
@@ -538,7 +538,7 @@ export default function ApaPrintTemplate({ data }) {
                     ].map((opt) => {
                         const isSelected = data?.parecerFinal === opt.val || data?.parecerFinal === opt.altVal;
                         return (
-                            <div key={opt.label} className={`flex items-center gap-1 px-2 py-1 border rounded-[2px] text-[8px] font-bold ${isSelected ? opt.colors : 'border-gray-200 text-gray-400 opacity-50'}`}>
+                            <div key={opt.label} className={`flex items-center gap-1 px-2 py-1 border rounded-[2px] text-[9px] font-bold ${isSelected ? opt.colors : 'border-gray-200 text-gray-400 opacity-50'}`}>
                                 <div className={`w-2 h-2 rounded-full border flex items-center justify-center ${isSelected ? 'border-current' : 'border-gray-300'}`}>
                                     {isSelected && <div className="w-1 h-1 rounded-full bg-current"></div>}
                                 </div>
@@ -569,7 +569,7 @@ export default function ApaPrintTemplate({ data }) {
                             {/* Assinatura removida conforme solicitação */}
                         </div>
                         <div className="border-t border-black w-full mb-1"></div>
-                        <p className="font-bold text-[9px] uppercase text-[#002776]">
+                        <p className="font-bold text-[10px] uppercase text-[#002776]">
                             {/* Título Inteligente + Nome também na assinatura */}
                             {data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}
                         </p>
@@ -596,7 +596,7 @@ export default function ApaPrintTemplate({ data }) {
                         {theme.logoUrl && <img src={theme.logoUrl} alt="Logo" className="h-[32px] w-[auto] object-contain object-left mb-1" onError={(e) => e.target.style.display = 'none'} />}
                     </div>
                     <div className="flex-1 text-center pb-0.5">
-                        <h1 className="text-[11px] font-black uppercase text-[#002776] tracking-widest">
+                        <h1 className="text-xs font-black uppercase text-[#002776] tracking-widest">
                             TERMO DE CONSENTIMENTO
                         </h1>
                     </div>
@@ -613,7 +613,7 @@ export default function ApaPrintTemplate({ data }) {
                     <>
                         <div className="text-[9.5px] text-justify text-gray-800 leading-relaxed space-y-3.5">
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO DO PACIENTE E DO RESPONSÁVEL LEGAL</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO DO PACIENTE E DO RESPONSÁVEL LEGAL</h3>
                                 <div className="mb-2 bg-gray-50 p-2 border border-gray-200 rounded">
                                     <p><strong>Nome do(a) Paciente (Menor):</strong> <span className="uppercase">{data?.nome || '__________________________________________________'}</span></p>
                                     <p className="mt-1"><strong>Nome do Responsável Legal:</strong> <span className="uppercase">{data?.resp_nome || '__________________________________________________'}</span></p>
@@ -628,28 +628,28 @@ export default function ApaPrintTemplate({ data }) {
                             </div>
 
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">2. RISCOS INERENTES À ANESTESIA</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">2. RISCOS INERENTES À ANESTESIA</h3>
                                 <p>
                                     Estou ciente de que qualquer tipo de anestesia envolve riscos, que não há garantia absoluta de resultado e que o(a) paciente está sujeito(a) a: dores, mal-estar, hemorragias, reações alérgicas, perda ou danos aos dentes, infecções, perda de movimentos ou sentidos (temporária ou permanente), derrames, paralisia, danos cerebrais, falência de órgãos vitais, paradas cardiorrespiratórias e morte. O médico e sua equipe adotarão a melhor técnica e recursos disponíveis, mas compreendo que podem ocorrer intercorrências insuperáveis, inerentes à própria operação.
                                 </p>
                             </div>
 
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">3. DEVERES DO RESPONSÁVEL E OMISSÃO DE INFORMAÇÕES</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">3. DEVERES DO RESPONSÁVEL E OMISSÃO DE INFORMAÇÕES</h3>
                                 <p>
                                     Declaro que, na entrevista pré-anestésica, não ocultei qualquer fato sobre o histórico do(a) paciente. Informei com total veracidade suas condições físicas, psicológicas e o uso de quaisquer medicações. Estou ciente de que devo garantir que o(a) menor siga rigorosamente as instruções médicas (como o tempo de jejum) antes, durante e após o procedimento, e que o não cumprimento destas orientações pode ser a causa de danos permanentes à sua saúde.
                                 </p>
                             </div>
 
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">4. MUDANÇAS DE CONDUTA, CANCELAMENTO E EQUIPE</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">4. MUDANÇAS DE CONDUTA, CANCELAMENTO E EQUIPE</h3>
                                 <p>
                                     Fui informado(a) da possibilidade de cancelamento da operação e/ou anestesia sem aviso prévio devido a circunstâncias imprevistas. Estou ciente de que o médico que realizou a avaliação pré-anestésica não será necessariamente o mesmo que acompanhará o(a) paciente no dia da cirurgia. Autorizo a equipe a realizar as mudanças necessárias no procedimento inicial caso ocorram eventos indesejados, visando salvaguardar a vida e a saúde do(a) menor.
                                 </p>
                             </div>
 
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">5. MANIFESTAÇÃO DE VONTADE E AUTORIDADE MÉDICA SOBRE TRANSFUSÃO DE SANGUE</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">5. MANIFESTAÇÃO DE VONTADE E AUTORIDADE MÉDICA SOBRE TRANSFUSÃO DE SANGUE</h3>
                                 <p className="mb-2">
                                     Fui informado(a) de que, durante o ato cirúrgico, pode haver necessidade extrema de transfusão de sangue e/ou hemocomponentes. A equipe médica se compromete a utilizar técnicas de conservação de sangue e opções alternativas viáveis, respeitando as convicções religiosas e pessoais da família sempre que o quadro clínico permitir.
                                 </p>
@@ -662,7 +662,7 @@ export default function ApaPrintTemplate({ data }) {
                             </div>
 
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">6. CONSENTIMENTO FINAL</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">6. CONSENTIMENTO FINAL</h3>
                                 <p>
                                     Confirmo que recebi, li e compreendi todas as explicações, e que me foi dada a oportunidade de tirar todas as dúvidas. Dessa forma, declaro meu pleno consentimento para o ato anestésico a ser realizado no(a) menor pelo qual sou responsável.
                                 </p>
@@ -670,27 +670,27 @@ export default function ApaPrintTemplate({ data }) {
                         </div>
 
                         <div className="mt-8 print:break-inside-avoid">
-                            <p className="text-[9px] text-center mb-10 text-gray-700">
+                            <p className="text-[10px] text-center mb-10 text-gray-700">
                                 {data?.unidade || '__________________________________'}, {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                             </p>
 
                             <div className="flex justify-center mb-8">
                                 <div className="text-center w-2/3">
                                     <div className="border-t border-black w-full mb-1"></div>
-                                    <p className="font-bold text-[9px] uppercase">Assinatura do Responsável Legal</p>
-                                    <p className="text-[8px] mt-1 uppercase text-gray-600">{data?.resp_nome || '__________________________________________________'}</p>
+                                    <p className="font-bold text-[10px] uppercase">Assinatura do Responsável Legal</p>
+                                    <p className="text-[9px] mt-1 uppercase text-gray-600">{data?.resp_nome || '__________________________________________________'}</p>
                                 </div>
                             </div>
 
                             <div className="border border-gray-300 p-4 rounded bg-gray-50/50 mb-2 mt-6">
-                                <h3 className="font-bold text-[9px] mb-1.5 uppercase text-center text-gray-700">Declaração do Médico Responsável</h3>
-                                <p className="text-[8px] text-justify mb-8 text-gray-600">
+                                <h3 className="font-bold text-[10px] mb-1.5 uppercase text-center text-gray-700">Declaração do Médico Responsável</h3>
+                                <p className="text-[9px] text-justify mb-8 text-gray-600">
                                     Declaro que expliquei em detalhes para o responsável legal, e dirimi todas as dúvidas apresentadas sobre o ato anestésico, seus benefícios, riscos e alternativas, bem como sobre a conduta médica inegociável em caso de risco de morte do menor. Informo crer que o responsável entendeu adequadamente o que foi explicado.
                                 </p>
                                 <div className="flex justify-center">
                                     <div className="text-center w-1/2">
                                         <div className="border-t border-black w-full mb-1"></div>
-                                        <p className="font-bold text-[8px] uppercase">Assinatura e CRM do Médico</p>
+                                        <p className="font-bold text-[9px] uppercase">Assinatura e CRM do Médico</p>
                                         <p className="text-[7.5px] mt-1 uppercase text-[#002776] font-bold">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}</p>
                                         <p className="text-[7.5px] uppercase text-gray-500">{data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : ''}</p>
                                     </div>
@@ -702,35 +702,35 @@ export default function ApaPrintTemplate({ data }) {
                     <>
                         <div className="text-[9.5px] text-justify text-gray-800 leading-relaxed space-y-3.5">
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO E ESCLARECIMENTOS GERAIS</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO E ESCLARECIMENTOS GERAIS</h3>
                                 <p>
                                     Eu, <strong className="uppercase">{data?.nome || '__________________________________________________'}</strong>, declaro que o(a) médico(a) anestesiologista <strong className="uppercase">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : '________________________________________'}</strong>, inscrito(a) no CRM sob o nº <strong>{data?.anestesistaCRM ? data.anestesistaCRM : '____________'}</strong>, informou-me de que serei submetido(a) ao procedimento anestésico para a cirurgia/procedimento de <strong className="uppercase">{data?.procedimento || '________________________________________'}</strong>. O médico explicou-me detalhadamente o procedimento, informando sobre os riscos, benefícios e alternativas disponíveis, inclusive a possibilidade de não realização do procedimento ou desistência da operação, e suas repercussões.
                                 </p>
                             </div>
 
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">2. RISCOS INERENTES À ANESTESIA</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">2. RISCOS INERENTES À ANESTESIA</h3>
                                 <p>
                                     Estou ciente de que qualquer tipo de anestesia envolve riscos, que não há garantia absoluta de resultado e que estou sujeito(a) a: dores, mal-estar, hemorragias, reações alérgicas, perda ou danos aos dentes, infecções, perda de movimentos ou sentidos (tato, olfato, visão, paladar e audição) temporária ou permanente, derrames, paralisia, danos cerebrais, falência de órgãos vitais, paradas cardiorrespiratórias e morte. O médico e sua equipe adotarão a melhor técnica e recursos disponíveis, mas compreendo que podem ocorrer intercorrências insuperáveis, inerentes à própria operação.
                                 </p>
                             </div>
 
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">3. DEVERES DO PACIENTE E OMISSÃO DE INFORMAÇÕES</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">3. DEVERES DO PACIENTE E OMISSÃO DE INFORMAÇÕES</h3>
                                 <p>
                                     Declaro que, na entrevista pré-anestésica, não ocultei qualquer fato. Informei com total veracidade minhas condições físicas, psicológicas e meus hábitos. Estou ciente de que o tabagismo (mesmo recreativo), álcool e o uso de fármacos/drogas de qualquer tipo aumentam gravemente o risco de complicações. Compreendo que posso apresentar reações alérgicas imprevisíveis a medicações. Estou ciente de que devo seguir rigorosamente as instruções médicas antes, durante e após o procedimento, e que o não cumprimento destas orientações pode ser a causa de danos permanentes ou temporários à minha saúde.
                                 </p>
                             </div>
 
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">4. MUDANÇAS DE CONDUTA, CANCELAMENTO E EQUIPE</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">4. MUDANÇAS DE CONDUTA, CANCELAMENTO E EQUIPE</h3>
                                 <p>
                                     Fui informado(a) da possibilidade de cancelamento da operação e/ou anestesia sem aviso prévio devido a circunstâncias alheias à vontade da equipe ou instituição. Estou ciente de que o médico que realizou a avaliação pré-anestésica não será necessariamente o mesmo que me acompanhará no dia da cirurgia. Autorizo a equipe a realizar as mudanças necessárias no procedimento inicial caso ocorram eventos indesejados, visando salvaguardar minha vida.
                                 </p>
                             </div>
 
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">5. MANIFESTAÇÃO DE VONTADE SOBRE TRANSFUSÃO DE SANGUE E HEMOCOMPONENTES</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">5. MANIFESTAÇÃO DE VONTADE SOBRE TRANSFUSÃO DE SANGUE E HEMOCOMPONENTES</h3>
                                 <p className="mb-2">
                                     Fui informado(a) de que, durante o ato cirúrgico, pode haver necessidade extrema de transfusão de sangue. Ciente dos riscos de transmissão de doenças (como hepatite ou HIV, embora raros devido à testagem) e do risco iminente de morte em caso de hemorragia grave, decido de forma livre e inequívoca:
                                 </p>
@@ -753,7 +753,7 @@ export default function ApaPrintTemplate({ data }) {
                             </div>
 
                             <div>
-                                <h3 className="font-bold text-[10px] mb-1 text-[#002776]">6. CONSENTIMENTO FINAL</h3>
+                                <h3 className="font-bold text-[11px] mb-1 text-[#002776]">6. CONSENTIMENTO FINAL</h3>
                                 <p>
                                     Confirmo que recebi, li e compreendi todas as explicações, e que me foi dada a oportunidade de tirar todas as dúvidas. Dessa forma, declaro meu pleno consentimento para o ato anestésico.
                                 </p>
@@ -761,27 +761,27 @@ export default function ApaPrintTemplate({ data }) {
                         </div>
 
                         <div className="mt-8 print:break-inside-avoid">
-                            <p className="text-[9px] text-center mb-10 text-gray-700">
+                            <p className="text-[10px] text-center mb-10 text-gray-700">
                                 {data?.unidade || '__________________________________'}, {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                             </p>
 
                             <div className="flex justify-center mb-8">
                                 <div className="text-center w-2/3">
                                     <div className="border-t border-black w-full mb-1"></div>
-                                    <p className="font-bold text-[9px] uppercase">Assinatura do Paciente (ou Responsável Legal)</p>
-                                    <p className="text-[8px] mt-1 uppercase text-gray-600">{data?.nome}</p>
+                                    <p className="font-bold text-[10px] uppercase">Assinatura do Paciente (ou Responsável Legal)</p>
+                                    <p className="text-[9px] mt-1 uppercase text-gray-600">{data?.nome}</p>
                                 </div>
                             </div>
 
                             <div className="border border-gray-300 p-4 rounded bg-gray-50/50 mb-2 mt-6">
-                                <h3 className="font-bold text-[9px] mb-1.5 uppercase text-center text-gray-700">Declaração do Médico Responsável</h3>
-                                <p className="text-[8px] text-justify mb-8 text-gray-600">
+                                <h3 className="font-bold text-[10px] mb-1.5 uppercase text-center text-gray-700">Declaração do Médico Responsável</h3>
+                                <p className="text-[9px] text-justify mb-8 text-gray-600">
                                     Declaro que expliquei em detalhes para o paciente (familiar ou responsável), e dirimi todas as dúvidas apresentadas sobre o ato anestésico, seus benefícios, riscos e alternativas. Informo crer que o paciente ou o seu responsável entendeu adequadamente o que foi explicado.
                                 </p>
                                 <div className="flex justify-center">
                                     <div className="text-center w-1/2">
                                         <div className="border-t border-black w-full mb-1"></div>
-                                        <p className="font-bold text-[8px] uppercase">Assinatura e CRM do Médico</p>
+                                        <p className="font-bold text-[9px] uppercase">Assinatura e CRM do Médico</p>
                                         <p className="text-[7.5px] mt-1 uppercase text-[#002776] font-bold">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}</p>
                                         <p className="text-[7.5px] uppercase text-gray-500">{data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : ''}</p>
                                     </div>
@@ -801,7 +801,7 @@ export default function ApaPrintTemplate({ data }) {
                             {theme.logoUrl && <img src={theme.logoUrl} alt="Logo" className="h-[32px] w-[auto] object-contain object-left mb-1" onError={(e) => e.target.style.display = 'none'} />}
                         </div>
                         <div className="flex-1 text-center pb-0.5">
-                            <h1 className="text-[11px] font-black uppercase text-[#002776] tracking-widest">
+                            <h1 className="text-xs font-black uppercase text-[#002776] tracking-widest">
                                 TERMO DE RECUSA
                             </h1>
                         </div>
@@ -816,7 +816,7 @@ export default function ApaPrintTemplate({ data }) {
 
                     <div className="text-[9.5px] text-justify text-gray-800 leading-relaxed space-y-2">
                         <div>
-                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO DO PACIENTE</h3>
+                            <h3 className="font-bold text-[11px] mb-1 text-[#002776]">1. IDENTIFICAÇÃO DO PACIENTE</h3>
                             <div className="mb-1.5 bg-gray-50 py-1.5 px-2 border border-gray-200 rounded flex gap-4 items-center">
                                 <p className="flex-1 truncate"><strong>Nome:</strong> <span className="uppercase">{data?.nome || '________________________________________'}</span></p>
                                 <p><strong>CPF:</strong> {data?.cpf || '________________'}</p>
@@ -828,7 +828,7 @@ export default function ApaPrintTemplate({ data }) {
                         </div>
 
                         <div>
-                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">2. RECUSA DE SANGUE E HEMOCOMPONENTES DE TERCEIROS (ALOGÊNICOS)</h3>
+                            <h3 className="font-bold text-[11px] mb-1 text-[#002776]">2. RECUSA DE SANGUE E HEMOCOMPONENTES DE TERCEIROS (ALOGÊNICOS)</h3>
                             <p>
                                 No exercício de minha autonomia individual e liberdade de convicção, conforme garantido pela Constituição Federal e ratificado pelo Supremo Tribunal Federal (STF), eu <strong className="uppercase">RECUSO EXPRESSAMENTE</strong> a administração de sangue total e seus hemocomponentes (glóbulos vermelhos, plaquetas, plasma, crioprecipitado e outros) provenientes de doadores terceiros.
                             </p>
@@ -838,7 +838,7 @@ export default function ApaPrintTemplate({ data }) {
                         </div>
 
                         <div>
-                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">3. DIRETIVAS SOBRE O USO DO PRÓPRIO SANGUE (AUTÓLOGO)</h3>
+                            <h3 className="font-bold text-[11px] mb-1 text-[#002776]">3. DIRETIVAS SOBRE O USO DO PRÓPRIO SANGUE (AUTÓLOGO)</h3>
                             <p className="mb-1.5">
                                 Fui informado(a) sobre técnicas que utilizam meu próprio sangue para minimizar a necessidade de transfusões externas. Sobre estas opções, manifesto minha vontade de acordo com minha consciência:
                             </p>
@@ -868,14 +868,14 @@ export default function ApaPrintTemplate({ data }) {
                         </div>
 
                         <div>
-                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">4. AUTORIZAÇÃO PARA TERAPIAS ALTERNATIVAS</h3>
+                            <h3 className="font-bold text-[11px] mb-1 text-[#002776]">4. AUTORIZAÇÃO PARA TERAPIAS ALTERNATIVAS</h3>
                             <p>
                                 Solicito e autorizo a equipe médica a empregar todos os meios e recursos científicos disponíveis que não envolvam a transfusão de sangue de terceiros, tais como: técnicas cirúrgicas para preservação de sangue, uso de expansores de volume não sanguíneos (cristaloides e coloides), uso de agentes farmacológicos (hemostáticos, eritropoetina, etc.), dentro das possibilidades estruturais deste hospital.
                             </p>
                         </div>
 
                         <div>
-                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">5. CIÊNCIA DOS RISCOS E ASSUNÇÃO DE RESPONSABILIDADE</h3>
+                            <h3 className="font-bold text-[11px] mb-1 text-[#002776]">5. CIÊNCIA DOS RISCOS E ASSUNÇÃO DE RESPONSABILIDADE</h3>
                             <p className="mb-1">Declaro que fui exaustivamente informado(a) pelo <strong>Dr(a). {data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : '________________________________________'}</strong> e sua equipe sobre:</p>
                             <ul className="list-disc pl-5 space-y-0.5">
                                 <li>Meu diagnóstico clínico e a necessidade técnica da transfusão de sangue no meu caso.</li>
@@ -885,7 +885,7 @@ export default function ApaPrintTemplate({ data }) {
                         </div>
 
                         <div>
-                            <h3 className="font-bold text-[10px] mb-1 text-[#002776]">6. EXONERAÇÃO DE RESPONSABILIDADE JURÍDICA E ÉTICA</h3>
+                            <h3 className="font-bold text-[11px] mb-1 text-[#002776]">6. EXONERAÇÃO DE RESPONSABILIDADE JURÍDICA E ÉTICA</h3>
                             <p>
                                 Diante da minha decisão, assumo integral e exclusiva responsabilidade pelas consequências diretas e indiretas desta escolha. ISENTO expressamente o médico assistente, a equipe de anestesia, a equipe de enfermagem e esta instituição hospitalar de qualquer responsabilidade civil, penal, ética ou administrativa por danos à minha saúde ou falecimento que ocorram em decorrência direta da não realização da transfusão de sangue ora recusada.
                             </p>
@@ -894,26 +894,26 @@ export default function ApaPrintTemplate({ data }) {
                     </div>
 
                     <div className="mt-4 print:break-inside-avoid">
-                        <p className="text-[9px] text-center mb-6 text-gray-700">
+                        <p className="text-[10px] text-center mb-6 text-gray-700">
                             {data?.unidade || '__________________________________'}, {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                         </p>
 
                         <div className="flex justify-between items-end mb-4 px-4 gap-8">
                             <div className="text-center flex-1">
                                 <div className="border-t border-black w-full mb-1"></div>
-                                <p className="font-bold text-[9px] uppercase">Assinatura do Paciente</p>
-                                <p className="text-[8px] mt-1 uppercase text-gray-600">{data?.nome}</p>
+                                <p className="font-bold text-[10px] uppercase">Assinatura do Paciente</p>
+                                <p className="text-[9px] mt-1 uppercase text-gray-600">{data?.nome}</p>
                             </div>
                             <div className="text-center flex-1">
                                 <div className="border-t border-black w-full mb-1"></div>
-                                <p className="font-bold text-[8px] uppercase">Assinatura e Carimbo do Médico</p>
+                                <p className="font-bold text-[9px] uppercase">Assinatura e Carimbo do Médico</p>
                                 <p className="text-[7.5px] mt-1 uppercase text-[#002776] font-bold">{data?.anestesistaNome ? `${getDoctorPrefix(data.anestesistaNome, data.anestesistaSexo)} ${data.anestesistaNome}` : ''}</p>
                                 <p className="text-[7.5px] uppercase text-gray-500">{data?.anestesistaCRM ? `CRM ${data.anestesistaCRM}` : ''}</p>
                             </div>
                         </div>
 
                         <div className="border border-gray-300 p-2.5 rounded bg-gray-50/50 mt-3">
-                            <h3 className="font-bold text-[9px] mb-3 uppercase text-gray-700">Testemunhas:</h3>
+                            <h3 className="font-bold text-[10px] mb-3 uppercase text-gray-700">Testemunhas:</h3>
                             <div className="flex flex-col gap-4">
                                 <div className="flex gap-4 items-end">
                                     <div className="flex-[2]">
