@@ -63,29 +63,26 @@ const PEP = () => {
     const fetchFila = async () => {
         setLoading(true);
         try {
-            const hojeFormatado = new Date().toISOString().split('T')[0];
-            const inicioDoDiaISO = new Date(new Date().setHours(0,0,0,0)).toISOString();
+            const todayRef = new Date();
+            const hojeFormatado = `${todayRef.getFullYear()}-${String(todayRef.getMonth() + 1).padStart(2, '0')}-${String(todayRef.getDate()).padStart(2, '0')}`;
 
             // 1. Pega do config do médico se ele deve ver a clínica inteira
             let queryConfig = supabase.from('users').select('ver_clinica_inteira').ilike('name', medicoLogado).maybeSingle();
             const { data: configMedico } = await queryConfig;
             const verClinicaInteira = configMedico?.ver_clinica_inteira || false;
 
-            // 2. Busca consultas de hoje
+            // 2. Busca consultas de hoje (Sem filtro estrito de unidade, pois os nomes podem divergir ligeiramente)
             let queryCols = supabase.from('consultas')
                 .select('*')
                 .eq('data_agendamento', hojeFormatado)
-                .in('status', ['Aguardando', 'Em Atendimento'])
-                .eq('unidade', unidadeAtual);
+                .in('status', ['Aguardando', 'Em Atendimento']);
 
             const { data: consultasData } = await queryCols;
 
-            // 3. Busca prontuário eletrônico (novo fluxo de senhas)
+            // 3. Busca prontuário eletrônico (novo fluxo de senhas) - sem restrição estrita de data/unidade
             const { data: atendimentosData } = await supabase.from('atendimentos')
                 .select('*')
-                .in('status', ['Aguardando', 'Em Atendimento'])
-                .eq('unidade', unidadeAtual)
-                .gte('created_at', inicioDoDiaISO);
+                .in('status', ['Aguardando', 'Em Atendimento']);
 
             const normalizeName = (name) => {
                 if (!name) return '';
