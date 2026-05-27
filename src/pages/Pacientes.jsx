@@ -12,11 +12,11 @@ import { PacienteFormModal } from '../components/PacienteFormModal';
 import { usePermission } from '../contexts/PermissionContext';
 
 const STATUS_COLORS = {
-    'Aguardando': 'bg-slate-50 text-slate-500 border-slate-200',
-    'Agendado': 'bg-blue-50 text-blue-600 border-blue-100',
-    'Realizado': 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    'Cancelado': 'bg-rose-50 text-rose-500 border-rose-100',
-    'Aguardando Autorização': 'bg-amber-50 text-amber-600 border-amber-100',
+    'Aguardando': 'bg-white/60 text-slate-500 border-white/60',
+    'Agendado': 'bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none border-blue-100',
+    'Realizado': 'bg-emerald-500/20 text-emerald-600 border-emerald-100',
+    'Cancelado': 'bg-rose-500/20 text-rose-500 border-rose-100',
+    'Aguardando Autorização': 'bg-amber-500/20 text-amber-600 border-amber-100',
     'Mensagem Enviada': 'bg-sky-50 text-sky-600 border-sky-100'
 };
 
@@ -123,46 +123,46 @@ const Pacientes = () => {
         }
     };
 
-    const inputStyle = "w-full h-9 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-800 placeholder:text-slate-400";
+    const inputStyle = "w-full h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-900 drop-shadow-none placeholder:text-slate-500";
     const labelStyle = "text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-wider";
 
     return (
-        <div className="px-4 lg:px-4 pr-4 py-4 sm:px-4 font-sans animate-in fade-in duration-700 text-slate-900 w-full min-h-full bg-slate-50/20 print:hidden">
+        <div className="px-4 lg:px-4 pr-4 py-4 sm:px-4 font-sans animate-in fade-in duration-700 text-slate-800 w-full min-h-full bg-slate-50/20 print:hidden">
             <div className="max-w-7xl mx-auto space-y-3">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-center mb-3 pb-3 border-b border-slate-200 gap-3">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-3 pb-3 border-b border-white/60 gap-3">
                     <div>
-                        <h1 className="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                        <h1 className="text-lg font-black tracking-normal text-slate-800 flex items-center gap-2">
                             <User className="text-blue-600" size={20} /> Central de Pacientes
                         </h1>
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Prontuário Eletrônico</p>
                     </div>
                     {hasPermission('Criar Pacientes') && (
-                        <button onClick={() => handleOpenModal()} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 transition-all">
+                        <button onClick={() => handleOpenModal()} className="bg-blue-600 hover:bg-blue-700 text-slate-800 px-4 py-2 rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 transition-all">
                             <Plus size={16} /> Novo Paciente
                         </button>
                     )}
                 </div>
 
                 {/* Filtro Principal */}
-                <div className="bg-white/60 backdrop-blur-lg p-2.5 rounded-xl shadow-sm border border-white/50 mb-3">
+                <div className="bg-white/60 backdrop-blur-lg p-2.5 rounded-xl shadow-sm border border-white/400 mb-3">
                     <div className="relative">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
                         <input
                             type="text"
                             placeholder="Pesquisar por Nome, CPF ou CNS..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full py-1.5 pl-8 pr-3 bg-white/50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 font-semibold text-xs placeholder:text-slate-400"
+                            className="w-full py-1.5 pl-8 pr-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 font-semibold text-xs placeholder:text-slate-500"
                         />
                     </div>
                 </div>
 
                 {/* Tabela de Pacientes */}
-                <div className="bg-white/60 backdrop-blur-lg rounded-xl shadow-sm border border-white/50 overflow-hidden">
+                <div className="bg-white/60 backdrop-blur-lg rounded-xl shadow-sm border border-white/400 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-slate-200">
-                            <thead className="bg-white/40">
+                            <thead className="bg-white/60">
                                 <tr className="text-left text-[11px] font-black text-slate-500 uppercase tracking-widest">
                                     <th className="py-1.5 px-3">Paciente</th>
                                     <th className="py-1.5 px-3">Documentos</th>
@@ -183,32 +183,32 @@ const Pacientes = () => {
                                         <tr
                                             key={paciente.id}
                                             onClick={() => handleOpenModal(paciente)}
-                                            className="hover:bg-slate-50 transition-colors group cursor-pointer"
+                                            className="hover:bg-white/60 transition-colors group cursor-pointer"
                                         >
                                             <td className="px-3 py-1.5">
-                                                <div className="font-bold text-slate-800 text-xs uppercase">{paciente.nome}</div>
-                                                <div className="text-[10px] font-semibold text-slate-400 uppercase mt-0.5">{paciente.sexo || 'N/I'}</div>
+                                                <div className="font-bold text-slate-900 drop-shadow-none text-xs uppercase">{paciente.nome}</div>
+                                                <div className="text-[10px] font-semibold text-slate-500 uppercase mt-0.5">{paciente.sexo || 'N/I'}</div>
                                             </td>
                                             <td className="px-3 py-1.5">
                                                 <div className="text-[11px] font-bold text-slate-600">CPF: {paciente.cpf || '---'}</div>
-                                                <div className="text-[10px] font-semibold text-slate-400">CNS: {paciente.cns || '---'}</div>
+                                                <div className="text-[10px] font-semibold text-slate-500">CNS: {paciente.cns || '---'}</div>
                                             </td>
                                             <td className="px-3 py-1.5 text-xs font-bold text-slate-600">
                                                 {paciente.dataNascimento ? paciente.dataNascimento.split('-').reverse().join('/') : '---'}
                                             </td>
                                             <td className="px-3 py-1.5">
                                                 <div className="text-[11px] font-bold text-slate-600 flex items-center gap-1"><Phone size={12} className="text-emerald-500" /> {paciente.telefone || '---'}</div>
-                                                <div className="text-[10px] font-semibold text-slate-400 truncate max-w-[150px] mt-0.5"><MapPin size={10} className="inline mr-1" />{paciente.municipio}-{paciente.uf}</div>
+                                                <div className="text-[10px] font-semibold text-slate-500 truncate max-w-[150px] mt-0.5"><MapPin size={10} className="inline mr-1" />{paciente.municipio}-{paciente.uf}</div>
                                             </td>
                                             <td className="px-3 py-1.5 text-center">
                                                 <div className="flex justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     {hasPermission('Editar Pacientes') && (
-                                                        <button onClick={(e) => { e.stopPropagation(); handleOpenModal(paciente); }} className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" title="Ver Perfil">
+                                                        <button onClick={(e) => { e.stopPropagation(); handleOpenModal(paciente); }} className="p-1.5 bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none hover:bg-blue-100 rounded-lg transition-colors" title="Ver Perfil">
                                                             <Edit size={14} />
                                                         </button>
                                                     )}
                                                     {hasPermission('Excluir Pacientes') && (
-                                                        <button onClick={(e) => { e.stopPropagation(); handleDelete(paciente); }} className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors" title="Excluir">
+                                                        <button onClick={(e) => { e.stopPropagation(); handleDelete(paciente); }} className="p-1.5 bg-rose-500/20 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors" title="Excluir">
                                                             <Trash2 size={14} />
                                                         </button>
                                                     )}
@@ -218,7 +218,7 @@ const Pacientes = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="py-20 text-center text-slate-400 font-bold uppercase text-sm">
+                                        <td colSpan="5" className="py-20 text-center text-slate-500 font-bold uppercase text-sm">
                                             Nenhum paciente encontrado.
                                         </td>
                                     </tr>

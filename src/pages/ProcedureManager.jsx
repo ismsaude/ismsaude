@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
+import { logAction } from '../utils/logger';
 
 import {
     Search, Clock, Save, Loader2, Stethoscope,
@@ -60,6 +61,8 @@ const ProcedureManager = () => {
 
             if (error) throw error;
 
+            await logAction('GESTOR DE PROCEDIMENTOS', `Tempo padrão do procedimento "${originalName}" definido para ${timeValue} min.`);
+
             toast.success(`Tempo de "${originalName}" definido para ${timeValue} min!`, { id: toastId });
 
             // Limpa o estado de edição dessa linha
@@ -90,19 +93,19 @@ const ProcedureManager = () => {
 
     // --- RENDERIZAÇÃO ---
     return (
-        <div className="px-4 sm:px-6 pr-8 py-10 min-h-full bg-slate-50/50 font-sans animate-in fade-in duration-700">
+        <div className="px-4 sm:px-6 pr-8 py-10 min-h-full bg-white/60 font-sans animate-in fade-in duration-700">
 
             {/* CABEÇALHO DA PÁGINA COMPACTO */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-200 pb-4">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-white/60 pb-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-600 rounded-lg text-white shadow-md shadow-blue-200">
+                    <div className="p-2 bg-blue-600 rounded-lg text-slate-800 shadow-md shadow-blue-200">
                         <Clock size={20} />
                     </div>
                     <div>
-                        <h1 className="text-xl font-black text-slate-900 uppercase tracking-tighter">
+                        <h1 className="text-xl font-black text-slate-800 uppercase tracking-widest">
                             Gestão de Tempos
                         </h1>
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                             {loading ? 'Sincronizando...' : `${procedures.length} procedimentos`}
                         </p>
                     </div>
@@ -110,13 +113,13 @@ const ProcedureManager = () => {
 
                 {/* BARRA DE PESQUISA COMPACTA */}
                 <div className="relative w-full md:w-[400px] group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" size={18} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-blue-500 transition-colors" size={18} />
                     <input
                         type="text"
                         placeholder="Pesquise por nome ou código..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-white/50 border border-white/60 rounded-lg shadow-sm outline-none focus:border-blue-500 text-sm font-semibold text-slate-800 transition-all placeholder:text-slate-500 h-10"
+                        className="w-full pl-10 pr-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg shadow-sm outline-none focus:border-blue-500 text-sm font-semibold text-slate-900 drop-shadow-none transition-all placeholder:text-slate-500 h-10"
                     />
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         {loading && <Loader2 className="animate-spin text-blue-500" size={16} />}
@@ -125,16 +128,16 @@ const ProcedureManager = () => {
             </div>
 
             {/* TABELA DE DADOS DENSA */}
-            <div className="bg-white/60 backdrop-blur-lg rounded-lg shadow-sm border border-white/50 overflow-hidden flex flex-col h-[calc(100vh-220px)]">
+            <div className="bg-white/60 backdrop-blur-lg rounded-lg shadow-sm border border-white/400 overflow-hidden flex flex-col h-[calc(100vh-220px)]">
                 <div className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                     <table className="w-full text-left border-collapse">
                         {/* Cabeçalho da Tabela Sticky */}
-                        <thead className="bg-white/40 sticky top-0 z-10 shadow-sm">
+                        <thead className="bg-white/60 sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-32">Código SUS</th>
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Nome do Procedimento</th>
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Duração (Min)</th>
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-center w-32">Status</th>
+                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-white/60 w-32">Código SUS</th>
+                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-white/60">Nome do Procedimento</th>
+                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-white/60 w-40">Duração (Min)</th>
+                                <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-white/60 text-center w-32">Status</th>
                             </tr>
                         </thead>
 
@@ -146,18 +149,18 @@ const ProcedureManager = () => {
                                     <td colSpan="4" className="py-20 text-center">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <Loader2 className="animate-spin text-blue-500" size={32} />
-                                            <span className="text-[11px] font-bold text-slate-300 uppercase tracking-widest">Carregando...</span>
+                                            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Carregando...</span>
                                         </div>
                                     </td>
                                 </tr>
                             ) : filteredData.length > 0 ? (
                                 // Lista de Procedimentos
                                 filteredData.map((item, idx) => (
-                                    <tr key={item.codigo || item.id || idx} className="hover:bg-white/40 transition-all group">
+                                    <tr key={item.codigo || item.id || idx} className="hover:bg-white/60 transition-all group">
 
                                         {/* Coluna Código */}
                                         <td className="px-4 py-2 align-middle">
-                                            <span className="font-mono font-bold text-[11px] text-slate-600 bg-white/50 px-2 py-0.5 rounded border border-white/60 group-hover:bg-white/80 group-hover:border-blue-200 transition-colors">
+                                            <span className="font-mono font-bold text-[11px] text-slate-600 bg-white/60 px-2 py-0.5 rounded border border-white/60 group-hover:bg-white/80 group-hover:border-blue-200 transition-colors">
                                                 {item.codigo || '---'}
                                             </span>
                                         </td>
@@ -165,7 +168,7 @@ const ProcedureManager = () => {
                                         {/* Coluna Nome */}
                                         <td className="px-4 py-2 align-middle">
                                             <div className="flex items-center gap-2">
-                                                <div className="text-slate-300 group-hover:text-blue-400 transition-colors">
+                                                <div className="text-slate-600 group-hover:text-blue-400 transition-colors">
                                                     <Stethoscope size={14} />
                                                 </div>
                                                 <span className="font-bold text-xs text-slate-700 uppercase leading-snug truncate max-w-[400px] block" title={item.nome}>
@@ -176,14 +179,14 @@ const ProcedureManager = () => {
 
                                         {/* Coluna Input de Tempo */}
                                         <td className="px-4 py-2 align-middle">
-                                            <div className={`flex items-center gap-2 bg-white/50 px-2 py-1 rounded-md border transition-all w-24 ${editingTimes[item.id] ? 'border-blue-400 ring-2 ring-blue-50' : 'border-white/60 group-hover:border-blue-300'}`}>
-                                                <Clock size={12} className="text-slate-400" />
+                                            <div className={`flex items-center gap-2 bg-white/60 px-2 py-1 rounded-md border transition-all w-24 ${editingTimes[item.id] ? 'border-blue-400 ring-2 ring-blue-50' : 'border-white/60 group-hover:border-blue-300'}`}>
+                                                <Clock size={12} className="text-slate-500" />
                                                 <input
                                                     type="number"
                                                     placeholder={item.tempoPadrao || "0"}
                                                     value={editingTimes[item.id] !== undefined ? editingTimes[item.id] : (item.tempoPadrao || '')}
                                                     onChange={(e) => handleTimeChange(item.id, e.target.value)}
-                                                    className="w-full outline-none text-xs font-bold text-slate-700 placeholder:text-slate-300 bg-transparent"
+                                                    className="w-full outline-none text-xs font-bold text-slate-700 placeholder:text-slate-600 bg-transparent"
                                                 />
                                             </div>
                                         </td>
@@ -205,8 +208,8 @@ const ProcedureManager = () => {
                                                 </div>
                                             ) : (
                                                 // Estado Vazio
-                                                <div className="text-slate-200 flex items-center justify-center">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
+                                                <div className="text-slate-700 flex items-center justify-center">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-white/80"></div>
                                                 </div>
                                             )}
                                         </td>
@@ -217,10 +220,10 @@ const ProcedureManager = () => {
                                 <tr>
                                     <td colSpan="4" className="py-20 text-center opacity-70">
                                         <div className="flex flex-col items-center justify-center gap-2">
-                                            <div className="bg-slate-50 p-3 rounded-full">
-                                                <Filter size={24} className="text-slate-400" />
+                                            <div className="bg-white/60 p-3 rounded-full">
+                                                <Filter size={24} className="text-slate-500" />
                                             </div>
-                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
                                                 Nada encontrado para "{searchTerm}"
                                             </p>
                                         </div>

@@ -8,10 +8,12 @@ import {
     LayoutDashboard, ClipboardList, Users, Settings, LogOut,
     Activity, CalendarDays, CalendarRange, FileText, Stethoscope,
     Bed, FileSignature, ShieldCheck, CheckSquare, Building2, User,
-    Lock, X, Save, Syringe, ChevronDown, Clock, UploadCloud, FileSpreadsheet, Palette, Menu
+    Lock, X, Save, Syringe, ChevronDown, Clock, UploadCloud, FileSpreadsheet, Palette, Menu,
+    DollarSign, ArrowRightLeft
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import toast from 'react-hot-toast';
+import { formatNameStandard } from '../utils/nameFormatter';
 
 export const Topbar = () => {
     const { currentUser, logout } = useAuth();
@@ -21,7 +23,7 @@ export const Topbar = () => {
     const navigate = useNavigate();
 
     const [activeDropdown, setActiveDropdown] = useState(null);
-    const [forceHideDropdown, setForceHideDropdown] = useState(false);
+    const [hideDropdown, setHideDropdown] = useState(null);
     const dropdownRef = useRef(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -80,14 +82,7 @@ export const Topbar = () => {
                 { path: '/semana', icon: CalendarRange, label: 'Mapa Semanal', show: hasPermission('Visualizar Mapa/Agenda') }
             ]
         },
-        {
-            id: 'clinico', icon: Stethoscope, label: 'Médico', show: hasPermission('Visualizar Atendimentos'),
-            subItems: [
-                { path: '/pep', icon: FileSignature, label: 'PEP', show: true },
-                { path: '/apa', icon: Activity, label: 'APA', show: hasPermission('Visualizar Atendimentos') },
-                { path: '/aih', icon: FileText, label: 'AIH', show: hasPermission('Visualizar Atendimentos') }
-            ]
-        },
+
         {
             id: 'regulacao', icon: ShieldCheck, label: 'Autorização', show: hasPermission('Acessar Autorizações'),
             subItems: [
@@ -95,143 +90,88 @@ export const Topbar = () => {
             ]
         },
         {
+            id: 'financeiro', icon: DollarSign, label: 'Financeiro', show: hasPermission('Acessar Relatórios'),
+            subItems: [
+                { path: '/finance/dashboard', icon: LayoutDashboard, label: 'Cockpit', show: hasPermission('Acessar Relatórios') },
+                { path: '/finance/transacoes', icon: Activity, label: 'Extratos', show: hasPermission('Acessar Relatórios') },
+                { path: '/finance/conciliacao', icon: ArrowRightLeft, label: 'Conciliação', show: hasPermission('Acessar Relatórios') },
+                { path: '/finance/repasse', icon: Users, label: 'Rateio/Repasse', show: hasPermission('Acessar Relatórios') },
+                { path: '/finance/glosas', icon: ShieldCheck, label: 'Glosas', show: hasPermission('Acessar Relatórios') },
+                { path: '/finance/configuracoes', icon: Settings, label: 'Ajustes', show: hasPermission('Acessar Configurações') }
+            ]
+        },
+        {
             id: 'escala', path: '/escala', icon: CalendarDays, label: 'Escala', show: true
         },
-        { id: 'dashboard', path: '/dashboard', icon: LayoutDashboard, label: 'Relatório', show: true }
+        { id: 'dashboard', path: '/dashboard', icon: LayoutDashboard, label: 'Relatório', show: true },
+        {
+            id: 'configuracoes', icon: Settings, label: 'Configurações', show: hasPermission('Acessar Configurações') || hasPermission('Acessar Usuarios') || hasPermission('Acesso Total (Admin)'),
+            subItems: [
+                { 
+                    label: 'Cadastros Gerais', 
+                    icon: User, 
+                    show: hasPermission('Acessar Configurações'),
+                    dropdown: [
+                        { path: '/configuracoes?tab=especialidades', label: 'Especialidades' },
+                        { path: '/configuracoes?tab=convenios', label: 'Convênios' },
+                        { path: '/configuracoes?tab=locais', label: 'Salas Cirúrgicas' },
+                        { path: '/configuracoes?tab=cidades', label: 'Cidades' },
+                        { path: '/configuracoes?tab=anestesias', label: 'Anestesias' },
+                        { path: '/configuracoes?tab=status', label: 'Status da Fila' },
+                        { path: '/configuracoes?tab=motivos_suspensao', label: 'Motivos de Suspensão' },
+                        { path: '/configuracoes?tab=prioridades', label: 'Prioridades' },
+                        { path: '/configuracoes?tab=clinicas', label: 'Clínicas AIH' },
+                        { path: '/configuracoes?tab=caraterInternacao', label: 'Caráter AIH' }
+                    ]
+                },
+                { path: '/configuracoes?tab=usuarios', icon: Users, label: 'Gestão de Acessos', show: hasPermission('Acesso Total (Admin)') || hasPermission('Acessar Usuarios') },
+                { path: '/configuracoes?tab=orientacoes', icon: FileText, label: 'Textos de Orientação', show: hasPermission('Acessar Configurações') },
+                { path: '/configuracoes?tab=identidade', icon: Palette, label: 'Identidade Visual', show: hasPermission('Acesso Total (Admin)') },
+                { path: '/configuracoes?tab=hub', icon: LayoutDashboard, label: 'Hub Inicial', show: hasPermission('Acesso Total (Admin)') },
+                { path: '/configuracoes?tab=importacao', icon: UploadCloud, label: 'Importação CSV', show: hasPermission('Acessar Configurações') },
+                { path: '/configuracoes?tab=basesus', icon: FileSpreadsheet, label: 'Tabela SIGTAP', show: hasPermission('Acessar Configurações') },
+                { path: '/configuracoes?tab=logs', icon: Activity, label: 'Logs do Sistema', show: hasPermission('Acesso Total (Admin)') }
+            ]
+        }
     ].filter(item => item.show);
+
+    const activeModule = menuItems.find(item => {
+        if (item.subItems) {
+            return item.subItems.some(sub => {
+                if (sub.dropdown) return sub.dropdown.some(d => location.pathname === d.path.split('?')[0]);
+                if (sub.path) return location.pathname === sub.path.split('?')[0];
+                return false;
+            });
+        }
+        return location.pathname === item.path;
+    });
+
+    const isHome = location.pathname === '/home';
 
     return (
         <>
-            <header className="h-16 bg-white border-b border-slate-200 shadow-sm flex items-center justify-between px-4 sm:px-6 sticky top-0 z-[999] shrink-0 print:hidden">
+            <header className="h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-[999] shrink-0 print:hidden transition-colors duration-300 bg-white/60 backdrop-blur-md border-b border-white/60 shadow-none">
 
                 {/* LOGO */}
-                <div className="flex items-center justify-center">
-                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="lg:hidden p-2 -ml-2 mr-2 text-slate-500 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors">
+                <div className="flex items-center justify-center shrink-0">
+                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="lg:hidden p-2 -ml-2 mr-2 rounded-lg transition-colors text-slate-800 hover:bg-white/70">
                         <Menu size={24} />
                     </button>
-                    <Link to="/dashboard" className="cursor-pointer transition-transform hover:scale-105 active:scale-95 flex items-center">
-                        <img src={theme.logoUrl} alt="Logo do Sistema" className="h-8 w-auto object-contain drop-shadow-sm" />
+                    <Link to="/home" className="cursor-pointer transition-transform hover:scale-105 active:scale-95 flex items-center">
+                        <img src={theme.logoUrl} alt="Logo do Sistema" className="h-8 w-auto object-contain drop-shadow-sm transition-all duration-300 opacity-90" />
                     </Link>
                 </div>
 
-                {/* NAV */}
-                {/* NAV UNIFICADA COM HOVER (CSS PURE) */}
-                <nav className="hidden lg:flex items-center gap-1 h-full">
-                    {menuItems.map(item => {
-                        const isParentActive = item.subItems ? item.subItems.some(sub => location.pathname === sub.path) : isActive(item.path);
-
-                        const btnStyle = isParentActive
-                            ? 'bg-white/80 text-blue-600 font-bold shadow-sm border border-slate-200/60'
-                            : 'bg-transparent text-slate-500 hover:bg-white/50 hover:text-blue-600 border border-transparent';
-
-                        return (
-                            <div 
-                                key={item.id || item.path} 
-                                className="relative group flex h-full items-center"
-                                onMouseLeave={() => setForceHideDropdown(false)}
-                            >
-                                {item.subItems ? (
-                                    <div 
-                                        onClick={() => setActiveDropdown(activeDropdown === item.id ? null : item.id)}
-                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-tight transition-all duration-300 cursor-pointer ${btnStyle}`}
-                                    >
-                                        <item.icon size={16} strokeWidth={isParentActive ? 2.5 : 2} />
-                                        {item.label}
-                                        <ChevronDown size={14} className={`ml-0.5 transition-transform ${activeDropdown === item.id ? 'rotate-180' : (!forceHideDropdown ? 'group-hover:rotate-180' : '')}`} />
-                                    </div>
-                                ) : (
-                                    <Link
-                                        to={item.path}
-                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-tight transition-all duration-300 ${btnStyle}`}
-                                    >
-                                        <item.icon size={16} strokeWidth={isParentActive ? 2.5 : 2} />
-                                        {item.label}
-                                    </Link>
-                                )}
-
-                                {/* DROPDOWN MENU COM HOVER E CLICK TOUCH */}
-                                {item.subItems && (
-                                    <div className={`absolute top-[100%] left-0 pt-2 min-w-[180px] z-50 transition-all duration-200 ${activeDropdown === item.id ? 'opacity-100 visible' : (!forceHideDropdown ? 'lg:group-hover:opacity-100 lg:group-hover:visible opacity-0 invisible' : 'opacity-0 invisible')}`}>
-                                        <div className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-xl rounded-2xl p-1.5 flex flex-col gap-1">
-                                            {item.subItems.filter(sub => sub.show).map(sub => (
-                                                sub.isSoon ? (
-                                                    <div key={sub.label} className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase text-slate-400 bg-slate-50/50 cursor-not-allowed">
-                                                        <div className="flex items-center gap-2"><sub.icon size={14} /> {sub.label}</div>
-                                                        <span className="text-[7px] text-amber-500 font-black tracking-widest">BREVE</span>
-                                                    </div>
-                                                ) : (
-                                                    <Link
-                                                        key={sub.path} to={sub.path}
-                                                        onClick={(e) => { 
-                                                            setActiveDropdown(null); 
-                                                            setForceHideDropdown(true); 
-                                                        }}
-                                                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-tight transition-all duration-300 ${isActive(sub.path) ? 'bg-white/90 text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600'}`}
-                                                    >
-                                                        <sub.icon size={14} strokeWidth={isActive(sub.path) ? 2.5 : 2} /> {sub.label}
-                                                    </Link>
-                                                )
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-
-                    {/* MENU CONFIGURAÇÕES COM HOVER NATIVO E ROTAS CORRETAS */}
-                    {(hasPermission('Acessar Configurações') || hasPermission('Acessar Usuarios')) && (
-                        <div 
-                            className="relative group flex h-full items-center ml-2"
-                            onMouseLeave={() => setForceHideDropdown(false)}
-                        >
-                            <div 
-                                onClick={() => setActiveDropdown(activeDropdown === 'config' ? null : 'config')}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-tight transition-all duration-300 cursor-pointer border ${location.pathname.includes('/configuracoes') ? 'bg-white/80 text-blue-600 font-bold shadow-sm border-slate-200/60' : 'bg-transparent text-slate-500 hover:bg-white/50 hover:text-blue-600 border-transparent'}`}
-                            >
-                                <Settings size={16} strokeWidth={2} /> Configurações
-                            </div>
-                            
-                            <div className={`absolute top-[100%] right-0 pt-2 min-w-[220px] z-50 transition-all duration-200 ${activeDropdown === 'config' ? 'opacity-100 visible' : 'opacity-0 invisible lg:group-hover:opacity-100 lg:group-hover:visible'}`}>
-                                <div className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-xl rounded-2xl p-1.5 flex flex-col gap-1">
-                                    {hasPermission('Acessar Configurações') && (
-                                        <>
-                                            <Link onClick={() => { setActiveDropdown(null); setForceHideDropdown(true); }} to="/configuracoes?tab=medicos" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all duration-300"><User size={14}/> Cadastros Gerais</Link>
-                                            <Link onClick={() => { setActiveDropdown(null); setForceHideDropdown(true); }} to="/configuracoes?tab=orientacoes" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all duration-300"><FileText size={14}/> Textos de Orientação</Link>
-                                            <Link onClick={() => { setActiveDropdown(null); setForceHideDropdown(true); }} to="/configuracoes?tab=horarios" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all duration-300"><Clock size={14}/> Horários Operacionais</Link>
-                                            <div className="h-px bg-slate-100 my-1 mx-2"></div>
-                                            <Link onClick={() => { setActiveDropdown(null); setForceHideDropdown(true); }} to="/configuracoes?tab=importacao" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all duration-300"><UploadCloud size={14}/> Importação CSV</Link>
-                                            <Link onClick={() => { setActiveDropdown(null); setForceHideDropdown(true); }} to="/configuracoes?tab=basesus" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all duration-300"><FileSpreadsheet size={14}/> Tabela SIGTAP</Link>
-                                        </>
-                                    )}
-
-                                    {(hasPermission('Acesso Total (Admin)') || hasPermission('Acessar Usuarios')) && (
-                                        <>
-                                            <div className="h-px bg-slate-100 my-1 mx-2"></div>
-                                            <Link onClick={() => { setActiveDropdown(null); setForceHideDropdown(true); }} to="/configuracoes?tab=usuarios" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300"><Users size={14}/> Gestão de Acessos</Link>
-                                        </>
-                                    )}
-                                    
-                                    {hasPermission('Acesso Total (Admin)') && (
-                                        <>
-                                            <Link onClick={() => { setActiveDropdown(null); setForceHideDropdown(true); }} to="/configuracoes?tab=identidade" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300"><Palette size={14}/> Identidade Visual</Link>
-                                            <Link onClick={() => { setActiveDropdown(null); setForceHideDropdown(true); }} to="/configuracoes?tab=logs" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300"><Activity size={14}/> Logs do Sistema</Link>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </nav>
-
+                {/* NAV CONDICIONAL E CONTEXTUAL - REMOVIDO A PEDIDO DO USUÁRIO */}
+                <div className="hidden lg:flex flex-1 items-center h-full mx-4 sm:mx-8 min-w-0"></div>
                 {/* DIREITA */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                     <UnitSelector />
-                    <div className="h-5 w-px bg-slate-200 hidden sm:block mx-1"></div>
-                    <button title="Meu Perfil" onClick={() => setIsProfileOpen(true)} className="p-2 rounded-xl text-slate-500 hover:bg-white/60 hover:text-blue-600 transition-all duration-300 shadow-sm border border-transparent hover:border-white/50">
+                    <div className="h-5 w-px hidden sm:block mx-1 bg-white/80"></div>
+                    <button title="Meu Perfil" onClick={() => setIsProfileOpen(true)} className="p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent text-slate-800 hover:bg-white/70 hover:border-white/30">
                         <User size={16} />
                     </button>
-                    <button title="Sair" onClick={handleLogout} className="p-2 rounded-xl text-slate-500 hover:bg-rose-500/10 hover:text-rose-600 transition-all duration-300">
+                    <button title="Sair" onClick={handleLogout} className="p-2 rounded-xl transition-all duration-300 text-slate-800 hover:bg-rose-500/80 hover:text-slate-800">
                         <LogOut size={16} />
                     </button>
                 </div>
@@ -245,29 +185,29 @@ export const Topbar = () => {
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl"><User size={20} /></div>
                                 <div>
-                                    <h2 className="text-lg font-black text-slate-800 uppercase tracking-tighter leading-none">Meu Perfil</h2>
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Gerencie sua conta</p>
+                                    <h2 className="text-lg font-black text-slate-800 uppercase tracking-widest leading-none">Meu Perfil</h2>
+                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gerencie sua conta</p>
                                 </div>
                             </div>
-                            <button onClick={() => setIsProfileOpen(false)} className="text-slate-400 hover:text-rose-500 bg-white p-2 rounded-full shadow-sm hover:shadow transition-all"><X size={18} /></button>
+                            <button onClick={() => setIsProfileOpen(false)} className="text-slate-500 hover:text-rose-500 bg-white p-2 rounded-full shadow-sm hover:shadow transition-all"><X size={18} /></button>
                         </div>
                         <div className="p-6 space-y-6">
                             <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                                 <div className="col-span-2">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nome Completo</label>
-                                    <div className="text-sm font-bold text-slate-800 uppercase">{currentUser?.name || currentUser?.displayName || '---'}</div>
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Nome Completo</label>
+                                    <div className="text-sm font-bold text-slate-800 uppercase">{formatNameStandard(currentUser?.name || currentUser?.displayName) || '---'}</div>
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">E-mail</label>
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">E-mail</label>
                                     <div className="text-xs font-semibold text-slate-600">{currentUser?.email}</div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Perfil</label>
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Perfil</label>
                                     <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-[11px] font-black uppercase rounded">{currentUser?.role || '---'}</span>
                                 </div>
                                 {(currentUser?.crm || currentUser?.cpf) && (
                                     <div>
-                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Documento</label>
+                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Documento</label>
                                         <div className="text-xs font-bold text-slate-700">{currentUser?.crm || currentUser?.cpf}</div>
                                     </div>
                                 )}
@@ -277,9 +217,9 @@ export const Topbar = () => {
                                 <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
                                     <Lock size={12} /> Alterar Senha
                                 </h3>
-                                <div><input type="password" placeholder="Nova Senha (min. 6 caracteres)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 font-semibold outline-none focus:border-blue-500 placeholder:text-slate-400 placeholder:font-normal" /></div>
-                                <div><input type="password" placeholder="Confirmar Nova Senha" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 font-semibold outline-none focus:border-blue-500 placeholder:text-slate-400 placeholder:font-normal" /></div>
-                                <button type="submit" disabled={loadingPassword || !newPassword || !confirmPassword} className="w-full py-3 bg-slate-800 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-900 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-slate-800/20">
+                                <div><input type="password" placeholder="Nova Senha (min. 6 caracteres)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 font-semibold outline-none focus:border-blue-500 placeholder:text-slate-500 placeholder:font-normal" /></div>
+                                <div><input type="password" placeholder="Confirmar Nova Senha" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 font-semibold outline-none focus:border-blue-500 placeholder:text-slate-500 placeholder:font-normal" /></div>
+                                <button type="submit" disabled={loadingPassword || !newPassword || !confirmPassword} className="w-full py-3 bg-slate-800 text-slate-800 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-900 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-slate-800/20">
                                     {loadingPassword ? 'Salvando...' : <><Save size={16} /> Atualizar Senha</>}
                                 </button>
                             </form>
@@ -294,30 +234,30 @@ export const Topbar = () => {
                     <div className="absolute left-0 top-0 bottom-0 w-[80%] max-w-[320px] bg-white shadow-2xl flex flex-col animate-in slide-in-from-left duration-300" onClick={e => e.stopPropagation()}>
                         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                             <img src={theme.logoUrl} alt="Logo" className="h-8 object-contain" />
-                            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 hover:text-rose-600 rounded-lg bg-slate-50"><X size={18} /></button>
+                            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-500 hover:text-rose-600 rounded-lg bg-slate-50"><X size={18} /></button>
                         </div>
                         <div className="overflow-y-auto flex-1 py-4 px-3 space-y-3 custom-scrollbar">
                             {menuItems.map(item => (
                                 <div key={item.id || item.path} className="flex flex-col">
                                     {item.subItems ? (
                                         <>
-                                            <div className="px-3 py-2 text-[11px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-2">
+                                            <div className="px-3 py-2 text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center gap-2">
                                                 <item.icon size={14} /> {item.label}
                                             </div>
                                             <div className="flex flex-col ml-3 pl-3 border-l border-slate-100 space-y-1">
                                                 {item.subItems.filter(s => s.show).map(sub => sub.isSoon ? (
-                                                    <div key={sub.label} className="px-3 py-2.5 text-xs font-bold text-slate-300 flex items-center gap-2 uppercase tracking-tight">
+                                                    <div key={sub.label} className="px-3 py-2.5 text-xs font-bold text-slate-600 flex items-center gap-2 uppercase tracking-wider">
                                                         <sub.icon size={14} /> {sub.label} <span className="text-[9px] text-amber-500 font-black ml-auto border border-amber-200 px-1 rounded bg-amber-50">Breve</span>
                                                     </div>
                                                 ) : (
-                                                    <Link key={sub.path} to={sub.path} onClick={() => setIsMobileMenuOpen(false)} className={`px-3 py-2.5 text-xs font-bold uppercase tracking-tight rounded-xl flex items-center gap-2 transition-all ${isActive(sub.path) ? 'bg-blue-50 text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                                    <Link key={sub.path} to={sub.path} onClick={() => setIsMobileMenuOpen(false)} className={`px-3 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center gap-2 transition-all ${isActive(sub.path) ? 'bg-blue-50 text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:bg-slate-50'}`}>
                                                         <sub.icon size={14} strokeWidth={isActive(sub.path) ? 2.5 : 2} /> {sub.label}
                                                     </Link>
                                                 ))}
                                             </div>
                                         </>
                                     ) : (
-                                        <Link to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={`px-3 py-3 text-xs font-bold uppercase tracking-tight rounded-xl flex items-center gap-2 transition-all ${isActive(item.path) ? 'bg-blue-50 text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                        <Link to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={`px-3 py-3 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center gap-2 transition-all ${isActive(item.path) ? 'bg-blue-50 text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:bg-slate-50'}`}>
                                             <item.icon size={16} strokeWidth={isActive(item.path) ? 2.5 : 2} /> {item.label}
                                         </Link>
                                     )}
@@ -326,32 +266,40 @@ export const Topbar = () => {
 
                             {(hasPermission('Acessar Configurações') || hasPermission('Acessar Usuarios')) && (
                                 <div className="flex flex-col mt-4 pt-4 border-t border-slate-100">
-                                    <div className="px-3 py-2 text-[11px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-2">
+                                    <div className="px-3 py-2 text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center gap-2">
                                         <Settings size={14} /> Configurações
                                     </div>
                                     <div className="flex flex-col ml-3 pl-3 border-l border-slate-100 space-y-1">
-                                        {hasPermission('Acessar Configurações') && (
-                                            <>
-                                                <Link onClick={() => setIsMobileMenuOpen(false)} to="/configuracoes?tab=medicos" className="px-3 py-2.5 text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-50 rounded-xl flex items-center gap-2"><User size={14}/> Cadastros Gerais</Link>
-                                                <Link onClick={() => setIsMobileMenuOpen(false)} to="/configuracoes?tab=orientacoes" className="px-3 py-2.5 text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-50 rounded-xl flex items-center gap-2"><FileText size={14}/> Textos de Orientação</Link>
-                                                <Link onClick={() => setIsMobileMenuOpen(false)} to="/configuracoes?tab=horarios" className="px-3 py-2.5 text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-50 rounded-xl flex items-center gap-2"><Clock size={14}/> Horários</Link>
-                                                <div className="h-px bg-slate-100 mx-2 my-1"></div>
-                                                <Link onClick={() => setIsMobileMenuOpen(false)} to="/configuracoes?tab=importacao" className="px-3 py-2.5 text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-50 rounded-xl flex items-center gap-2"><UploadCloud size={14}/> Importação CSV</Link>
-                                                <Link onClick={() => setIsMobileMenuOpen(false)} to="/configuracoes?tab=basesus" className="px-3 py-2.5 text-xs font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-50 rounded-xl flex items-center gap-2"><FileSpreadsheet size={14}/> Tabela SIGTAP</Link>
-                                                <div className="h-px bg-slate-100 mx-2 my-1"></div>
-                                            </>
-                                        )}
-                                        
-                                        {(hasPermission('Acesso Total (Admin)') || hasPermission('Acessar Usuarios')) && (
-                                            <Link onClick={() => setIsMobileMenuOpen(false)} to="/configuracoes?tab=usuarios" className="px-3 py-2.5 text-xs font-bold uppercase tracking-tight text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-2"><Users size={14}/> Gestão de Acessos</Link>
-                                        )}
-                                        
-                                        {hasPermission('Acesso Total (Admin)') && (
-                                            <>
-                                                <Link onClick={() => setIsMobileMenuOpen(false)} to="/configuracoes?tab=identidade" className="px-3 py-2.5 text-xs font-bold uppercase tracking-tight text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-2"><Palette size={14}/> Identidade Visual</Link>
-                                                <Link onClick={() => setIsMobileMenuOpen(false)} to="/configuracoes?tab=logs" className="px-3 py-2.5 text-xs font-bold uppercase tracking-tight text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-2"><Activity size={14}/> Logs do Sistema</Link>
-                                            </>
-                                        )}
+                                        {menuItems.find(m => m.id === 'configuracoes')?.subItems.filter(s => s.show).map(sub => {
+                                            if (sub.dropdown) {
+                                                return (
+                                                    <div key={sub.label} className="space-y-1">
+                                                        <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500">{sub.label}</div>
+                                                        {sub.dropdown.map(dropItem => (
+                                                            <Link 
+                                                                key={dropItem.path}
+                                                                onClick={() => setIsMobileMenuOpen(false)} 
+                                                                to={dropItem.path} 
+                                                                className="px-3 py-2.5 ml-4 text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-50 hover:text-blue-600 rounded-xl flex items-center gap-2 transition-colors"
+                                                            >
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                                                                {dropItem.label}
+                                                            </Link>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            }
+                                            return (
+                                                <Link 
+                                                    key={sub.path}
+                                                    onClick={() => setIsMobileMenuOpen(false)} 
+                                                    to={sub.path} 
+                                                    className="px-3 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-50 hover:text-blue-600 rounded-xl flex items-center gap-2 transition-colors"
+                                                >
+                                                    <sub.icon size={14}/> {sub.label}
+                                                </Link>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}

@@ -5,7 +5,7 @@ import { usePermission } from '../contexts/PermissionContext';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const PermissionRoute = ({ children, requiredPermission }) => {
+const PermissionRoute = ({ children, requiredPermission, requiredModule }) => {
     const { currentUser, loading: authLoading } = useAuth();
     const { hasPermission, loading: permLoading } = usePermission();
 
@@ -23,7 +23,12 @@ const PermissionRoute = ({ children, requiredPermission }) => {
         return <Navigate to="/login" />;
     }
 
-    // 3. Verifica permissão (se exigida)
+    // 3. Verifica permissão de Módulo (Macro)
+    if (requiredModule && currentUser.modules_access && !currentUser.modules_access.includes(requiredModule)) {
+        return <PermissionDeniedRedirect />;
+    }
+
+    // 4. Verifica permissão Granular (se exigida)
     if (requiredPermission && !hasPermission(requiredPermission)) {
         // Evita loop infinito se a rota proibida for dashboard
         // Mas como dashboard é público (autenticado), redireciona pra ele.
@@ -46,7 +51,7 @@ const PermissionDeniedRedirect = () => {
     React.useEffect(() => {
         toast.error("Acesso Negado: Área restrita.", { id: 'acesso-negado' }); // ID evita duplicidade
     }, []);
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/home" />;
 }
 
 export default PermissionRoute;

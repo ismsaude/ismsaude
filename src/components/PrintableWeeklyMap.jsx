@@ -116,7 +116,7 @@ const PrintableWeeklyMap = ({ surgeries, weekDays, temposByCode, temposByName, p
 
         if (p === 'BLOQUEIO') {
             return {
-                badge: 'bg-slate-50 text-slate-400 border-slate-200/60 font-bold',
+                badge: 'bg-slate-50 text-slate-500 border-slate-200/60 font-bold',
                 card: 'border-slate-300 border-[2px] border-dashed bg-slate-50/50 font-bold',
                 shadow: 'shadow-none'
             };
@@ -141,7 +141,7 @@ const PrintableWeeklyMap = ({ surgeries, weekDays, temposByCode, temposByName, p
                 <div className="flex items-center gap-4">
                     {theme.logoUrl && <img src={theme.logoUrl} alt="Logo" className="h-[32px] w-auto object-contain drop-shadow-sm" />}
                     <div>
-                        <h1 className="text-xl font-black text-slate-800 tracking-tight uppercase leading-none mb-1">Mapa Semanal</h1>
+                        <h1 className="text-xl font-black text-slate-800 tracking-normal uppercase leading-none mb-1">Mapa Semanal</h1>
                         <h2 className="text-[11px] font-bold uppercase text-slate-500 tracking-widest">{theme.nomeInstituicao}</h2>
                     </div>
                 </div>
@@ -166,7 +166,7 @@ const PrintableWeeklyMap = ({ surgeries, weekDays, temposByCode, temposByName, p
                             className={`border-b border-slate-100 flex items-start justify-center pt-1.5 shrink-0 box-border ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`} 
                             style={{ height: `${ROW_HEIGHT}px` }}
                         >
-                            <span className="text-[10px] font-black text-slate-400">{String(hour).padStart(2, '0')}h</span>
+                            <span className="text-[10px] font-black text-slate-500">{String(hour).padStart(2, '0')}h</span>
                         </div>
                     ))}
                     <div style={{ height: `${(EXTRA_MINUTES / 60) * ROW_HEIGHT}px` }} className="shrink-0 box-border bg-white" />
@@ -314,7 +314,7 @@ const PrintableWeeklyMap = ({ surgeries, weekDays, temposByCode, temposByName, p
                                                     
                                                     {statusUpper === 'BLOQUEIO' ? (
                                                         <div className="flex flex-col items-center justify-center h-full text-center p-[1px] w-full relative">
-                                                            <div className="font-extrabold text-[9px] text-rose-900 tracking-tighter mb-[1px] bg-rose-100/80 px-[2px] py-[1px] rounded-[2px] border border-rose-200">
+                                                            <div className="font-extrabold text-[9px] text-rose-900 tracking-normal mb-[1px] bg-rose-100/80 px-[2px] py-[1px] rounded-[2px] border border-rose-200">
                                                                 {surgery.horario} - {endTime}
                                                             </div>
                                                             <div className="text-[9px] font-black text-rose-950 uppercase leading-tight whitespace-normal break-words">
@@ -328,7 +328,7 @@ const PrintableWeeklyMap = ({ surgeries, weekDays, temposByCode, temposByName, p
                                                         <>
                                                             {/* Bloco 1: Topo */}
                                                             <div className="flex items-start justify-between shrink-0 gap-[2px] mb-[1px]">
-                                                                <span className="text-[9.5px] font-black text-slate-900 tracking-tight leading-none whitespace-nowrap pt-[1px]">
+                                                                <span className="text-[9.5px] font-black text-slate-900 tracking-normal leading-none whitespace-nowrap pt-[1px]">
                                                                     {surgery.horario} - {endTime}
                                                                 </span>
                                                                 <div className={`px-[3px] py-[1px] rounded-[3px] text-[7px] font-bold uppercase tracking-wide border whitespace-nowrap ${pStyle.badge.replace('bg-', 'bg-white/90 border-').replace('text-', 'text-')}`}>
@@ -346,13 +346,13 @@ const PrintableWeeklyMap = ({ surgeries, weekDays, temposByCode, temposByName, p
                                                             {/* Bloco 3: Paciente */}
                                                             <div className="flex items-start shrink-0 mb-[1px]">
                                                                 <div className="text-[10px] font-extrabold text-slate-700 uppercase leading-[1.05] whitespace-normal break-words pt-[1px]">
-                                                                    {pacienteCompleto} {idade && <span className="text-[9px] text-slate-400 font-medium ml-[1.5px]">({idade})</span>}
+                                                                    {pacienteCompleto} {idade && <span className="text-[9px] text-slate-500 font-medium ml-[1.5px]">({idade})</span>}
                                                                 </div>
                                                             </div>
 
                                                             {/* Bloco 4: Médico */}
                                                             <div className="flex flex-col shrink-0 mt-auto">
-                                                                <div className="text-[9px] font-bold text-slate-400 uppercase truncate">
+                                                                <div className="text-[9px] font-bold text-slate-500 uppercase truncate">
                                                                     Dr. {cirurgiao}
                                                                 </div>
                                                             </div>
@@ -398,7 +398,7 @@ const PrintableWeeklyMap = ({ surgeries, weekDays, temposByCode, temposByName, p
 
             {/* RODAPÉ */}
             <div className="mt-1 px-1 flex justify-between items-center shrink-0">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Documento Restrito - Uso Interno - Pág {pageNumber} de 2</span>
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Documento Restrito - Uso Interno - Pág {pageNumber} de 2</span>
                 <span className="text-[9px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-sm border border-slate-200">
                     Gerado por <strong className="text-slate-700 uppercase">{currentUser?.name || currentUser?.displayName || currentUser?.email || 'Sistema'}</strong> em: <strong className="text-slate-700">{dataImpressao}</strong>
                 </span>

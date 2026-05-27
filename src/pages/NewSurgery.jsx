@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import { supabase } from '../services/supabase';
+import { logAction } from '../utils/logger';
 
 
 import {
@@ -132,6 +133,7 @@ const NewSurgery = () => {
 
             const { error } = await supabase.from('surgeries').insert([payload]);
             if (error) throw error;
+            await logAction('CADASTRO DE CIRURGIA', `Nova cirurgia cadastrada para ${payload.paciente}.`);
 
             toast.success("Cirurgia cadastrada com sucesso!");
 
@@ -164,13 +166,13 @@ const NewSurgery = () => {
         }
     };
 
-    const baseInputStyle = "w-full h-9 px-3 py-2 bg-white/50 border border-white/60 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-800 placeholder:text-slate-500";
+    const baseInputStyle = "w-full h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-900 drop-shadow-none placeholder:text-slate-500";
 
     return (
-        <div className="px-4 sm:px-6 pr-8 py-6 min-h-full bg-slate-50/50 font-sans">
+        <div className="px-4 sm:px-6 pr-8 py-6 min-h-full bg-white/60 font-sans">
 
-            <div className="mb-6 border-b border-slate-200/60 pb-4">
-                <h1 className="text-lg font-bold text-slate-900 uppercase tracking-tight">
+            <div className="mb-6 border-b border-white/60 pb-4">
+                <h1 className="text-lg font-bold text-slate-800 uppercase tracking-wider">
                     Novo Cadastro Cirúrgico
                 </h1>
             </div>
@@ -178,7 +180,7 @@ const NewSurgery = () => {
             <form onSubmit={handleSubmit} className="max-w-7xl space-y-4 pb-16">
 
                 {/* --- BLOCO 1: DADOS PESSOAIS --- */}
-                <div className="bg-white/60 backdrop-blur-lg p-5 rounded-lg shadow-sm border border-white/50">
+                <div className="bg-white/60 backdrop-blur-lg p-5 rounded-lg shadow-sm border border-white/400">
                     <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-5 flex items-center gap-2">
                         <User size={14} /> Dados Pessoais e Contato
                     </h3>
@@ -214,7 +216,7 @@ const NewSurgery = () => {
                         </div>
                         <div>
                             <label className="text-xs font-semibold text-slate-500 uppercase ml-1 mb-1.5 block">Idade</label>
-                            <div className="bg-slate-100 text-slate-400 border border-slate-200 rounded-lg h-9 flex items-center justify-center font-semibold text-sm italic">
+                            <div className="bg-white/70 text-slate-500 border border-white/60 rounded-lg h-9 flex items-center justify-center font-semibold text-sm italic">
                                 {calcularIdade(formData.nascimento)}
                             </div>
                         </div>
@@ -222,7 +224,7 @@ const NewSurgery = () => {
                 </div>
 
                 {/* --- BLOCO 2: PROCEDIMENTO E EQUIPE --- */}
-                <div className="bg-white/60 backdrop-blur-lg p-5 rounded-lg shadow-sm border border-white/50">
+                <div className="bg-white/60 backdrop-blur-lg p-5 rounded-lg shadow-sm border border-white/400">
                     <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-wide mb-5 flex items-center gap-2">
                         <Stethoscope size={14} /> Procedimento e Equipe
                     </h3>
@@ -293,7 +295,7 @@ const NewSurgery = () => {
                 </div>
 
                 {/* --- BLOCO 3: DATAS E AUTORIZAÇÕES --- */}
-                <div className="bg-white/60 backdrop-blur-lg p-5 rounded-lg shadow-sm border border-white/50">
+                <div className="bg-white/60 backdrop-blur-lg p-5 rounded-lg shadow-sm border border-white/400">
                     <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-5 flex items-center gap-2">
                         <ShieldCheck size={14} /> Datas/Autorizações
                     </h3>
@@ -328,7 +330,7 @@ const NewSurgery = () => {
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {[{ id: 'aih', label: 'AIH' }, { id: 'autorizada', label: 'Autorizada' }, { id: 'apa', label: 'APA' }, { id: 'opme', label: 'OPME' }].map(check => (
-                            <button key={check.id} type="button" onClick={() => setFormData({ ...formData, [check.id]: !formData[check.id] })} className={`h-9 px-4 rounded-lg border flex items-center justify-between transition-all group ${formData[check.id] ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-300'}`}>
+                            <button key={check.id} type="button" onClick={() => setFormData({ ...formData, [check.id]: !formData[check.id] })} className={`h-9 px-4 rounded-lg border flex items-center justify-between transition-all group ${formData[check.id] ? 'bg-emerald-500/20 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-white/60 border-white/40 text-slate-500 hover:border-white hover:bg-white/90'}`}>
                                 <span className="text-[11px] font-bold uppercase tracking-wide">{check.label}</span>
                                 <CheckCircle2 size={16} className={`transition-all ${formData[check.id] ? 'opacity-100 scale-110' : 'opacity-30 group-hover:opacity-50'}`} />
                             </button>
@@ -338,7 +340,7 @@ const NewSurgery = () => {
 
                 {/* --- BLOCO 4: STATUS E ANEXOS MULTIPLOS (ATUALIZADO) --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="bg-white/60 backdrop-blur-lg p-8 rounded-[3rem] shadow-sm border border-white/50 flex flex-col justify-between">
+                    <div className="bg-white/60 backdrop-blur-lg p-8 rounded-[3rem] shadow-sm border border-white/400 flex flex-col justify-between">
                         <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-6 flex items-center gap-2">
                             <Activity size={16} /> Status e Observação
                         </h3>
@@ -349,16 +351,16 @@ const NewSurgery = () => {
                                 {settings.status?.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
 
-                            <textarea value={formData.obs} onChange={e => setFormData({ ...formData, obs: e.target.value })} rows="4" className="w-full p-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-medium outline-none resize-none focus:ring-2 focus:ring-blue-500/10 placeholder:text-slate-300" placeholder="Observações clínicas ou administrativas..."></textarea>
+                            <textarea value={formData.obs} onChange={e => setFormData({ ...formData, obs: e.target.value })} rows="4" className="w-full p-5 bg-white/60 border border-white/40 rounded-3xl text-sm font-medium outline-none resize-none focus:ring-2 focus:ring-blue-500/10 placeholder:text-slate-600" placeholder="Observações clínicas ou administrativas..."></textarea>
                         </div>
                     </div>
 
-                    <div className="bg-white/60 backdrop-blur-lg border border-white/50 p-8 rounded-[3rem] shadow-sm flex flex-col justify-between">
+                    <div className="bg-white/60 backdrop-blur-lg border border-white/400 p-8 rounded-[3rem] shadow-sm flex flex-col justify-between">
                         <div>
                             <h3 className="text-xs font-black uppercase tracking-widest mb-2 text-slate-600 flex items-center gap-2">
                                 <Paperclip size={16} /> Documentação
                             </h3>
-                            <p className="text-xs font-bold text-slate-400">Anexe pedidos, laudos e exames.</p>
+                            <p className="text-xs font-bold text-slate-500">Anexe pedidos, laudos e exames.</p>
                         </div>
 
                         {/* INPUT FILE ESCONDIDO ACIONADO PELO REF */}
@@ -374,9 +376,9 @@ const NewSurgery = () => {
                             {/* Botão de Adicionar */}
                             <div
                                 onClick={() => fileInputRef.current.click()}
-                                className="p-8 border-2 border-dashed border-white/60 rounded-3xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/40 transition-all group"
+                                className="p-8 border-2 border-dashed border-white/60 rounded-3xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/60 transition-all group"
                             >
-                                <div className="p-3 bg-white/50 backdrop-blur-md rounded-full shadow-sm ring-1 ring-white/50 group-hover:ring-blue-100">
+                                <div className="p-3 bg-white/60 backdrop-blur-md rounded-full shadow-sm ring-1 ring-white/50 group-hover:ring-blue-100">
                                     <Paperclip size={20} className="text-slate-500 group-hover:text-blue-600" />
                                 </div>
                                 <span className="text-[11px] font-black uppercase text-slate-500 group-hover:text-blue-600">
@@ -388,7 +390,7 @@ const NewSurgery = () => {
                             {selectedFiles.length > 0 && (
                                 <div className="space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2">
                                     {selectedFiles.map((file, index) => (
-                                        <div key={index} className="flex justify-between items-center bg-blue-50 p-3 rounded-xl border border-blue-100">
+                                        <div key={index} className="flex justify-between items-center bg-blue-500/20 p-3 rounded-xl border border-blue-100">
                                             <div className="flex items-center gap-2 overflow-hidden">
                                                 <FileText size={16} className="text-blue-500 shrink-0" />
                                                 <span className="text-[11px] font-bold text-blue-700 truncate">{file.name}</span>

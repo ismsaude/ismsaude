@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { usePermission } from '../contexts/PermissionContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useUnit } from '../contexts/UnitContext';
@@ -43,13 +43,13 @@ const InlineCalendar = ({ value, onChange, disabled }) => {
     const monthNames = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
     return (
-        <div className={`border border-slate-200 rounded-lg p-2 bg-white flex flex-col ${disabled ? 'opacity-60 pointer-events-none' : ''}`}>
+        <div className={`border border-white/60 rounded-lg p-2 bg-white/60 flex flex-col ${disabled ? 'opacity-60 pointer-events-none' : ''}`}>
             <div className="flex justify-between items-center mb-2">
-                <button type="button" onClick={prevMonth} className="px-2 py-1 text-slate-500 hover:bg-slate-100 rounded">&lt;</button>
+                <button type="button" onClick={prevMonth} className="px-2 py-1 text-slate-500 hover:bg-white/70 rounded">&lt;</button>
                 <span className="text-[11px] font-bold uppercase text-slate-700">{monthNames[month]} {year}</span>
-                <button type="button" onClick={nextMonth} className="px-2 py-1 text-slate-500 hover:bg-slate-100 rounded">&gt;</button>
+                <button type="button" onClick={nextMonth} className="px-2 py-1 text-slate-500 hover:bg-white/70 rounded">&gt;</button>
             </div>
-            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase text-slate-400 mb-1">
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase text-slate-500 mb-1">
                 <div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>
             </div>
             <div className="grid grid-cols-7 gap-1 text-center">
@@ -65,7 +65,7 @@ const InlineCalendar = ({ value, onChange, disabled }) => {
                                 <div 
                                     key={d} 
                                     onClick={() => onChange(dStr)}
-                                    className={`py-1 text-xs font-bold rounded cursor-pointer transition-colors ${isSelected ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : isToday ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-100'}`}
+                                    className={`py-1 text-xs font-bold rounded cursor-pointer transition-colors ${isSelected ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : isToday ? 'bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none' : 'text-slate-700 hover:bg-white/70'}`}
                                 >
                                     {d}
                                 </div>
@@ -95,8 +95,18 @@ const getDoctorPrefix = (nome, sexo) => {
     return 'DR.'; // Default fallback para masculino ao invés de ficar o estético DR(A)
 };
 
+const capitalizeName = (str) => {
+    if (!str) return '';
+    const preposicoes = ['de', 'da', 'do', 'das', 'dos', 'e'];
+    return str.toLowerCase().split(' ').map((word, index) => {
+        if (index > 0 && preposicoes.includes(word)) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
+};
+
 export default function Apa({ paciente }) {
     const location = useLocation();
+    const navigate = useNavigate();
     const { hasPermission } = usePermission();
     const { currentUser: user } = useAuth();
     const { unidadeAtual, unidades } = useUnit();
@@ -136,6 +146,12 @@ export default function Apa({ paciente }) {
     const [filterProcedimento, setFilterProcedimento] = useState('Todos');
     const [mostrarTodasUnidades, setMostrarTodasUnidades] = useState(false);
 
+    // Paginação e Lixeira
+    const [paginaAtual, setPaginaAtual] = useState(1);
+    const [totalApas, setTotalApas] = useState(0);
+    const [mostrarLixeira, setMostrarLixeira] = useState(false);
+    const itensPorPagina = 1500;
+
     const [pacientes, setPacientes] = useState([]);
     const [showPacientes, setShowPacientes] = useState(false);
     
@@ -164,7 +180,8 @@ export default function Apa({ paciente }) {
         plan_hemoderivados: 'Não', plan_recusa_hemo: '', plan_hemo_ch: '', plan_hemo_pfc: '', plan_hemo_plaq: '', plan_hemo_outros: '', plan_destino: 'Não', plan_obs: '',
         mpa_ansio: 'Não prescrito', mpa_nvpo: 'Não indicada', mpa_atb: 'Não indicada', mpa_outras: '',
         parecer_obs: '', parecer_aval_esp: 'Não', parecer_aval_especialidade: '', parecer_aval_motivo: '',
-        neuro_consciencia: '', neuro_deficit: '', coluna_dorso: '', acesso_venoso: '', tabag_cigarros: '', tabag_anos: ''
+        neuro_consciencia: '', neuro_deficit: '', coluna_dorso: '', acesso_venoso: '', tabag_cigarros: '', tabag_anos: '',
+        pacienteInapto: false
     };
 
     const [formData, setFormData] = useState(draftState?.formData ? { ...defaultFormData, ...draftState.formData } : defaultFormData);
@@ -253,20 +270,32 @@ export default function Apa({ paciente }) {
 
     // PREENCHIMENTO AUTOMÁTICO VIA PROP (Quando aberto do PEP)
     useEffect(() => {
-        if (paciente) {
-            setFormData(prev => ({
-                ...prev,
-                nome: paciente.paciente_nome || paciente.nome,
-                cpf: paciente.paciente_cpf || paciente.cpf || '',
-                dataNasc: paciente.dataNascimento || paciente.nascimento || '',
-                sexo: paciente.sexo ? (paciente.sexo.toUpperCase().startsWith('M') ? 'Masculino' : paciente.sexo.toUpperCase().startsWith('F') ? 'Feminino' : '') : '',
-                telefone: paciente.telefone || paciente.telefone1 || '',
-                peso: paciente.peso || '',
-                altura: paciente.altura || ''
-            }));
-            setSearchTerm(paciente.paciente_nome || paciente.nome);
-            setModoVisao('formulario');
-        }
+        const fetchDetalhesPaciente = async () => {
+            if (paciente) {
+                let p = { ...paciente };
+                const pid = paciente.paciente_id || paciente.id;
+                if (pid) {
+                    try {
+                        const { data } = await supabase.from('pacientes').select('*').eq('id', pid).single();
+                        if (data) p = { ...p, ...data };
+                    } catch (e) {}
+                }
+                
+                setFormData(prev => ({
+                    ...prev,
+                    nome: p.paciente_nome || p.nome || '',
+                    cpf: p.paciente_cpf || p.cpf || '',
+                    dataNasc: p.dataNascimento || p.nascimento || p.paciente_nascimento || '',
+                    sexo: p.sexo ? (p.sexo.toUpperCase().startsWith('M') ? 'Masculino' : p.sexo.toUpperCase().startsWith('F') ? 'Feminino' : '') : '',
+                    telefone: p.telefone || p.telefone1 || '',
+                    peso: p.peso || '',
+                    altura: p.altura || ''
+                }));
+                setSearchTerm(p.paciente_nome || p.nome || '');
+                setModoVisao('formulario');
+            }
+        };
+        fetchDetalhesPaciente();
     }, [paciente]);
 
     const loadApasList = async () => {
@@ -276,12 +305,25 @@ export default function Apa({ paciente }) {
             return;
         }
         setLoadingApas(true);
+
+        // Limpeza silenciosa de APAs apagadas há mais de 60 dias
         try {
+            const sixtyDaysAgo = new Date();
+            sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+            await supabase.from('apas').delete().lt('deleted_at', sixtyDaysAgo.toISOString());
+        } catch (e) {
+            // Ignora erro se a coluna ainda não existir
+        }
+
+        try {
+            const from = (paginaAtual - 1) * itensPorPagina;
+            const to = from + itensPorPagina - 1;
+
             let query = supabase
                 .from('apas')
-                .select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url, asa, anestesistaNome')
+                .select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url, asa, anestesistaNome', { count: 'exact' })
                 .order('createdAt', { ascending: false })
-                .limit(6000);
+                .range(from, to);
 
             if (mostrarTodasUnidades && unidades && unidades.length > 0) {
                 query = query.in('unidade', unidades);
@@ -289,22 +331,47 @@ export default function Apa({ paciente }) {
                 query = query.or(`unidade.eq.${unidadeAtual},unidade.is.null`);
             }
 
-            const { data, error } = await query;
+            if (mostrarLixeira) {
+                query = query.not('deleted_at', 'is', null);
+            } else {
+                query = query.is('deleted_at', null);
+            }
+
+            const { data, error, count } = await query;
 
             if (error) {
                 if (error.code === '42703' || error.message?.includes('does not exist')) {
-                    toast.error("Por favor, crie a coluna 'unidade' na tabela apas!");
-                    const fallback = await supabase.from('apas').select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url, asa, anestesistaNome').order('createdAt', { ascending: false }).limit(6000);
+                    if (mostrarLixeira) {
+                        toast.error("Você precisa criar a coluna 'deleted_at' (tipo timestampZ) na tabela 'apas' para usar a lixeira.");
+                        setMostrarLixeira(false);
+                    }
+                    // Fallback para quando a coluna não existe ainda
+                    let fallbackQuery = supabase
+                        .from('apas')
+                        .select('id, nome, cpf, dataRegistro, procedimento, parecerFinal, unidade, exames_url, asa, anestesistaNome', { count: 'exact' })
+                        .order('createdAt', { ascending: false })
+                        .range(from, to);
+                    
+                    if (mostrarTodasUnidades && unidades && unidades.length > 0) {
+                        fallbackQuery = fallbackQuery.in('unidade', unidades);
+                    } else if (unidadeAtual) {
+                        fallbackQuery = fallbackQuery.or(`unidade.eq.${unidadeAtual},unidade.is.null`);
+                    }
+
+                    const fallback = await fallbackQuery;
                     setListaApas(fallback.data || []);
+                    setTotalApas(fallback.count || 0);
                 } else {
                     throw error;
                 }
             } else {
                 setListaApas(data || []);
+                setTotalApas(count || 0);
             }
         } catch (error) {
             console.warn('Aviso: Erro ao carregar apas. Retornando vazio.', error);
             setListaApas([]);
+            setTotalApas(0);
         } finally {
             setLoadingApas(false);
         }
@@ -314,11 +381,11 @@ export default function Apa({ paciente }) {
         if (modoVisao === 'lista') {
             loadApasList();
         }
-    }, [modoVisao, unidadeAtual, mostrarTodasUnidades, unidades]);
+    }, [modoVisao, unidadeAtual, mostrarTodasUnidades, unidades, paginaAtual, mostrarLixeira]);
 
     const handleNovaApa = () => {
         setFormData({
-            nome: '', dataNasc: '', cpf: '', sexo: 'Feminino', peso: '', altura: '',
+            nome: '', dataNasc: '', cpf: '', sexo: '', peso: '', altura: '',
             resp_nome: '', resp_cpf: '', resp_parentesco: '', telefone: '',
             procedimento: '', profissional: '', dataProcedimento: '', carater: 'Eletivo', porte: '', posicao: '',
             has: false, dm: false, cardio: false, arritmia: false, icc: false, iam: false, asma: false, dpoc: false,
@@ -438,17 +505,45 @@ export default function Apa({ paciente }) {
         }
     };
 
-    const handleExcluirApa = async (id) => {
-        if (window.confirm('Excluir esta avaliação?')) {
+    const handleExcluirApa = async (id, permanente = false) => {
+        const msg = permanente 
+            ? 'Excluir PERMANENTEMENTE esta avaliação? Ela não poderá ser recuperada!'
+            : 'Mover esta avaliação para a lixeira?';
+
+        if (window.confirm(msg)) {
             try {
                 const apa = listaApas.find(a => a.id === id);
-                const { error } = await supabase.from('apas').delete().eq('id', id);
-                if (error) throw error;
-                await logAction('EXCLUSÃO DE APA', `APA do paciente ${apa?.nome || 'Desconhecido'} foi excluída.`);
-                toast.success('Excluída!');
+                if (permanente) {
+                    const { error } = await supabase.from('apas').delete().eq('id', id);
+                    if (error) throw error;
+                    await logAction('EXCLUSÃO DE APA', `APA do paciente ${apa?.nome || 'Desconhecido'} excluída definitivamente.`);
+                    toast.success('Excluída permanentemente!');
+                } else {
+                    const { error } = await supabase.from('apas').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+                    if (error) throw error;
+                    await logAction('LIXEIRA DE APA', `APA do paciente ${apa?.nome || 'Desconhecido'} movida para a lixeira.`);
+                    toast.success('Movida para a lixeira!');
+                }
                 loadApasList();
             }
-            catch (error) { toast.error("Erro ao excluir."); }
+            catch (error) { 
+                console.error(error);
+                toast.error("Erro ao excluir. Verifique se a coluna 'deleted_at' foi criada."); 
+            }
+        }
+    };
+
+    const handleRestaurarApa = async (id) => {
+        if (window.confirm('Restaurar esta avaliação da lixeira?')) {
+            try {
+                const apa = listaApas.find(a => a.id === id);
+                const { error } = await supabase.from('apas').update({ deleted_at: null }).eq('id', id);
+                if (error) throw error;
+                await logAction('RESTAURAÇÃO DE APA', `APA do paciente ${apa?.nome || 'Desconhecido'} foi restaurada da lixeira.`);
+                toast.success('APA Restaurada!');
+                loadApasList();
+            }
+            catch (error) { toast.error("Erro ao restaurar."); }
         }
     };
 
@@ -604,6 +699,7 @@ export default function Apa({ paciente }) {
                 // Atualiza APA existente
                 const { error } = await supabase.from('apas').update({ ...apaCompleta, dataAtualizacao: new Date().toISOString() }).eq('id', apaIdParaCarregar);
                 if (error) throw error;
+                await logAction('EDIÇÃO DE APA', `APA do paciente ${apaCompleta.nome || 'Desconhecido'} atualizada.`);
                 sessionStorage.removeItem('apa_draft_state');
                 toast.success("APA atualizada!");
                 setModoVisao('lista');
@@ -749,7 +845,7 @@ Responda SOMENTE o bloco JSON.`;
             if (imc < 18.5) { label = "Abaixo"; color = "text-amber-700 bg-amber-100 border-l border-amber-200"; }
             else if (imc < 25) { label = "Normal"; color = "text-emerald-700 bg-emerald-100 border-l border-emerald-200"; }
             else if (imc < 30) { label = "Sobrepeso"; color = "text-orange-700 bg-orange-100 border-l border-orange-200"; }
-            else if (imc < 35) { label = "Obeso I"; color = "text-rose-600 bg-rose-50 border-l border-rose-100"; }
+            else if (imc < 35) { label = "Obeso I"; color = "text-rose-600 bg-rose-500/20 border-l border-rose-100"; }
             else if (imc < 40) { label = "Obeso II"; color = "text-rose-700 bg-rose-100 border-l border-rose-200"; }
             else { label = "Obeso III"; color = "text-rose-800 bg-rose-200 border-l border-rose-300"; }
             return { value: imc, label, color };
@@ -819,6 +915,7 @@ Responda SOMENTE o bloco JSON.`;
     ];
 
     const validateCurrentTab = () => {
+        if (formData.pacienteInapto) return null;
         if (activeTab === 'dados') {
             if (!formData.nome) return "Selecione um paciente.";
             if (!formData.dataNasc) return "A Data de Nascimento é obrigatória.";
@@ -897,11 +994,23 @@ Responda SOMENTE o bloco JSON.`;
     return (
         <div className="py-4 px-2 sm:px-4 font-sans animate-in fade-in duration-700 w-full min-h-full bg-slate-50/30">
             <div className="max-w-[1600px] mx-auto space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white/70 backdrop-blur-2xl p-4 sm:p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white/60 backdrop-blur-2xl p-4 sm:p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 text-blue-600 rounded-lg"><Activity size={20} /></div>
+                        {modoVisao === 'lista' && (
+                            <>
+                                <button 
+                                    onClick={() => navigate('/pep-hub')}
+                                    className="p-2 md:p-2.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-500/20 rounded-xl transition-colors shrink-0"
+                                    title="Voltar para a Central"
+                                >
+                                    <ArrowLeft size={22} strokeWidth={2.5} />
+                                </button>
+                                <div className="w-px h-8 bg-white/80 shrink-0 hidden md:block"></div>
+                            </>
+                        )}
+                        <div className="p-2 bg-blue-100 text-blue-600 rounded-lg shrink-0"><Activity size={20} /></div>
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800">
+                            <h1 className="text-2xl font-bold text-slate-900 drop-shadow-none">
                                 {modoVisao === 'lista' ? 'Avaliações Pré-Anestésicas' : modoVisao === 'preview' ? 'Documento APA' : (isReadOnly ? 'Visualizando APA' : 'Nova APA')}
                             </h1>
                             <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">
@@ -911,7 +1020,7 @@ Responda SOMENTE o bloco JSON.`;
                     </div>
                     {modoVisao === 'lista' ? (
                         hasPermission('Criar/Editar APA') && (
-                            <button onClick={handleNovaApa} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm flex items-center gap-2 transition-all">
+                            <button onClick={handleNovaApa} className="bg-white/80 hover:bg-white text-blue-600 border border-slate-200 px-4 py-2 rounded-xl text-sm font-bold shadow-sm flex items-center gap-2 transition-all">
                                 <Plus size={18} /> Nova Avaliação
                             </button>
                         )
@@ -923,12 +1032,12 @@ Responda SOMENTE o bloco JSON.`;
                                 Cancelar
                             </button>
                             {isReadOnly && (
-                                <button type="button" onClick={handleGeneratePDF} className="text-sm flex items-center gap-1.5 border border-slate-300 bg-white text-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-50 transition-colors">
+                                <button type="button" onClick={handleGeneratePDF} className="text-sm flex items-center gap-1.5 border border-white/80 bg-white/60 text-slate-700 px-3 py-1.5 rounded-md hover:bg-white/60 transition-colors">
                                     <Printer size={16} /> Imprimir PDF
                                 </button>
                             )}
                             {!isReadOnly && (
-                                <button disabled={isSaving} onClick={handleSalvarApa} className="text-sm flex items-center gap-1.5 bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <button disabled={isSaving} onClick={handleSalvarApa} className="text-sm flex items-center gap-1.5 bg-slate-800 text-white px-4 py-1.5 rounded-md hover:bg-slate-900 font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                                     {isSaving ? "Salvando..." : "Salvar e Imprimir"}
                                 </button>
@@ -939,21 +1048,21 @@ Responda SOMENTE o bloco JSON.`;
 
                 {modoVisao === 'preview' && apaParaImprimir ? (
                     <div className="max-w-4xl mx-auto pb-20 animate-in fade-in zoom-in-95 duration-300">
-                        <div className="flex flex-wrap gap-4 justify-between items-center mb-6 bg-white/70 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white">
+                        <div className="flex flex-wrap gap-4 justify-between items-center mb-6 bg-white/60 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white">
                             <button onClick={() => { setModoVisao('lista'); setApaParaImprimir(null); }} className="text-sm font-bold text-slate-600 hover:text-blue-600 flex items-center gap-2 transition-colors">
                                 <ArrowLeft size={16} /> Voltar à Lista
                             </button>
-                            <button onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 transition-all">
+                            <button onClick={() => window.print()} className="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 transition-all">
                                 <Printer size={16} /> Imprimir / Salvar
                             </button>
                             {apaParaImprimir?.exames_url && (
-                                <button onClick={() => window.open(apaParaImprimir.exames_url, '_blank')} className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ml-2">
+                                <button onClick={() => window.open(apaParaImprimir.exames_url, '_blank')} className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ml-2">
                                     <FileText size={16} /> Ver Exame Original
                                 </button>
                             )}
                         </div>
                         <div className="w-full overflow-x-auto pb-8 custom-scrollbar">
-                            <div className="bg-white shadow-[0_20px_60px_rgb(0,0,0,0.1)] mb-8 mx-auto print:shadow-none print:m-0 border border-slate-200 shrink-0" style={{ width: '210mm', minHeight: '297mm', padding: '15mm' }}>
+                            <div className="bg-white shadow-xl mb-8 mx-auto print:shadow-none print:m-0 shrink-0" style={{ width: '210mm', minHeight: '297mm', padding: '15mm' }}>
                                 <ApaPrintTemplate data={apaParaImprimir} />
                             </div>
                         </div>
@@ -962,85 +1071,83 @@ Responda SOMENTE o bloco JSON.`;
                     <div className="space-y-6 print:hidden animate-in fade-in duration-500 w-full max-w-[1600px] mx-auto">
                         {/* iOS Spotlight Search & Filters */}
                         <div className="flex flex-col gap-3 w-full">
-                            <div className="flex flex-col md:flex-row gap-3 w-full">
-                                <div className="relative group flex-1">
+                            <div className="flex flex-col 2xl:flex-row gap-3 w-full items-start 2xl:items-center">
+                                <div className="relative group flex-1 w-full">
                                     <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                        <Search className="text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+                                        <Search className="text-slate-500 group-focus-within:text-blue-500 transition-colors" size={18} />
                                     </div>
                                     <input 
                                         type="text" 
                                         placeholder="Buscar paciente por nome ou CPF..." 
                                         value={searchApa} 
                                         onChange={e => setSearchApa(e.target.value)}
-                                        className="w-full pl-11 pr-4 py-3 bg-white/70 backdrop-blur-3xl border border-white rounded-[1rem] text-base font-bold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300"
+                                        className="w-full pl-11 pr-4 py-3 bg-white/60 backdrop-blur-3xl border border-white rounded-[1rem] text-base font-bold text-slate-900 drop-shadow-none placeholder-slate-400 focus:bg-white/80 focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300"
                                     />
                                 </div>
-                                <div className="relative shrink-0 md:w-64">
-                                    <select 
-                                        value={filterStatus}
-                                        onChange={e => setFilterStatus(e.target.value)}
-                                        className="w-full px-4 py-3 appearance-none bg-white/70 backdrop-blur-3xl border border-white rounded-[1rem] text-base font-bold text-slate-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 cursor-pointer"
-                                    >
-                                        <option value="Todos">Todos os Pareceres</option>
-                                        <option value="Apto">Apto</option>
-                                        <option value="Restricao">Apto c/ Restrição</option>
-                                        <option value="Inapto">Inapto</option>
-                                    </select>
-                                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                                        <ChevronDown className="text-slate-400" size={16} />
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 md:flex md:flex-row gap-3 w-full">
-                                <div className="relative shrink-0 md:w-40">
-                                    <input 
-                                        type="date" 
-                                        value={filterDataInicio}
-                                        onChange={e => setFilterDataInicio(e.target.value)}
-                                        className="w-full px-3 py-3 bg-white/70 backdrop-blur-3xl border border-white rounded-[1rem] text-sm font-bold text-slate-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 cursor-pointer"
-                                    />
-                                    <span className="absolute -top-2 left-4 text-[11px] font-black text-blue-600 px-1 bg-white/90 backdrop-blur-sm rounded uppercase tracking-widest pointer-events-none">Data Início</span>
-                                </div>
-                                <div className="relative shrink-0 md:w-40">
-                                    <input 
-                                        type="date" 
-                                        value={filterDataFim}
-                                        onChange={e => setFilterDataFim(e.target.value)}
-                                        className="w-full px-3 py-3 bg-white/70 backdrop-blur-3xl border border-white rounded-[1rem] text-sm font-bold text-slate-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 cursor-pointer"
-                                    />
-                                    <span className="absolute -top-2 left-4 text-[11px] font-black text-blue-600 px-1 bg-white/90 backdrop-blur-sm rounded uppercase tracking-widest pointer-events-none">Data Fim</span>
-                                </div>
-                                <div className="relative col-span-2 md:col-auto flex-1">
-                                    <select 
-                                        value={filterProcedimento}
-                                        onChange={e => setFilterProcedimento(e.target.value)}
-                                        className="w-full px-4 py-3 appearance-none bg-white/70 backdrop-blur-3xl border border-white rounded-[1rem] text-sm font-bold text-slate-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 cursor-pointer"
-                                    >
-                                        <option value="Todos">Todos os Procedimentos</option>
-                                        {uniqueProcedimentos.map((proc, index) => (
-                                            <option key={index} value={proc}>{proc}</option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                                        <ChevronDown className="text-slate-400" size={16} />
-                                    </div>
-                                    <span className="absolute -top-2 left-4 text-[11px] font-black text-blue-600 px-1 bg-white/90 backdrop-blur-sm rounded uppercase tracking-widest pointer-events-none">Procedimento</span>
-                                </div>
-                                {(searchApa || filterStatus !== 'Todos' || filterDataInicio || filterDataFim || filterProcedimento !== 'Todos') && (
-                                    <div className="col-span-2 md:col-auto flex items-center justify-end">
-                                        <button 
-                                            onClick={() => { setSearchApa(''); setFilterStatus('Todos'); setFilterDataInicio(''); setFilterDataFim(''); setFilterProcedimento('Todos'); }} 
-                                            className="w-full md:w-auto px-4 py-3 bg-rose-50 hover:bg-rose-100 text-rose-500 text-sm font-bold uppercase tracking-widest rounded-[1rem] border border-rose-100 transition-colors shadow-sm"
+                                <div className="flex flex-wrap xl:flex-nowrap items-center gap-3 w-full 2xl:w-auto shrink-0">
+                                    <div className="relative flex-1 md:w-48 xl:w-48 shrink-0">
+                                        <select 
+                                            value={filterStatus}
+                                            onChange={e => setFilterStatus(e.target.value)}
+                                            className="w-full px-4 py-3 appearance-none bg-white/60 backdrop-blur-3xl border border-white rounded-[1rem] text-sm font-bold text-slate-600 focus:bg-white/80 focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 cursor-pointer"
                                         >
-                                            Limpar
-                                        </button>
+                                            <option value="Todos">Todos os Pareceres</option>
+                                            <option value="Apto">Apto</option>
+                                            <option value="Restricao">Apto c/ Restrição</option>
+                                            <option value="Inapto">Inapto</option>
+                                        </select>
+                                        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                                            <ChevronDown className="text-slate-500" size={16} />
+                                        </div>
                                     </div>
-                                )}
+                                    <div className="relative w-[48%] md:w-36 xl:w-36 shrink-0">
+                                        <input 
+                                            type="date" 
+                                            value={filterDataInicio}
+                                            onChange={e => setFilterDataInicio(e.target.value)}
+                                            className="w-full px-3 py-3 bg-white/60 backdrop-blur-3xl border border-white rounded-[1rem] text-sm font-bold text-slate-600 focus:bg-white/80 focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 cursor-pointer"
+                                        />
+                                        <span className="absolute -top-2 left-4 text-[10px] font-black text-blue-600 px-1 bg-white/90 backdrop-blur-sm rounded uppercase tracking-widest pointer-events-none">Data Início</span>
+                                    </div>
+                                    <div className="relative w-[48%] md:w-36 xl:w-36 shrink-0">
+                                        <input 
+                                            type="date" 
+                                            value={filterDataFim}
+                                            onChange={e => setFilterDataFim(e.target.value)}
+                                            className="w-full px-3 py-3 bg-white/60 backdrop-blur-3xl border border-white rounded-[1rem] text-sm font-bold text-slate-600 focus:bg-white/80 focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 cursor-pointer"
+                                        />
+                                        <span className="absolute -top-2 left-4 text-[10px] font-black text-blue-600 px-1 bg-white/90 backdrop-blur-sm rounded uppercase tracking-widest pointer-events-none">Data Fim</span>
+                                    </div>
+                                    <div className="relative flex-1 md:w-48 xl:w-48 shrink-0">
+                                        <select 
+                                            value={filterProcedimento}
+                                            onChange={e => setFilterProcedimento(e.target.value)}
+                                            className="w-full px-4 py-3 appearance-none bg-white/60 backdrop-blur-3xl border border-white rounded-[1rem] text-sm font-bold text-slate-600 focus:bg-white/80 focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 cursor-pointer"
+                                        >
+                                            <option value="Todos">Todos os Procedimentos</option>
+                                            {uniqueProcedimentos.map((proc, index) => (
+                                                <option key={index} value={proc}>{proc}</option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                                            <ChevronDown className="text-slate-500" size={16} />
+                                        </div>
+                                    </div>
+                                    {(searchApa || filterStatus !== 'Todos' || filterDataInicio || filterDataFim || filterProcedimento !== 'Todos') && (
+                                        <div className="flex-1 md:w-auto flex items-center justify-end">
+                                            <button 
+                                                onClick={() => { setSearchApa(''); setFilterStatus('Todos'); setFilterDataInicio(''); setFilterDataFim(''); setFilterProcedimento('Todos'); }} 
+                                                className="w-full md:w-auto px-4 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 text-sm font-bold uppercase tracking-widest rounded-[1rem] border border-rose-200 transition-colors shadow-sm"
+                                            >
+                                                Limpar
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            {/* Mostrar todas as unidades toggle */}
-                            <div className="flex items-center gap-2 px-2 py-1">
+                            {/* Toggles (Mostrar todas as unidades e Lixeira) */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 px-2 py-1">
                                 <label className="flex items-center gap-2 cursor-pointer group">
                                     <div className="relative">
                                         <input 
@@ -1049,12 +1156,32 @@ Responda SOMENTE o bloco JSON.`;
                                             checked={mostrarTodasUnidades}
                                             onChange={(e) => setMostrarTodasUnidades(e.target.checked)}
                                         />
-                                        <div className={`block w-10 h-6 rounded-full transition-colors ${mostrarTodasUnidades ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
-                                        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${mostrarTodasUnidades ? 'transform translate-x-4' : ''}`}></div>
+                                        <div className={`block w-10 h-6 rounded-full transition-colors ${mostrarTodasUnidades ? 'bg-blue-500/200' : 'bg-white/80'}`}></div>
+                                        <div className={`dot absolute left-1 top-1 bg-white/60 w-4 h-4 rounded-full transition-transform ${mostrarTodasUnidades ? 'transform translate-x-4' : ''}`}></div>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 group-hover:text-slate-700 transition-colors">
                                         <Globe size={14} className={mostrarTodasUnidades ? 'text-blue-500' : ''} />
                                         Buscar em todas as minhas unidades
+                                    </div>
+                                </label>
+
+                                <label className="flex items-center gap-2 cursor-pointer group">
+                                    <div className="relative">
+                                        <input 
+                                            type="checkbox" 
+                                            className="sr-only" 
+                                            checked={mostrarLixeira}
+                                            onChange={(e) => {
+                                                setMostrarLixeira(e.target.checked);
+                                                setPaginaAtual(1); // Voltar para a página 1 ao alternar
+                                            }}
+                                        />
+                                        <div className={`block w-10 h-6 rounded-full transition-colors ${mostrarLixeira ? 'bg-rose-500/200' : 'bg-white/80'}`}></div>
+                                        <div className={`dot absolute left-1 top-1 bg-white/60 w-4 h-4 rounded-full transition-transform ${mostrarLixeira ? 'transform translate-x-4' : ''}`}></div>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 group-hover:text-rose-600 transition-colors">
+                                        <Trash2 size={14} className={mostrarLixeira ? 'text-rose-500' : ''} />
+                                        Lixeira (Apagadas)
                                     </div>
                                 </label>
                             </div>
@@ -1065,24 +1192,24 @@ Responda SOMENTE o bloco JSON.`;
                             {loadingApas ? (
                                 <div className="py-24 flex flex-col items-center justify-center">
                                     <Loader2 className="animate-spin text-blue-500 mb-4" size={32} />
-                                    <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Carregando Avaliações...</span>
+                                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Carregando Avaliações...</span>
                                 </div>
                             ) : filteredApasList.length === 0 ? (
-                                <div className="py-24 flex flex-col items-center justify-center text-slate-400">
-                                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                                <div className="py-24 flex flex-col items-center justify-center text-slate-500">
+                                    <div className="w-16 h-16 bg-white/70 rounded-full flex items-center justify-center mb-4">
                                         <FileText size={24} className="opacity-40" />
                                     </div>
                                     <span className="text-xs font-black uppercase tracking-widest">Nenhuma avaliação encontrada</span>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-slate-100/60">
+                                <div className="divide-y divide-slate-100/60 relative">
                                     {/* Header Row */}
-                                    <div className="px-3 md:px-6 py-2.5 md:py-4 bg-slate-50/50 flex items-center text-[11px] md:text-xs font-black uppercase tracking-widest text-slate-400">
+                                    <div className="sticky top-0 z-20 px-3 md:px-6 py-3 md:py-4 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] flex items-center text-[10px] md:text-[11px] font-black uppercase tracking-widest text-slate-500">
                                         <div className="w-16 md:w-20 pl-1 md:pl-2">Data</div>
-                                        <div className="flex-1">Paciente</div>
-                                        <div className="flex-1 hidden lg:block">Unidade</div>
-                                        <div className="flex-1 hidden lg:block">Médico</div>
-                                        <div className="flex-1 hidden md:block">Procedimento</div>
+                                        <div className="flex-[2]">Paciente</div>
+                                        <div className="flex-[1] hidden lg:block">Unidade</div>
+                                        <div className="w-32 lg:w-48 hidden lg:block">Médico</div>
+                                        <div className="flex-[1] hidden md:block">Procedimento</div>
                                         <div className="w-16 text-center hidden md:block">ASA</div>
                                         <div className="w-20 md:w-28 text-center">Parecer</div>
                                         <div className="w-[80px] md:w-[190px] text-right pr-2 md:pr-4">Ações</div>
@@ -1090,59 +1217,60 @@ Responda SOMENTE o bloco JSON.`;
                                     
                                     {/* List Items */}
                                     {filteredApasList.map((apa, index) => (
-                                        <div key={apa.id} className="group relative flex items-center px-3 md:px-6 py-3 md:py-4 hover:bg-white/80 transition-all duration-200 cursor-default" style={{ zIndex: openActionApaId === apa.id ? 50 : 1 }}>
+                                        <div key={apa.id} className="group relative flex items-center px-3 md:px-6 py-3 md:py-4 hover:bg-slate-50/60 transition-all duration-200 cursor-default border-b border-slate-100/60 last:border-b-0" style={{ zIndex: openActionApaId === apa.id ? 50 : 1 }}>
                                             {/* Accent Left Bar on Hover */}
-                                            <div className="absolute left-0 top-3 bottom-3 w-1 bg-blue-500 rounded-r-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <div className="absolute left-0 top-3 bottom-3 w-1 bg-blue-500/200 rounded-r-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                             
                                             {/* Data */}
-                                            <div className="w-16 md:w-20 pl-1 md:pl-2 text-[11px] md:text-sm font-bold text-slate-500 tracking-wide">
+                                            <div className="w-16 md:w-20 pl-1 md:pl-2 text-[11px] md:text-[13px] font-bold text-slate-500 tracking-wide">
                                                 {apa.dataRegistro ? new Date(apa.dataRegistro).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '--'}
                                             </div>
                                             
                                             {/* Paciente */}
-                                            <div className="flex-1 min-w-0 pr-2">
-                                                <div className="text-sm md:text-base font-black text-slate-800 truncate tracking-tight">{apa.nome}</div>
+                                            <div className="flex-[2] min-w-0 pr-4">
+                                                <div className="text-sm md:text-base font-bold text-slate-900 drop-shadow-none truncate tracking-normal group-hover:text-blue-700 transition-colors">{capitalizeName(apa.nome)}</div>
                                                 {apa.anestesistaNome && (
                                                     <div className="lg:hidden text-[11px] md:text-xs font-bold text-slate-500 truncate mt-0.5" title={apa.anestesistaNome}>
-                                                        {getDoctorPrefix(apa.anestesistaNome, apa.anestesistaSexo)} {apa.anestesistaNome.split(' ')[0]}
+                                                        {capitalizeName(`${getDoctorPrefix(apa.anestesistaNome, apa.anestesistaSexo)} ${apa.anestesistaNome.split(' ')[0]}`)}
                                                     </div>
                                                 )}
                                             </div>
 
                                             {/* Unidade */}
-                                            <div className="flex-1 hidden lg:flex items-center gap-2 pr-4 min-w-0">
+                                            <div className="flex-[1] hidden lg:flex items-center gap-2 pr-4 min-w-0">
                                                 <div className="flex-1 min-w-0 text-xs md:text-sm font-bold text-slate-500 truncate mt-0.5" title={apa.unidade}>
-                                                    {apa.unidade || '--'}
+                                                    {capitalizeName(apa.unidade || '--')}
                                                 </div>
                                             </div>
 
                                             {/* Médico */}
-                                            <div className="flex-1 hidden lg:flex items-center gap-2 pr-4 min-w-0">
-                                                <div className="flex-1 min-w-0 text-xs md:text-sm font-bold text-slate-600 truncate uppercase mt-0.5" title={apa.anestesistaNome}>
-                                                    {apa.anestesistaNome ? `${getDoctorPrefix(apa.anestesistaNome, apa.anestesistaSexo)} ${apa.anestesistaNome.split(' ')[0]}` : '--'}
+                                            <div className="w-32 lg:w-48 hidden lg:flex items-center gap-2 pr-4 min-w-0">
+                                                <div className="flex-1 min-w-0 text-xs md:text-[13px] font-bold text-slate-600 truncate mt-0.5" title={apa.anestesistaNome}>
+                                                    {apa.anestesistaNome ? capitalizeName(`${getDoctorPrefix(apa.anestesistaNome, apa.anestesistaSexo)} ${apa.anestesistaNome.split(' ')[0]}`) : '--'}
                                                 </div>
                                             </div>
 
                                             {/* Procedimento */}
-                                            <div className="flex-1 hidden md:flex items-center gap-2 pr-4 min-w-0">
-                                                <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 shadow-[inset_0_1px_2px_rgba(255,255,255,1)] flex-shrink-0">
+                                            <div className="flex-[1] hidden md:flex items-center gap-3 pr-4 min-w-0">
+                                                <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 shadow-sm flex-shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                                                     <Stethoscope size={14} />
                                                 </div>
-                                                <div className="flex-1 min-w-0 text-xs md:text-sm font-bold text-slate-600 truncate uppercase mt-0.5" title={apa.procedimento}>
-                                                    {apa.procedimento}
+                                                <div className="flex-1 min-w-0 text-xs md:text-[13px] font-bold text-slate-600 truncate mt-0.5" title={apa.procedimento}>
+                                                    {capitalizeName(apa.procedimento)}
                                                 </div>
                                             </div>
 
                                             {/* ASA */}
                                             <div className="w-16 hidden md:flex justify-center">
-                                                <span className="text-xs md:text-sm font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                                                <span className="text-[11px] font-black text-slate-600 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/60 shadow-sm">
                                                     {apa.asa ? apa.asa.replace('ASA ', '') : '--'}
                                                 </span>
                                             </div>
 
                                             {/* Parecer */}
                                             <div className="w-20 md:w-28 flex justify-center">
-                                                <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest shadow-sm border ${apa.parecerFinal === 'Apto' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : apa.parecerFinal === 'Restricao' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
+                                                <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-wider shadow-sm border flex items-center gap-1 ${apa.parecerFinal === 'Apto' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : apa.parecerFinal === 'Restricao' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${apa.parecerFinal === 'Apto' ? 'bg-emerald-500' : apa.parecerFinal === 'Restricao' ? 'bg-amber-500' : 'bg-rose-500'}`}></div>
                                                     {apa.parecerFinal || 'N/A'}
                                                 </span>
                                             </div>
@@ -1153,28 +1281,50 @@ Responda SOMENTE o bloco JSON.`;
                                                 <div className="relative md:hidden">
                                                     <button 
                                                         onClick={() => setOpenActionApaId(openActionApaId === apa.id ? null : apa.id)} 
-                                                        className="p-1 px-2 md:p-1.5 md:px-3 rounded-md border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none cursor-pointer text-[11px] md:text-xs font-bold flex items-center gap-1 shadow-sm transition-all active:scale-95"
+                                                        className="p-1 px-2 md:p-1.5 md:px-3 rounded-md border border-white/60 bg-white/60 text-slate-600 focus:outline-none cursor-pointer text-[11px] md:text-xs font-bold flex items-center gap-1 shadow-sm transition-all active:scale-95"
                                                     >
                                                         Ações
                                                     </button>
                                                     {openActionApaId === apa.id && (
                                                         <>
                                                             <div className="fixed inset-0 z-40" onClick={() => setOpenActionApaId(null)} />
-                                                            <div className={`absolute right-0 w-36 bg-white rounded-xl shadow-xl shadow-slate-200/50 border border-slate-200 flex flex-col p-1.5 gap-1 z-50 animate-in fade-in zoom-in-95 duration-100 ${index >= filteredApasList.length - 2 && filteredApasList.length > 3 ? 'bottom-[calc(100%+8px)] origin-bottom-right' : 'top-[calc(100%+8px)] origin-top-right'}`}>
-                                                                {apa.exames_url && <button onClick={() => { window.open(apa.exames_url, '_blank'); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg text-left text-xs font-bold"><FileText size={14}/> Exame</button>}
-                                                                <button onClick={() => { handleVerPreviewPdf(apa); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-blue-600 hover:bg-blue-50 rounded-lg text-left text-xs font-bold"><Eye size={14}/> Preview</button>
-                                                                {hasPermission('Criar/Editar APA') && <button onClick={() => { handleDuplicarApa(apa); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-amber-600 hover:bg-amber-50 rounded-lg text-left text-xs font-bold"><Copy size={14}/> Duplicar</button>}
-                                                                {hasPermission('Excluir AIH/APA') && <button onClick={() => { handleExcluirApa(apa.id); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-rose-600 hover:bg-rose-50 rounded-lg text-left text-xs font-bold"><Trash2 size={14}/> Excluir</button>}
+                                                            <div className={`absolute right-0 w-36 bg-white/60 rounded-xl shadow-xl shadow-slate-200/50 border border-white/60 flex flex-col p-1.5 gap-1 z-50 animate-in fade-in zoom-in-95 duration-100 ${index >= filteredApasList.length - 2 && filteredApasList.length > 3 ? 'bottom-[calc(100%+8px)] origin-bottom-right' : 'top-[calc(100%+8px)] origin-top-right'}`}>
+                                                                {!mostrarLixeira && (
+                                                                    <>
+                                                                        {apa.exames_url && <button onClick={() => { window.open(apa.exames_url, '_blank'); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-indigo-600 hover:bg-indigo-500/20 rounded-lg text-left text-xs font-bold"><FileText size={14}/> Exame</button>}
+                                                                        <button onClick={() => { handleVerPreviewPdf(apa); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-blue-600 hover:bg-blue-500/20 rounded-lg text-left text-xs font-bold"><Eye size={14}/> Preview</button>
+                                                                        {hasPermission('Criar/Editar APA') && <button onClick={() => { handleDuplicarApa(apa); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-amber-600 hover:bg-amber-500/20 rounded-lg text-left text-xs font-bold"><Copy size={14}/> Duplicar</button>}
+                                                                    </>
+                                                                )}
+                                                                {mostrarLixeira && (
+                                                                    <button onClick={() => { handleRestaurarApa(apa.id); setOpenActionApaId(null); }} className="w-full flex items-center gap-2 p-2 text-emerald-600 hover:bg-emerald-500/20 rounded-lg text-left text-xs font-bold"><Copy size={14}/> Restaurar</button>
+                                                                )}
+                                                                {hasPermission('Excluir AIH/APA') && (
+                                                                    <button onClick={() => { handleExcluirApa(apa.id, mostrarLixeira); setOpenActionApaId(null); }} className={`w-full flex items-center gap-2 p-2 rounded-lg text-left text-xs font-bold ${mostrarLixeira ? 'text-red-600 hover:bg-red-50 bg-red-50/50' : 'text-rose-600 hover:bg-rose-500/20'}`}>
+                                                                        <Trash2 size={14}/> {mostrarLixeira ? 'Excluir Final' : 'Excluir'}
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         </>
                                                     )}
                                                 </div>
 
                                                 <div className="hidden md:flex gap-1.5">
-                                                    {apa.exames_url && <button onClick={() => window.open(apa.exames_url, '_blank')} className="p-2 text-indigo-600 hover:bg-indigo-100 bg-indigo-50 border border-indigo-100 rounded-xl transition-all active:scale-95" title="Ver Exame Original"><FileText size={16} strokeWidth={2.5}/></button>}
-                                                    <button onClick={() => handleVerPreviewPdf(apa)} className="p-2 text-blue-600 hover:bg-blue-100 bg-blue-50 rounded-xl transition-all active:scale-95" title="Visualizar PDF na tela"><Eye size={16} strokeWidth={2.5}/></button>
-                                                    {hasPermission('Criar/Editar APA') && <button onClick={() => handleDuplicarApa(apa)} className="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all active:scale-95" title="Duplicar"><Copy size={16} strokeWidth={2.5}/></button>}
-                                                    {hasPermission('Excluir AIH/APA') && <button onClick={() => handleExcluirApa(apa.id)} className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-95" title="Excluir"><Trash2 size={16} strokeWidth={2.5}/></button>}
+                                                    {!mostrarLixeira && (
+                                                        <>
+                                                            {apa.exames_url && <button onClick={() => window.open(apa.exames_url, '_blank')} className="p-2 text-indigo-600 hover:bg-indigo-100 bg-indigo-500/20 border border-indigo-100 rounded-xl transition-all active:scale-95" title="Ver Exame Original"><FileText size={16} strokeWidth={2.5}/></button>}
+                                                            <button onClick={() => handleVerPreviewPdf(apa)} className="p-2 text-blue-600 hover:bg-blue-100 bg-blue-500/20 rounded-xl transition-all active:scale-95" title="Visualizar PDF na tela"><Eye size={16} strokeWidth={2.5}/></button>
+                                                            {hasPermission('Criar/Editar APA') && <button onClick={() => handleDuplicarApa(apa)} className="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-500/20 rounded-xl transition-all active:scale-95" title="Duplicar"><Copy size={16} strokeWidth={2.5}/></button>}
+                                                        </>
+                                                    )}
+                                                    {mostrarLixeira && (
+                                                        <button onClick={() => handleRestaurarApa(apa.id)} className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-500/20 rounded-xl transition-all active:scale-95" title="Restaurar"><Copy size={16} strokeWidth={2.5}/></button>
+                                                    )}
+                                                    {hasPermission('Excluir AIH/APA') && (
+                                                        <button onClick={() => handleExcluirApa(apa.id, mostrarLixeira)} className={`p-2 rounded-xl transition-all active:scale-95 ${mostrarLixeira ? 'text-red-500 hover:text-red-700 hover:bg-red-100 bg-red-50' : 'text-slate-500 hover:text-rose-600 hover:bg-rose-500/20'}`} title={mostrarLixeira ? "Excluir Definitivamente" : "Excluir"}>
+                                                            <Trash2 size={16} strokeWidth={2.5}/>
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -1182,6 +1332,31 @@ Responda SOMENTE o bloco JSON.`;
                                 </div>
                             )}
                         </div>
+
+                        {/* Paginação */}
+                        {!loadingApas && totalApas > itensPorPagina && (
+                            <div className="flex items-center justify-between mt-4 px-2">
+                                <div className="text-xs font-bold text-slate-500">
+                                    Mostrando de {(paginaAtual - 1) * itensPorPagina + 1} a {Math.min(paginaAtual * itensPorPagina, totalApas)} de {totalApas} APAs {mostrarLixeira ? 'na lixeira' : ''}
+                                </div>
+                                <div className="flex gap-2">
+                                    <button 
+                                        disabled={paginaAtual === 1}
+                                        onClick={() => setPaginaAtual(p => p - 1)}
+                                        className="px-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-xs font-bold text-slate-600 hover:bg-white/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Página Anterior
+                                    </button>
+                                    <button 
+                                        disabled={paginaAtual * itensPorPagina >= totalApas}
+                                        onClick={() => setPaginaAtual(p => p + 1)}
+                                        className="px-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-xs font-bold text-slate-600 hover:bg-white/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Próxima Página
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="flex flex-col xl:flex-row gap-6">
@@ -1193,8 +1368,8 @@ Responda SOMENTE o bloco JSON.`;
                             <div className="flex flex-row xl:flex-col overflow-x-auto pb-2 xl:pb-0 gap-2 custom-scrollbar scroll-smooth">
                                 {tabs.map(tab => (
                                     <button key={tab.id} onClick={() => handleTabNavigation(tab.id)}
-                                        className={`flex-shrink-0 w-auto xl:w-full flex items-center gap-3 px-4 py-3 xl:py-3.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-transparent' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}>
-                                        <div className={`${activeTab === tab.id ? 'text-blue-100' : 'text-slate-400'}`}>
+                                        className={`flex-shrink-0 w-auto xl:w-full flex items-center gap-3 px-4 py-3 xl:py-3.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-transparent' : 'bg-white/60 text-slate-600 hover:bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl'}`}>
+                                        <div className={`${activeTab === tab.id ? 'text-blue-100' : 'text-slate-500'}`}>
                                             {tab.icon}
                                         </div>
                                         {tab.label}
@@ -1204,50 +1379,59 @@ Responda SOMENTE o bloco JSON.`;
                         </div>
 
                         {/* Main Form Content */}
-                        <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="flex-1 bg-white/60 rounded-3xl shadow-sm border border-white/60 overflow-hidden">
                             <div className="p-4 md:p-5 space-y-5">
 
                                 {/* TAB 1: DADOS E PROCEDIMENTO */}
                                 {activeTab === 'dados' && (
                                     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">1. Identificação do Paciente</h3>
+                                            <div className="flex items-center justify-between border-b border-white/40 pb-1.5 mb-3">
+                                                <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider">1. Identificação do Paciente</h3>
+                                                <label className="flex items-center gap-2 cursor-pointer group">
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${formData.pacienteInapto ? 'text-red-500' : 'text-slate-400 group-hover:text-slate-600'}`}>Paciente Inapto</span>
+                                                    <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${formData.pacienteInapto ? 'bg-red-500' : 'bg-slate-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${formData.pacienteInapto ? 'translate-x-4.5' : 'translate-x-1'}`} />
+                                                    </div>
+                                                    <input type="checkbox" disabled={isReadOnly} checked={formData.pacienteInapto || false} onChange={e => setFormData({ ...formData, pacienteInapto: e.target.checked })} className="sr-only" />
+                                                </label>
+                                            </div>
                                             <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-5">
                                                 <div className="relative md:col-span-8">
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">NOME DO PACIENTE<span className="text-red-500 ml-0.5">*</span></label>
-                                                    <input disabled={isReadOnly} type="text" name="nome" value={formData.nome} onChange={e => { handleChange(e); setSearchTerm(e.target.value); setShowPacientes(true); }} onFocus={() => setShowPacientes(true)} onBlur={() => setTimeout(() => setShowPacientes(false), 200)} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+                                                    <input disabled={isReadOnly} type="text" name="nome" value={formData.nome} onChange={e => { handleChange(e); setSearchTerm(e.target.value); setShowPacientes(true); }} onFocus={() => setShowPacientes(true)} onBlur={() => setTimeout(() => setShowPacientes(false), 200)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
                                                     {showPacientes && searchTerm && (
-                                                        <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-48 overflow-auto">
+                                                        <div className="absolute z-10 w-full mt-1 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg shadow-xl max-h-48 overflow-auto">
                                                             {filteredPacientes.map(p => (
-                                                                <div key={p.id} onMouseDown={() => { setFormData(f => ({ ...f, nome: p.nome || '', cpf: p.cpf || '', dataNasc: p.dataNascimento || p.nascimento || '', sexo: p.sexo || '', peso: p.peso || '', altura: p.altura || '', telefone: p.telefone1 || p.telefone || '' })); setSearchTerm(p.nome); setShowPacientes(false); }} className="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-50">
+                                                                <div key={p.id} onMouseDown={() => { setFormData(f => ({ ...f, nome: p.nome || '', cpf: p.cpf || '', dataNasc: p.dataNascimento || p.nascimento || '', sexo: p.sexo || '', peso: p.peso || '', altura: p.altura || '', telefone: p.telefone1 || p.telefone || '' })); setSearchTerm(p.nome); setShowPacientes(false); }} className="p-3 hover:bg-blue-500/20 cursor-pointer border-b border-slate-50">
                                                                     <div className="font-semibold text-sm">{p.nome}</div><div className="text-xs text-slate-500">{p.cpf}</div>
                                                                 </div>
                                                             ))}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="md:col-span-4"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CPF</label><input disabled={isReadOnly} type="text" name="cpf" value={formData.cpf} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
-                                                <div className="md:col-span-3"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">NASCIMENTO<span className="text-red-500 ml-0.5">*</span></label><input disabled={isReadOnly} type="date" name="dataNasc" value={formData.dataNasc} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
-                                                <div className="md:col-span-2"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">IDADE</label><div className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium">{calcularIdade(formData.dataNasc)}</div></div>
+                                                <div className="md:col-span-4"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CPF</label><input disabled={isReadOnly} type="text" name="cpf" value={formData.cpf} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
+                                                <div className="md:col-span-3"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">NASCIMENTO<span className="text-red-500 ml-0.5">*</span></label><input disabled={isReadOnly} type="date" name="dataNasc" value={formData.dataNasc} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
+                                                <div className="md:col-span-2"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">IDADE</label><div className="w-full px-3 py-1.5 text-xs font-semibold bg-white/80 border-2 border-white shadow-sm rounded-lg text-slate-700 font-medium">{calcularIdade(formData.dataNasc)}</div></div>
                                                 <div className="md:col-span-3">
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">SEXO<span className="text-red-500 ml-0.5">*</span></label>
                                                     <div className="flex flex-wrap gap-1">
                                                         {[{val: 'Masculino', label: 'Masc'}, {val: 'Feminino', label: 'Fem'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, sexo: opt.val})} className={`flex-1 h-[30px] flex items-center justify-center px-1 whitespace-nowrap text-xs font-bold rounded-lg border transition-all ${formData.sexo === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, sexo: opt.val})} className={`flex-1 h-[30px] flex items-center justify-center px-1 whitespace-nowrap text-xs font-bold rounded-lg border transition-all ${formData.sexo === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                 {opt.label}
                                                             </button>
                                                         ))}
                                                     </div>
                                                 </div>
                                                 <div className="md:col-span-4 flex items-end gap-2">
-                                                    <div className="flex-1 w-full"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-tight whitespace-nowrap mb-1">PESO (kg)<span className="text-red-500 ml-0.5">*</span></label><input disabled={isReadOnly} type="number" name="peso" value={formData.peso} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
-                                                    <div className="flex-1 w-full"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-tight whitespace-nowrap mb-1">ALTURA (cm)<span className="text-red-500 ml-0.5">*</span></label><input disabled={isReadOnly} type="number" name="altura" value={formData.altura} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
+                                                    <div className="flex-1 w-full"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider whitespace-nowrap mb-1">PESO (kg)<span className="text-red-500 ml-0.5">*</span></label><input disabled={isReadOnly} type="number" name="peso" value={formData.peso} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
+                                                    <div className="flex-1 w-full"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider whitespace-nowrap mb-1">ALTURA (cm)<span className="text-red-500 ml-0.5">*</span></label><input disabled={isReadOnly} type="number" name="altura" value={formData.altura} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
                                                     <div className="flex-[1.2] min-w-[70px] w-full">
-                                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-tight whitespace-nowrap mb-1">IMC</label>
-                                                        <div className="w-full flex items-stretch border border-slate-200 rounded-lg overflow-hidden text-xs font-semibold bg-slate-100 h-[30px]">
+                                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider whitespace-nowrap mb-1">IMC</label>
+                                                        <div className="w-full flex items-stretch border border-white/60 rounded-lg overflow-hidden text-xs font-semibold bg-white/70 h-[30px]">
                                                             <div className="px-2 py-1.5 text-slate-700 flex items-center justify-center w-8">{imcData.value}</div>
                                                             {imcData.label && (
-                                                                <div className={`flex-1 px-1 py-1.5 flex items-center justify-center font-black uppercase text-[10px] tracking-tighter ${imcData.color}`}>
+                                                                <div className={`flex-1 px-1 py-1.5 flex items-center justify-center font-black uppercase text-[10px] tracking-normal ${imcData.color}`}>
                                                                     {imcData.label}
                                                                 </div>
                                                             )}
@@ -1259,7 +1443,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     const idadeInt = parseInt(idadeStr);
                                                     if (!isNaN(idadeInt) && idadeInt < 18) {
                                                         return (
-                                                            <div className="md:col-span-12 grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-3 mt-1 pt-3 border-t border-slate-100 bg-amber-50/30 p-3 rounded-xl border border-amber-100">
+                                                            <div className="md:col-span-12 grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-3 mt-1 pt-3 border-t border-white/40 bg-amber-500/20/30 p-3 rounded-xl border border-amber-100">
                                                                 <div className="md:col-span-12">
                                                                     <h4 className="text-[11px] font-black text-amber-800 uppercase flex items-center gap-1.5">
                                                                         <User size={12} /> Dados do Responsável Legal (Paciente Menor de Idade)
@@ -1267,15 +1451,15 @@ Responda SOMENTE o bloco JSON.`;
                                                                 </div>
                                                                 <div className="md:col-span-6">
                                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">Nome do Responsável<span className="text-red-500 ml-0.5">*</span></label>
-                                                                    <input disabled={isReadOnly} type="text" name="resp_nome" value={formData.resp_nome} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 transition-all shadow-sm" />
+                                                                    <input disabled={isReadOnly} type="text" name="resp_nome" value={formData.resp_nome} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-amber-500 transition-all shadow-sm" />
                                                                 </div>
                                                                 <div className="md:col-span-3">
                                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CPF do Responsável<span className="text-red-500 ml-0.5">*</span></label>
-                                                                    <input disabled={isReadOnly} type="text" name="resp_cpf" value={formData.resp_cpf} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 transition-all shadow-sm" />
+                                                                    <input disabled={isReadOnly} type="text" name="resp_cpf" value={formData.resp_cpf} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-amber-500 transition-all shadow-sm" />
                                                                 </div>
                                                                 <div className="md:col-span-3">
                                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">Grau de Parentesco<span className="text-red-500 ml-0.5">*</span></label>
-                                                                    <input disabled={isReadOnly} type="text" name="resp_parentesco" value={formData.resp_parentesco} onChange={handleChange} placeholder="Ex: Pai, Mãe" className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 transition-all shadow-sm" />
+                                                                    <input disabled={isReadOnly} type="text" name="resp_parentesco" value={formData.resp_parentesco} onChange={handleChange} placeholder="Ex: Pai, Mãe" className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-amber-500 transition-all shadow-sm" />
                                                                 </div>
                                                             </div>
                                                         );
@@ -1285,7 +1469,7 @@ Responda SOMENTE o bloco JSON.`;
                                             </div>
                                         </section>
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">2. Procedimento Proposto</h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5">2. Procedimento Proposto</h3>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 <div className="md:col-span-2 relative">
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">PROCEDIMENTO CIRÚRGICO<span className="text-red-500 ml-0.5">*</span></label>
@@ -1293,7 +1477,7 @@ Responda SOMENTE o bloco JSON.`;
                                                         value={formData.procedimento}
                                                         onSelect={(p) => setFormData(prev => ({ ...prev, procedimento: p.nome }))}
                                                         disabled={isReadOnly}
-                                                        className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all uppercase"
+                                                        className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all uppercase"
                                                     />
                                                 </div>
                                                 <div className="md:col-span-2">
@@ -1308,7 +1492,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                     onChange={handleChange} 
                                                                     list="especialidadesList"
                                                                     placeholder="SELECIONE OU DIGITE..."
-                                                                    className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all uppercase"
+                                                                    className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all uppercase"
                                                                 />
                                                                 <datalist id="especialidadesList">
                                                                     {settings.especialidades?.map((m, idx) => { 
@@ -1323,7 +1507,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CARÁTER<span className="text-red-500 ml-0.5">*</span></label>
                                                                     <div className="flex flex-wrap gap-1">
                                                                         {[{val: 'Eletivo', label: 'Eletivo'}, {val: 'Urgência', label: 'Urgência'}, {val: 'Emergência', label: 'Emergência'}].map(opt => (
-                                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, carater: opt.val})} className={`flex-1 h-[32px] flex items-center justify-center px-1 whitespace-nowrap text-[11px] md:text-xs font-bold rounded-lg border transition-all ${formData.carater === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, carater: opt.val})} className={`flex-1 h-[32px] flex items-center justify-center px-1 whitespace-nowrap text-[11px] md:text-xs font-bold rounded-lg border transition-all ${formData.carater === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                                 {opt.label}
                                                                             </button>
                                                                         ))}
@@ -1333,7 +1517,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">POSIÇÃO</label>
                                                                     <div className="flex flex-wrap gap-1">
                                                                         {[{val: 'Dorsal Horizontal', label: 'Dorsal Horizontal'}, {val: 'Ventral', label: 'Ventral'}, {val: 'Lateral Esquerdo', label: 'Lateral Esquerdo'}, {val: 'Lateral Direito', label: 'Lateral Direito'}, {val: 'Sentado', label: 'Sentado'}, {val: 'Litotomia', label: 'Litotomia'}].map(opt => (
-                                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, posicao: opt.val})} className={`flex-[1_1_30%] h-[32px] flex items-center justify-center px-0.5 whitespace-nowrap text-[10px] font-bold rounded-lg border transition-all ${formData.posicao === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, posicao: opt.val})} className={`flex-[1_1_30%] h-[32px] flex items-center justify-center px-0.5 whitespace-nowrap text-[10px] font-bold rounded-lg border transition-all ${formData.posicao === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                                 {opt.label}
                                                                             </button>
                                                                         ))}
@@ -1351,7 +1535,7 @@ Responda SOMENTE o bloco JSON.`;
                                         </section>
                                         
                                         <section className="pt-4 border-t border-slate-100/50 mt-4">
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">Sinais Vitais Básicos</h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5">Sinais Vitais Básicos</h3>
                                             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
                                                 <div>
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">PA (mmHg)</label>
@@ -1366,9 +1550,9 @@ Responda SOMENTE o bloco JSON.`;
                                                                 setFormData(prev => ({ ...prev, pa: (!sis && !dia) ? '' : `${sis}/${dia}` }));
                                                             }} 
                                                             placeholder="Máxima"
-                                                            className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg text-center appearance-none" 
+                                                            className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-center appearance-none" 
                                                         />
-                                                        <span className="text-slate-400 font-black">/</span>
+                                                        <span className="text-slate-500 font-black">/</span>
                                                         <input 
                                                             disabled={isReadOnly} 
                                                             type="number" 
@@ -1379,14 +1563,14 @@ Responda SOMENTE o bloco JSON.`;
                                                                 setFormData(prev => ({ ...prev, pa: (!sis && !dia) ? '' : `${sis}/${dia}` }));
                                                             }} 
                                                             placeholder="Mínima"
-                                                            className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg text-center appearance-none" 
+                                                            className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-center appearance-none" 
                                                         />
                                                     </div>
                                                 </div>
-                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">FC (bpm)</label><input disabled={isReadOnly} type="number" name="fc" value={formData.fc} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">SpO2 (%)</label><input disabled={isReadOnly} type="number" name="spo2" value={formData.spo2} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">FR (irpm)</label><input disabled={isReadOnly} type="number" name="fr" value={formData.fr} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">TEMP (°C)</label><input disabled={isReadOnly} type="text" name="temp" value={formData.temp} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">FC (bpm)</label><input disabled={isReadOnly} type="number" name="fc" value={formData.fc} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">SpO2 (%)</label><input disabled={isReadOnly} type="number" name="spo2" value={formData.spo2} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">FR (irpm)</label><input disabled={isReadOnly} type="number" name="fr" value={formData.fr} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">TEMP (°C)</label><input disabled={isReadOnly} type="text" name="temp" value={formData.temp} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
                                             </div>
                                         </section>
                                     </div>
@@ -1396,36 +1580,36 @@ Responda SOMENTE o bloco JSON.`;
                                 {activeTab === 'historico' && (
                                     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">3. Comorbidades (Antecedentes Patológicos)</h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5">3. Comorbidades (Antecedentes Patológicos)</h3>
                                             <div className="flex flex-wrap gap-2 mb-4">
                                                 {comorbidadesList.map(c => (
                                                     <div 
                                                         key={c.key} 
                                                         onClick={!isReadOnly ? () => setFormData(prev => ({ ...prev, [c.key]: !prev[c.key] })) : undefined}
-                                                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all select-none ${formData[c.key] ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}
+                                                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all select-none ${formData[c.key] ? 'border-rose-500 bg-rose-500 text-white shadow-[0_4px_15px_rgba(244,63,94,0.4)] border-none shadow-sm' : 'border-white/60 bg-white/60 text-slate-600 hover:border-white hover:bg-white/90'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}
                                                     >
-                                                        <div className={`w-2 h-2 rounded-full border ${formData[c.key] ? 'border-rose-600 bg-rose-500' : 'border-slate-300'}`} />
-                                                        <span className="text-[11px] tracking-tight font-bold uppercase">{c.label}</span>
+                                                        <div className={`w-2 h-2 rounded-full border ${formData[c.key] ? 'border-rose-600 bg-rose-500/200' : 'border-white/80'}`} />
+                                                        <span className="text-[11px] tracking-normal font-bold uppercase">{c.label}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                             <div>
                                                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">DETALHES / OBSERVAÇÕES DE COMORBIDADES</label>
-                                                <textarea disabled={isReadOnly} name="detalhes_comorbidades" value={formData.detalhes_comorbidades} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea>
+                                                <textarea disabled={isReadOnly} name="detalhes_comorbidades" value={formData.detalhes_comorbidades} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg"></textarea>
                                             </div>
                                         </section>
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5 flex items-center gap-1">4. Alergias <span className="text-rose-500">*</span></h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5 flex items-center gap-1">4. Alergias <span className="text-rose-500">*</span></h3>
                                             <label className="flex items-center gap-2 mb-3">
                                                 <input disabled={isReadOnly} type="checkbox" checked={negaAlergia} onChange={e => setNegaAlergia(e.target.checked)} className="w-4 h-4 text-blue-600 rounded" />
-                                                <span className="font-semibold text-slate-800">Nega alergias</span>
+                                                <span className="font-semibold text-slate-900 drop-shadow-none">Nega alergias</span>
                                             </label>
                                             {!negaAlergia && (
-                                                <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <div className="space-y-3 bg-white/60 p-4 rounded-xl border border-white/40">
                                                     {alergias.map((al, i) => (
                                                         <div key={i} className="flex gap-3 items-center">
-                                                            <div className="flex-1"><input disabled={isReadOnly} type="text" placeholder="Substância" value={al.substancia} onChange={e => updateArray(alergias, setAlergias, i, 'substancia', e.target.value)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg" /></div>
-                                                            <div className="flex-1"><input disabled={isReadOnly} type="text" placeholder="Reação" value={al.reacao} onChange={e => updateArray(alergias, setAlergias, i, 'reacao', e.target.value)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg" /></div>
+                                                            <div className="flex-1"><input disabled={isReadOnly} type="text" placeholder="Substância" value={al.substancia} onChange={e => updateArray(alergias, setAlergias, i, 'substancia', e.target.value)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                            <div className="flex-1"><input disabled={isReadOnly} type="text" placeholder="Reação" value={al.reacao} onChange={e => updateArray(alergias, setAlergias, i, 'reacao', e.target.value)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
                                                             {!isReadOnly && <button onClick={() => removeArray(alergias, setAlergias, i, { substancia: '', reacao: '' })} className="p-2 text-rose-500 hover:bg-rose-100 rounded-lg"><Trash2 size={18} /></button>}
                                                         </div>
                                                     ))}
@@ -1434,30 +1618,30 @@ Responda SOMENTE o bloco JSON.`;
                                             )}
                                         </section>
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">5. Medicamentos em Uso</h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5">5. Medicamentos em Uso</h3>
                                             <label className="flex items-center gap-2 mb-3">
                                                 <input disabled={isReadOnly} type="checkbox" checked={negaMed} onChange={e => setNegaMed(e.target.checked)} className="w-4 h-4 text-blue-600 rounded" />
-                                                <span className="font-semibold text-slate-800">Nega uso de medicamentos contínuos</span>
+                                                <span className="font-semibold text-slate-900 drop-shadow-none">Nega uso de medicamentos contínuos</span>
                                             </label>
                                             {!negaMed && (
-                                                <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <div className="space-y-3 bg-white/60 p-4 rounded-xl border border-white/40">
                                                     {medicamentos.map((med, i) => (
                                                         <div key={i} className="flex flex-wrap md:flex-nowrap gap-3 items-center">
-                                                            <div className="w-full md:flex-1"><input disabled={isReadOnly} type="text" placeholder="Nome" value={med.nome} onChange={e => updateArray(medicamentos, setMedicamentos, i, 'nome', e.target.value)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg" /></div>
-                                                            <div className="w-full md:w-24"><input disabled={isReadOnly} type="text" placeholder="Dose" value={med.dose} onChange={e => updateArray(medicamentos, setMedicamentos, i, 'dose', e.target.value)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg" /></div>
+                                                            <div className="w-full md:flex-1"><input disabled={isReadOnly} type="text" placeholder="Nome" value={med.nome} onChange={e => updateArray(medicamentos, setMedicamentos, i, 'nome', e.target.value)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                            <div className="w-full md:w-24"><input disabled={isReadOnly} type="text" placeholder="Dose" value={med.dose} onChange={e => updateArray(medicamentos, setMedicamentos, i, 'dose', e.target.value)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
                                                             <div className="w-full md:w-32">
-                                                                <input disabled={isReadOnly} type="text" list={`freqList_${i}`} placeholder="Freq." value={med.frequencia} onChange={e => updateArray(medicamentos, setMedicamentos, i, 'frequencia', e.target.value)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:font-normal" />
+                                                                <input disabled={isReadOnly} type="text" list={`freqList_${i}`} placeholder="Freq." value={med.frequencia} onChange={e => updateArray(medicamentos, setMedicamentos, i, 'frequencia', e.target.value)} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:font-normal" />
                                                                 <datalist id={`freqList_${i}`}><option value="1x/dia" /><option value="2x/dia" /><option value="3x/dia" /><option value="8/8h" /><option value="12/12h" /><option value="SOS" /></datalist>
                                                             </div>
-                                                            <div className="w-full md:w-[22rem] flex gap-1 p-0.5 bg-slate-100 border border-slate-200 rounded-lg shrink-0">
-                                                                <button type="button" disabled={isReadOnly} onClick={() => updateArray(medicamentos, setMedicamentos, i, 'conduta', 'Manter')} className={`flex-[0.8] px-2 py-1 text-[11px] font-bold uppercase rounded-md transition-all ${med.conduta === 'Manter' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}>Manter</button>
+                                                            <div className="w-full md:w-[22rem] flex gap-1 p-0.5 bg-white/80 border-2 border-white shadow-sm rounded-lg shrink-0">
+                                                                <button type="button" disabled={isReadOnly} onClick={() => updateArray(medicamentos, setMedicamentos, i, 'conduta', 'Manter')} className={`flex-[0.8] px-2 py-1 text-[11px] font-bold uppercase rounded-md transition-all ${med.conduta === 'Manter' ? 'bg-emerald-500/200 text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-white/80'}`}>Manter</button>
                                                                 {(med.conduta !== 'Manter' && med.conduta !== '') ? (
                                                                     <div className="flex-[2] flex relative">
-                                                                        <input autoFocus disabled={isReadOnly} type="text" placeholder="Suspender..." value={med.conduta} onChange={e => updateArray(medicamentos, setMedicamentos, i, 'conduta', e.target.value)} className="w-full min-w-[100px] pl-2 pr-7 py-1 text-xs tracking-tight font-bold bg-white text-rose-600 border border-rose-300 rounded-md outline-none focus:border-rose-500" />
-                                                                        <button type="button" onClick={() => updateArray(medicamentos, setMedicamentos, i, 'conduta', '')} className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 z-10 w-5 h-5 flex items-center justify-center rounded-full hover:bg-rose-50">✕</button>
+                                                                        <input autoFocus disabled={isReadOnly} type="text" placeholder="Suspender..." value={med.conduta} onChange={e => updateArray(medicamentos, setMedicamentos, i, 'conduta', e.target.value)} className="w-full min-w-[100px] pl-2 pr-7 py-1 text-xs tracking-normal font-bold bg-white/60 text-rose-600 border border-rose-300 rounded-md outline-none focus:border-rose-500" />
+                                                                        <button type="button" onClick={() => updateArray(medicamentos, setMedicamentos, i, 'conduta', '')} className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-500 hover:text-rose-500 z-10 w-5 h-5 flex items-center justify-center rounded-full hover:bg-rose-500/20">✕</button>
                                                                     </div>
                                                                 ) : (
-                                                                    <button type="button" disabled={isReadOnly} onClick={() => updateArray(medicamentos, setMedicamentos, i, 'conduta', 'Suspender ')} className="flex-1 px-2 py-1 text-[11px] font-bold uppercase rounded-md transition-all text-slate-500 hover:text-slate-700 hover:bg-slate-200">Suspender</button>
+                                                                    <button type="button" disabled={isReadOnly} onClick={() => updateArray(medicamentos, setMedicamentos, i, 'conduta', 'Suspender ')} className="flex-1 px-2 py-1 text-[11px] font-bold uppercase rounded-md transition-all text-slate-500 hover:text-slate-700 hover:bg-white/80">Suspender</button>
                                                                 )}
                                                             </div>
                                                             {!isReadOnly && <button type="button" onClick={() => removeArray(medicamentos, setMedicamentos, i, { nome: '', dose: '', frequencia: '', conduta: '' })} className="p-2 text-rose-500 hover:bg-rose-100 rounded-lg"><Trash2 size={18} /></button>}
@@ -1468,10 +1652,10 @@ Responda SOMENTE o bloco JSON.`;
                                             )}
                                         </section>
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">6. Antecedentes Cirúrgicos / 7. Hábitos</h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5">6. Antecedentes Cirúrgicos / 7. Hábitos</h3>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CIRURGIAS PRÉVIAS</label><textarea disabled={isReadOnly} name="cirurgias" value={formData.cirurgias} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea></div>
-                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ANESTESIAS PRÉVIAS / COMPLICAÇÕES</label><textarea disabled={isReadOnly} name="anestesias_previas" value={formData.anestesias_previas} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea></div>
+                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CIRURGIAS PRÉVIAS</label><textarea disabled={isReadOnly} name="cirurgias" value={formData.cirurgias} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg"></textarea></div>
+                                                <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ANESTESIAS PRÉVIAS / COMPLICAÇÕES</label><textarea disabled={isReadOnly} name="anestesias_previas" value={formData.anestesias_previas} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg"></textarea></div>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                                                 <div className="md:col-span-12 grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -1489,7 +1673,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                         newAnos = '';
                                                                     }
                                                                     setFormData({...formData, tabagismo: opt.val, carga_tabagica: newCarga, tabag_cigarros: newCig, tabag_anos: newAnos});
-                                                                }} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-xs md:text-xs font-bold rounded-lg border transition-all ${formData.tabagismo === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                }} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-xs md:text-xs font-bold rounded-lg border transition-all ${formData.tabagismo === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                     {opt.label}
                                                                 </button>
                                                             ))}
@@ -1505,7 +1689,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                     const anos = formData.tabag_anos;
                                                                     const result = cig && anos ? ((parseFloat(cig) / 20) * parseFloat(anos)).toFixed(1).replace('.0', '') : '';
                                                                     setFormData({...formData, tabag_cigarros: cig, carga_tabagica: result});
-                                                                }} className="w-full h-[40px] px-3 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white" />
+                                                                }} className="w-full h-[40px] px-3 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white/60" />
                                                             </div>
                                                             <div className="md:col-span-2">
                                                                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-2">Tempo (anos)</label>
@@ -1514,11 +1698,11 @@ Responda SOMENTE o bloco JSON.`;
                                                                     const cig = formData.tabag_cigarros;
                                                                     const result = cig && anos ? ((parseFloat(cig) / 20) * parseFloat(anos)).toFixed(1).replace('.0', '') : '';
                                                                     setFormData({...formData, tabag_anos: anos, carga_tabagica: result});
-                                                                }} className="w-full h-[40px] px-3 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white" />
+                                                                }} className="w-full h-[40px] px-3 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white/60" />
                                                             </div>
                                                             <div className="md:col-span-4">
                                                                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-2">Carga Tabágica (anos-maço)</label>
-                                                                <input disabled type="text" value={formData.carga_tabagica} className="w-full h-[40px] px-3 text-xs font-bold text-slate-500 bg-slate-100 border border-slate-200 rounded-lg outline-none" />
+                                                                <input disabled type="text" value={formData.carga_tabagica} className="w-full h-[40px] px-3 text-xs font-bold text-slate-500 bg-white/80 border-2 border-white shadow-sm rounded-lg outline-none" />
                                                             </div>
                                                         </>
                                                     )}
@@ -1526,7 +1710,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     {formData.tabagismo === 'Ex-tabagista' && (
                                                         <div className="md:col-span-4">
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-2">PAROU HÁ</label>
-                                                            <input disabled={isReadOnly} type="text" name="parou_fumo" value={formData.parou_fumo} onChange={handleChange} className="w-full h-[40px] px-3 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white" />
+                                                            <input disabled={isReadOnly} type="text" name="parou_fumo" value={formData.parou_fumo} onChange={handleChange} className="w-full h-[40px] px-3 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:bg-white/60" />
                                                         </div>
                                                     )}
                                                 </div>
@@ -1535,7 +1719,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-2">ETILISMO</label>
                                                     <div className="flex flex-wrap gap-2">
                                                         {[{val: 'Não', label: 'Não'}, {val: 'Social', label: 'Social'}, {val: 'Diário', label: 'Diário'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, etilismo: opt.val})} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-xs md:text-xs font-bold rounded-lg border transition-all ${formData.etilismo === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, etilismo: opt.val})} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-xs md:text-xs font-bold rounded-lg border transition-all ${formData.etilismo === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                 {opt.label}
                                                             </button>
                                                         ))}
@@ -1545,7 +1729,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-2">DROGAS ILÍCITAS</label>
                                                     <div className="flex flex-wrap gap-2">
                                                         {[{val: 'Nega', label: 'Nega'}, {val: 'Maconha', label: 'Maconha'}, {val: 'Cocaína/Crack', label: 'Cocaína/Crack'}, {val: 'Outras', label: 'Outras'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, drogas: opt.val})} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-xs md:text-xs font-bold rounded-lg border transition-all ${formData.drogas === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, drogas: opt.val})} className={`flex-1 h-[40px] flex items-center justify-center px-1 whitespace-nowrap text-xs md:text-xs font-bold rounded-lg border transition-all ${formData.drogas === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                 {opt.label}
                                                             </button>
                                                         ))}
@@ -1560,25 +1744,25 @@ Responda SOMENTE o bloco JSON.`;
                                 {activeTab === 'exame' && (
                                     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">8. Exame Físico</h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5">8. Exame Físico</h3>
                                             
                                             <div className="space-y-6">
                                                 {/* 1. AVALIAÇÃO CLÍNICA GERAL */}
                                                 <div>
-                                                    <h4 className="text-[11px] font-bold text-slate-400 mb-2">1. AVALIAÇÃO CLÍNICA GERAL</h4>
+                                                    <h4 className="text-[11px] font-bold text-slate-500 mb-2">1. AVALIAÇÃO CLÍNICA GERAL</h4>
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CARDIOVASCULAR (ACV)</label><input disabled={isReadOnly} type="text" name="acv" value={formData.acv} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">RESPIRATÓRIO (AR)</label><input disabled={isReadOnly} type="text" name="ar" value={formData.ar} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ABDOME</label><input disabled={isReadOnly} type="text" name="abdome" value={formData.abdome} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CARDIOVASCULAR (ACV)</label><input disabled={isReadOnly} type="text" name="acv" value={formData.acv} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">RESPIRATÓRIO (AR)</label><input disabled={isReadOnly} type="text" name="ar" value={formData.ar} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ABDOME</label><input disabled={isReadOnly} type="text" name="abdome" value={formData.abdome} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
                                                     </div>
                                                 </div>
 
                                                 {/* 2. CAPACIDADE FUNCIONAL (METS) */}
                                                 <div>
-                                                    <h4 className="text-[11px] font-bold text-slate-400 mb-2">2. CAPACIDADE FUNCIONAL (METS)</h4>
+                                                    <h4 className="text-[11px] font-bold text-slate-500 mb-2">2. CAPACIDADE FUNCIONAL (METS)</h4>
                                                     <div className="flex flex-wrap gap-2">
                                                         {[{val: '>10 METS', label: '>10 METS (Excelente)'}, {val: '4-7 METS', label: '4-7 METS'}, {val: '<4 METS', label: '<4 METS (Ruim)'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, mets: opt.val})} className={`px-4 py-1.5 text-xs md:text-xs font-bold rounded-lg border transition-all ${formData.mets === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, mets: opt.val})} className={`px-4 py-1.5 text-xs md:text-xs font-bold rounded-lg border transition-all ${formData.mets === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                 {opt.label}
                                                             </button>
                                                         ))}
@@ -1587,13 +1771,13 @@ Responda SOMENTE o bloco JSON.`;
                                                 
                                                 {/* 3. AVALIAÇÃO NEUROLÓGICA */}
                                                 <div>
-                                                    <h4 className="text-[11px] font-bold text-slate-400 mb-2">3. AVALIAÇÃO NEUROLÓGICA</h4>
+                                                    <h4 className="text-[11px] font-bold text-slate-500 mb-2">3. AVALIAÇÃO NEUROLÓGICA</h4>
                                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                                         <div>
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ESTADO DE CONSCIÊNCIA</label>
                                                             <div className="flex flex-wrap gap-1">
                                                                 {[{val: 'Lúcido/Orientado', label: 'Lúcido/Orientado'}, {val: 'Alteração de Consciência', label: 'Alteração de Consciência'}].map(opt => (
-                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, neuro_consciencia: opt.val})} className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.neuro_consciencia === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
+                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, neuro_consciencia: opt.val})} className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.neuro_consciencia === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
                                                                 ))}
                                                             </div>
                                                         </div>
@@ -1601,7 +1785,7 @@ Responda SOMENTE o bloco JSON.`;
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">DÉFICIT MOTOR/SENSITIVO</label>
                                                             <div className="flex flex-wrap gap-1">
                                                                 {[{val: 'Sem Déficit', label: 'Sem Déficit'}, {val: 'Hemiparesia', label: 'Hemiparesia'}, {val: 'Parestesia', label: 'Parestesia'}, {val: 'Paraplegia', label: 'Paraplegia'}].map(opt => (
-                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, neuro_deficit: opt.val})} className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.neuro_deficit === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
+                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, neuro_deficit: opt.val})} className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.neuro_deficit === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
                                                                 ))}
                                                             </div>
                                                         </div>
@@ -1610,13 +1794,13 @@ Responda SOMENTE o bloco JSON.`;
 
                                                 {/* 4. COLUNA VERTEBRAL E ACESSO VENOSO */}
                                                 <div>
-                                                    <h4 className="text-[11px] font-bold text-slate-400 mb-2">4. COLUNA VERTEBRAL E ACESSO VENOSO</h4>
+                                                    <h4 className="text-[11px] font-bold text-slate-500 mb-2">4. COLUNA VERTEBRAL E ACESSO VENOSO</h4>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div>
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">COLUNA/DORSO</label>
                                                             <div className="flex gap-1">
                                                                 {[{val: 'Normal', label: 'Normal'}, {val: 'Deformidade/Escoliose', label: 'Deformidade/Escoliose'}, {val: 'Restrição Local', label: 'Restrição Local'}].map(opt => (
-                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, coluna_dorso: opt.val})} className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.coluna_dorso === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
+                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, coluna_dorso: opt.val})} className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.coluna_dorso === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
                                                                 ))}
                                                             </div>
                                                         </div>
@@ -1624,7 +1808,7 @@ Responda SOMENTE o bloco JSON.`;
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ACESSO VENOSO</label>
                                                             <div className="flex gap-1">
                                                                 {[{val: 'Fácil', label: 'Fácil'}, {val: 'Difícil', label: 'Difícil'}, {val: 'Necessita USG', label: 'Necessita USG'}].map(opt => (
-                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, acesso_venoso: opt.val})} className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.acesso_venoso === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
+                                                                    <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, acesso_venoso: opt.val})} className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.acesso_venoso === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-slate-50'}`}>{opt.label}</button>
                                                                 ))}
                                                             </div>
                                                         </div>
@@ -1633,12 +1817,12 @@ Responda SOMENTE o bloco JSON.`;
 
                                                 {/* 5. VIA AÉREA */}
                                                 <div>
-                                                    <h4 className="text-[11px] font-bold text-slate-400 mb-2">5. VIA AÉREA</h4>
+                                                    <h4 className="text-[11px] font-bold text-slate-500 mb-2">5. VIA AÉREA</h4>
                                             <div className="mb-6">
                                                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CLASSIFICAÇÃO DE MALLAMPATI <span className="text-rose-500 text-[11px]">*</span></label>
                                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                                     {['I', 'II', 'III', 'IV'].map(m => (
-                                                        <div key={m} onClick={!isReadOnly ? () => setMallampati(m) : undefined} className={`p-4 rounded-xl border-2 text-center cursor-pointer transition-all ${mallampati === m ? 'border-blue-600 bg-blue-50 shadow-sm' : 'border-slate-100 hover:border-slate-300 bg-white'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
+                                                        <div key={m} onClick={!isReadOnly ? () => setMallampati(m) : undefined} className={`p-4 rounded-xl border-2 text-center cursor-pointer transition-all ${mallampati === m ? 'border-blue-600 bg-blue-500/20 shadow-sm' : 'border-white/40 hover:border-white hover:bg-white/90 bg-white/5'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
                                                             <div className={`w-14 h-14 mx-auto mb-3 rounded-full overflow-hidden relative transition-all duration-300 ${mallampati === m ? 'shadow-[0_0_0_3px_#2563eb,inset_0_4px_10px_rgba(0,0,0,0.5)] bg-rose-950 scale-110' : 'shadow-[inset_0_4px_10px_rgba(0,0,0,0.4)] bg-rose-950 opacity-85'}`}>
                                                                 {/* Palato Mole Superior */}
                                                                 <div className="absolute top-[-5px] left-1/2 -translate-x-1/2 w-16 h-8 rounded-full bg-rose-300 opacity-90" />
@@ -1657,7 +1841,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                 {m === 'III' && <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-2.5 rounded-b-[4px] bg-rose-400" />}
                                                                 
                                                                 {/* Língua Subindo */}
-                                                                <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 rounded-full bg-rose-500 shadow-[0_-4px_12px_rgba(0,0,0,0.4)] transition-all duration-300" 
+                                                                <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 rounded-full bg-rose-500/200 shadow-[0_-4px_12px_rgba(0,0,0,0.4)] transition-all duration-300" 
                                                                      style={{ width: m === 'IV' ? '120%' : m === 'III' ? '100%' : m === 'II' ? '85%' : '75%', 
                                                                               height: m === 'IV' ? '85%' : m === 'III' ? '65%' : m === 'II' ? '45%' : '30%' }} />
                                                             </div>
@@ -1671,7 +1855,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ABERTURA BUCAL</label>
                                                     <div className="flex gap-1">
                                                         {[{val: '> 3cm (Adequada)', label: '> 3cm (Adequada)', fallback: 'Adequada (> 3cm)'}, {val: '< 3cm (Restrita)', label: '< 3cm (Restrita)', fallback: 'Limitada (< 3cm)'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_abertura: opt.val})} className={`flex-1 px-2 py-1.5 text-[11px] md:text-xs font-bold rounded-lg border transition-all ${(formData.va_abertura === opt.val || formData.va_abertura === opt.fallback) ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_abertura: opt.val})} className={`flex-1 px-2 py-1.5 text-[11px] md:text-xs font-bold rounded-lg border transition-all ${(formData.va_abertura === opt.val || formData.va_abertura === opt.fallback) ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:bg-white/5'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -1679,7 +1863,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">DIST. TIREOMENTUAL</label>
                                                     <div className="flex gap-1">
                                                         {[{val: '> 6cm (Adequada)', label: '> 6cm (Adequada)', fallback: 'Adequada (> 6cm)'}, {val: '< 6cm (Curta)', label: '< 6cm (Curta)', fallback: 'Limitada (< 6cm)'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dtm: opt.val})} className={`flex-1 px-2 py-1.5 text-[11px] md:text-xs font-bold rounded-lg border transition-all ${(formData.va_dtm === opt.val || formData.va_dtm === opt.fallback) ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dtm: opt.val})} className={`flex-1 px-2 py-1.5 text-[11px] md:text-xs font-bold rounded-lg border transition-all ${(formData.va_dtm === opt.val || formData.va_dtm === opt.fallback) ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:bg-white/5'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -1687,7 +1871,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">DIST. ESTERNOMENTO</label>
                                                     <div className="flex gap-1">
                                                         {[{val: '> 12.5cm (Adequada)', label: '> 12.5cm (Adequada)', fallback: 'Adequada (> 12.5cm)'}, {val: '< 12.5cm (Curta)', label: '< 12.5cm (Curta)', fallback: 'Limitada (< 12.5cm)'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dem: opt.val})} className={`flex-1 px-2 py-1.5 text-[11px] md:text-xs font-bold rounded-lg border transition-all ${(formData.va_dem === opt.val || formData.va_dem === opt.fallback) ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dem: opt.val})} className={`flex-1 px-2 py-1.5 text-[11px] md:text-xs font-bold rounded-lg border transition-all ${(formData.va_dem === opt.val || formData.va_dem === opt.fallback) ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:bg-white/5'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -1695,7 +1879,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">MOBILIDADE CERVICAL</label>
                                                     <div className="flex gap-1">
                                                         {[{val: 'Normal', label: 'Normal'}, {val: 'Limitada', label: 'Limitada'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_cervical: opt.val})} className={`flex-1 px-2 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.va_cervical === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_cervical: opt.val})} className={`flex-1 px-2 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.va_cervical === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:bg-white/5'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -1703,7 +1887,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">PRÓTESE DENTÁRIA</label>
                                                     <div className="flex gap-1">
                                                         {[{val: 'Não', label: 'Não'}, {val: 'Fixa', label: 'Fixa'}, {val: 'Móvel', label: 'Móvel'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_protese: opt.val})} className={`flex-1 px-2 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.va_protese === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_protese: opt.val})} className={`flex-1 px-2 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.va_protese === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:bg-white/5'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -1711,14 +1895,14 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className={`block text-[10px] font-black uppercase tracking-wide mb-1 ${formData.va_dificil === 'Sim' ? 'text-rose-600' : formData.va_dificil === 'Possível' ? 'text-amber-600' : 'text-slate-500'}`}>VA DIFÍCIL PREVISTA <span className="text-rose-500 text-[11px]">*</span></label>
                                                     <div className="flex gap-1">
                                                         {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim', color: 'rose'}, {val: 'Possível', label: 'Possível', color: 'amber'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dificil: opt.val})} className={`flex-1 px-2 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.va_dificil === opt.val ? (opt.color === 'rose' ? 'bg-rose-50 border-rose-400 text-rose-700 shadow-sm' : opt.color === 'amber' ? 'bg-amber-50 border-amber-400 text-amber-700 shadow-sm' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm') : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{opt.label}</button>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, va_dificil: opt.val})} className={`flex-1 px-2 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.va_dificil === opt.val ? (opt.color === 'rose' ? 'bg-rose-500/20 border-rose-400 text-rose-700 shadow-sm' : opt.color === 'amber' ? 'bg-amber-500/20 border-amber-400 text-amber-700 shadow-sm' : 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm') : 'bg-white/60 border-white/60 text-slate-600 hover:bg-white/5'}`}>{opt.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
                                             </div>
                                                     <div className="mt-4">
                                                         <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">OBSERVAÇÕES VIA AÉREA</label>
-                                                        <textarea disabled={isReadOnly} name="va_obs" value={formData.va_obs} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea>
+                                                        <textarea disabled={isReadOnly} name="va_obs" value={formData.va_obs} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg"></textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1730,13 +1914,13 @@ Responda SOMENTE o bloco JSON.`;
                                 {activeTab === 'exames' && (
                                     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">10. Estado Físico (ASA)</h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5">10. Estado Físico (ASA)</h3>
                                             <div className="grid grid-cols-1 gap-3">
                                                 <div>
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CLASSIFICAÇÃO ASA</label>
                                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                                         {[{val: 'ASA I', label: 'ASA I', sub: 'Saudável'}, {val: 'ASA II', label: 'ASA II', sub: 'Doença sist. leve'}, {val: 'ASA III', label: 'ASA III', sub: 'Doença sist. grave'}, {val: 'ASA IV', label: 'ASA IV', sub: 'Risco à vida'}, {val: 'ASA V', label: 'ASA V', sub: 'Sobrevida < 24h'}, {val: 'ASA VI', label: 'ASA VI', sub: 'Morte encefálica'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, asa: opt.val})} className={`w-full min-w-[100px] h-[40px] flex flex-col items-center justify-center px-1 whitespace-nowrap text-xs font-bold rounded-lg border transition-all ${formData.asa === opt.val ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, asa: opt.val})} className={`w-full min-w-[100px] h-[40px] flex flex-col items-center justify-center px-1 whitespace-nowrap text-xs font-bold rounded-lg border transition-all ${formData.asa === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                 <span>{opt.label}</span>
                                                                 <span className="text-[9px] font-semibold opacity-75">{opt.sub}</span>
                                                             </button>
@@ -1744,11 +1928,11 @@ Responda SOMENTE o bloco JSON.`;
                                                     </div>
                                                 </div>
                                                 <div className="mt-2">
-                                                    <label className="flex items-center gap-2 cursor-pointer bg-slate-50 p-2 rounded-lg border border-slate-200 hover:border-slate-300 transition-all w-fit">
+                                                    <label className="flex items-center gap-2 cursor-pointer bg-white/60 p-2 rounded-lg border border-white/60 hover:border-white hover:bg-white/90 transition-all w-fit">
                                                         <div className="relative">
                                                             <input type="checkbox" className="sr-only" disabled={isReadOnly} checked={formData.asa_e === true || formData.asa_e === 'true'} onChange={(e) => setFormData({...formData, asa_e: e.target.checked})} />
-                                                            <div className={`block w-10 h-6 outline-none rounded-full transition-colors ${formData.asa_e === true || formData.asa_e === 'true' ? 'bg-rose-500' : 'bg-slate-300'}`}></div>
-                                                            <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.asa_e === true || formData.asa_e === 'true' ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                                            <div className={`block w-10 h-6 outline-none rounded-full transition-colors ${formData.asa_e === true || formData.asa_e === 'true' ? 'bg-rose-500/200' : 'bg-slate-300'}`}></div>
+                                                            <div className={`dot absolute left-1 top-1 bg-white/60 w-4 h-4 rounded-full transition-transform ${formData.asa_e === true || formData.asa_e === 'true' ? 'translate-x-4' : 'translate-x-0'}`}></div>
                                                         </div>
                                                         <span className="text-[11px] md:text-xs font-bold text-slate-600 uppercase tracking-wide">Emergência (E)</span>
                                                     </label>
@@ -1756,8 +1940,8 @@ Responda SOMENTE o bloco JSON.`;
                                             </div>
                                         </section>
                                         <section>
-                                            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 border-b border-slate-100 pb-2">
-                                                <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight">11. Exames Complementares</h3>
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 border-b border-white/40 pb-2">
+                                                <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider">11. Exames Complementares</h3>
                                                 
                                                 <div className="mt-2 md:mt-0 flex items-center">
                                                     {/* Botão de Leitura de Exame por IA oculto temporariamente */}
@@ -1780,54 +1964,54 @@ Responda SOMENTE o bloco JSON.`;
                                                         <h4 className="text-[11px] font-black text-slate-600 uppercase">Exames Laboratoriais</h4>
                                                         <div className="flex items-center gap-2">
                                                             <label className="text-[9px] font-bold text-slate-500 uppercase">Data do Exame:</label>
-                                                            <input disabled={isReadOnly} type="date" name="ex_data_lab" value={formData.ex_data_lab || ''} onChange={handleChange} className="px-2 py-1 text-[11px] font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none" />
+                                                            <input disabled={isReadOnly} type="date" name="ex_data_lab" value={formData.ex_data_lab || ''} onChange={handleChange} className="px-2 py-1 text-[11px] font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none" />
                                                         </div>
                                                     </div>
                                                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3">
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">HB</label><input disabled={isReadOnly} type="text" name="ex_hb" value={formData.ex_hb} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">HT</label><input disabled={isReadOnly} type="text" name="ex_ht" value={formData.ex_ht} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">PLAQUETAS</label><input disabled={isReadOnly} type="text" name="ex_plaq" value={formData.ex_plaq} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">LEUCÓCITOS</label><input disabled={isReadOnly} type="text" name="ex_leuco" value={formData.ex_leuco} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">TAP/INR</label><input disabled={isReadOnly} type="text" name="ex_inr" value={formData.ex_inr} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">TTPA</label><input disabled={isReadOnly} type="text" name="ex_ttpa" value={formData.ex_ttpa} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">GLICEMIA JEJUM</label><input disabled={isReadOnly} type="text" name="ex_glic" value={formData.ex_glic} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">HBA1C</label><input disabled={isReadOnly} type="text" name="ex_hba1c" value={formData.ex_hba1c} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">UREIA</label><input disabled={isReadOnly} type="text" name="ex_ureia" value={formData.ex_ureia} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">CREATININA</label><input disabled={isReadOnly} type="text" name="ex_creat" value={formData.ex_creat} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">SÓDIO (NA+)</label><input disabled={isReadOnly} type="text" name="ex_na" value={formData.ex_na} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">POTÁSSIO (K+)</label><input disabled={isReadOnly} type="text" name="ex_k" value={formData.ex_k} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">TGO (AST)</label><input disabled={isReadOnly} type="text" name="ex_tgo" value={formData.ex_tgo} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">TGP (ALT)</label><input disabled={isReadOnly} type="text" name="ex_tgp" value={formData.ex_tgp} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">HB</label><input disabled={isReadOnly} type="text" name="ex_hb" value={formData.ex_hb} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">HT</label><input disabled={isReadOnly} type="text" name="ex_ht" value={formData.ex_ht} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">PLAQUETAS</label><input disabled={isReadOnly} type="text" name="ex_plaq" value={formData.ex_plaq} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">LEUCÓCITOS</label><input disabled={isReadOnly} type="text" name="ex_leuco" value={formData.ex_leuco} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">TAP/INR</label><input disabled={isReadOnly} type="text" name="ex_inr" value={formData.ex_inr} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">TTPA</label><input disabled={isReadOnly} type="text" name="ex_ttpa" value={formData.ex_ttpa} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">GLICEMIA JEJUM</label><input disabled={isReadOnly} type="text" name="ex_glic" value={formData.ex_glic} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">HBA1C</label><input disabled={isReadOnly} type="text" name="ex_hba1c" value={formData.ex_hba1c} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">UREIA</label><input disabled={isReadOnly} type="text" name="ex_ureia" value={formData.ex_ureia} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">CREATININA</label><input disabled={isReadOnly} type="text" name="ex_creat" value={formData.ex_creat} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">SÓDIO (NA+)</label><input disabled={isReadOnly} type="text" name="ex_na" value={formData.ex_na} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1 truncate">POTÁSSIO (K+)</label><input disabled={isReadOnly} type="text" name="ex_k" value={formData.ex_k} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">TGO (AST)</label><input disabled={isReadOnly} type="text" name="ex_tgo" value={formData.ex_tgo} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                        <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">TGP (ALT)</label><input disabled={isReadOnly} type="text" name="ex_tgp" value={formData.ex_tgp} onChange={handleChange} className="w-full px-2 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
                                                     </div>
                                                 </div>
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {/* Exames Cardíacos */}
-                                                    <div className="border-t border-slate-100 pt-3">
+                                                    <div className="border-t border-white/40 pt-3">
                                                         <div className="flex justify-between items-center mb-2">
                                                             <h4 className="text-[11px] font-black text-slate-600 uppercase">Exames Cardíacos</h4>
                                                             <div className="flex items-center gap-2">
                                                                 <label className="text-[9px] font-bold text-slate-500 uppercase">Data do Exame:</label>
-                                                                <input disabled={isReadOnly} type="date" name="ex_data_cardio" value={formData.ex_data_cardio || ''} onChange={handleChange} className="px-2 py-1 text-[11px] font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none" />
+                                                                <input disabled={isReadOnly} type="date" name="ex_data_cardio" value={formData.ex_data_cardio || ''} onChange={handleChange} className="px-2 py-1 text-[11px] font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none" />
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-1 gap-3">
-                                                            <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ECG</label><input disabled={isReadOnly} type="text" name="ex_ecg" value={formData.ex_ecg} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
-                                                            <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ECOCARDIOGRAMA</label><input disabled={isReadOnly} type="text" name="ex_eco" value={formData.ex_eco} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                            <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ECG</label><input disabled={isReadOnly} type="text" name="ex_ecg" value={formData.ex_ecg} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
+                                                            <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ECOCARDIOGRAMA</label><input disabled={isReadOnly} type="text" name="ex_eco" value={formData.ex_eco} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
                                                         </div>
                                                     </div>
 
                                                     {/* Exames de Imagem */}
-                                                    <div className="border-t border-slate-100 pt-3 md:border-l md:pl-4 md:border-t-0 md:pt-3">
+                                                    <div className="border-t border-white/40 pt-3 md:border-l md:pl-4 md:border-t-0 md:pt-3">
                                                         <div className="flex justify-between items-center mb-2">
                                                             <h4 className="text-[11px] font-black text-slate-600 uppercase">Exames de Imagem</h4>
                                                             <div className="flex items-center gap-2">
                                                                 <label className="text-[9px] font-bold text-slate-500 uppercase">Data do Exame:</label>
-                                                                <input disabled={isReadOnly} type="date" name="ex_data_imagem" value={formData.ex_data_imagem || ''} onChange={handleChange} className="px-2 py-1 text-[11px] font-semibold bg-slate-50 border border-slate-200 rounded-lg outline-none" />
+                                                                <input disabled={isReadOnly} type="date" name="ex_data_imagem" value={formData.ex_data_imagem || ''} onChange={handleChange} className="px-2 py-1 text-[11px] font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none" />
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-1 gap-3">
-                                                            <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">RX TÓRAX</label><input disabled={isReadOnly} type="text" name="ex_rx" value={formData.ex_rx} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" /></div>
+                                                            <div><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">RX TÓRAX</label><input disabled={isReadOnly} type="text" name="ex_rx" value={formData.ex_rx} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" /></div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1835,16 +2019,16 @@ Responda SOMENTE o bloco JSON.`;
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                                                 <div>
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">OUTROS EXAMES</label>
-                                                    <textarea disabled={isReadOnly} name="ex_outros" value={formData.ex_outros} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea>
+                                                    <textarea disabled={isReadOnly} name="ex_outros" value={formData.ex_outros} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg"></textarea>
                                                 </div>
                                                 <div>
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">OBSERVAÇÕES DOS EXAMES</label>
-                                                    <textarea disabled={isReadOnly} name="ex_obs" value={formData.ex_obs} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea>
+                                                    <textarea disabled={isReadOnly} name="ex_obs" value={formData.ex_obs} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg"></textarea>
                                                 </div>
                                             </div>
                                         </section>
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5 flex justify-between items-center">
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5 flex justify-between items-center">
                                                 <span>12. Jejum Pré-Operatório</span>
                                             </h3>
                                             
@@ -1862,10 +2046,10 @@ Responda SOMENTE o bloco JSON.`;
 
                                             {/* Exibição Condicional (Tabela ou Texto Livre) */}
                                             {formData.jejum_orientacao === '' || formData.jejum_orientacao === 'Padrão ASA' ? (
-                                                <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-3 animate-in fade-in duration-300">
+                                                <div className="bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl overflow-hidden mb-3 animate-in fade-in duration-300">
                                                     <table className="w-full text-sm text-left">
-                                                        <thead className="bg-slate-100 text-slate-600 font-bold">
-                                                            <tr><th className="px-4 py-2 border-b border-slate-200">Tipo de Alimento</th><th className="px-4 py-2 border-b border-slate-200">Tempo de Jejum Mínimo</th></tr>
+                                                        <thead className="bg-white/70 text-slate-600 font-bold">
+                                                            <tr><th className="px-4 py-2 border-b border-white/60">Tipo de Alimento</th><th className="px-4 py-2 border-b border-white/60">Tempo de Jejum Mínimo</th></tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-slate-200">
                                                             {[
@@ -1875,7 +2059,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                 { id: 'jejum_leve', food: 'Refeição leve' },
                                                                 { id: 'jejum_completa', food: 'Refeição completa' },
                                                             ].map(item => (
-                                                                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                                                <tr key={item.id} className="hover:bg-white/60 transition-colors">
                                                                     <td className="px-4 py-3">{item.food}</td>
                                                                     <td className="px-4 py-3">
                                                                         <div className="flex gap-2">
@@ -1885,7 +2069,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                                     type="button" 
                                                                                     disabled={isReadOnly} 
                                                                                     onClick={() => setFormData({...formData, [item.id]: formData[item.id] === time ? '' : time, jejum_orientacao: 'Padrão ASA'})}
-                                                                                    className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all ${formData[item.id] === time ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                                                                                    className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all ${formData[item.id] === time ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:bg-white/70'}`}
                                                                                 >
                                                                                     {time}
                                                                                 </button>
@@ -1899,20 +2083,20 @@ Responda SOMENTE o bloco JSON.`;
                                                 </div>
                                             ) : (
                                                 <div className="animate-in fade-in duration-300">
-                                                    <textarea disabled={isReadOnly} name="jejum_orientacao" value={formData.jejum_orientacao} onChange={handleChange} rows="3" className="w-full px-3 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-mono" placeholder="Descreva o jejum personalizado..."></textarea>
+                                                    <textarea disabled={isReadOnly} name="jejum_orientacao" value={formData.jejum_orientacao} onChange={handleChange} rows="3" className="w-full px-3 py-2 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-mono" placeholder="Descreva o jejum personalizado..."></textarea>
                                                 </div>
                                             )}
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                                                 <div className="hidden">
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">ORIENTAÇÃO ESPECÍFICA DE JEJUM</label>
-                                                    <input disabled={isReadOnly} type="text" name="jejum_orientacao_old" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg" />
+                                                    <input disabled={isReadOnly} type="text" name="jejum_orientacao_old" className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg" />
                                                 </div>
                                                 <div>
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">PROFILAXIA DE ASPIRAÇÃO</label>
                                                     <div className="flex gap-2">
                                                         {[{val: 'Não indicada', label: 'Não indicada'}, {val: 'Indicada (Antiácido / Procinético)', label: 'Indicada'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, profilaxia_asp: opt.val})} className={`flex-1 h-[36px] text-xs font-bold rounded-lg border transition-all ${formData.profilaxia_asp === opt.val ? (opt.label === 'Indicada' ? 'bg-orange-50 border-orange-500 text-orange-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, profilaxia_asp: opt.val})} className={`flex-1 h-[36px] text-xs font-bold rounded-lg border transition-all ${formData.profilaxia_asp === opt.val ? (opt.label === 'Indicada' ? 'bg-orange-50 border-orange-500 text-orange-700 shadow-sm font-black' : 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm') : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                 {opt.label}
                                                             </button>
                                                         ))}
@@ -1927,7 +2111,7 @@ Responda SOMENTE o bloco JSON.`;
                                 {activeTab === 'plano' && (
                                     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">13. Plano Anestésico</h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5">13. Plano Anestésico</h3>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div>
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">TÉCNICA PREVISTA <span className="text-rose-500 text-[11px]">*</span></label>
@@ -1957,7 +2141,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                         <div 
                                                                             key={tecnica}
                                                                             onClick={() => handleToggle(tecnica)}
-                                                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition-all border ${isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}
+                                                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition-all border ${isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white/60 text-slate-600 border-white/60 hover:border-white hover:bg-white/90'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}
                                                                         >
                                                                             {tecnica}
                                                                         </div>
@@ -1971,7 +2155,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">RESERVA DE UTI? <span className="text-rose-500 text-[11px]">*</span></label>
                                                     <div className="flex flex-wrap gap-3 mt-1">
                                                         {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_destino: opt.val})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_destino === opt.val ? (opt.val === 'Sim' ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_destino: opt.val})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_destino === opt.val ? (opt.val === 'Sim' ? 'bg-rose-500/20 border-rose-500 text-rose-700 shadow-sm font-black' : 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                 {opt.label}
                                                             </button>
                                                         ))}
@@ -1980,13 +2164,13 @@ Responda SOMENTE o bloco JSON.`;
                                             </div>
 
                                             {/* Hemoderivados & Protocolo de Recusa */}
-                                            <div className="mt-5 pt-4 border-t border-slate-100">
+                                            <div className="mt-5 pt-4 border-t border-white/40">
                                                 <div className="flex flex-wrap gap-8">
                                                     <div>
                                                         <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-2">RESERVA DE HEMODERIVADOS</label>
                                                         <div className="flex flex-wrap gap-3 mb-4">
                                                             {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
-                                                                <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_hemoderivados: opt.val, plan_hemo_ch: opt.val==='Não'?'':formData.plan_hemo_ch, plan_hemo_pfc: opt.val==='Não'?'':formData.plan_hemo_pfc, plan_hemo_plaq: opt.val==='Não'?'':formData.plan_hemo_plaq, plan_hemo_outros: opt.val==='Não'?'':formData.plan_hemo_outros })} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_hemoderivados === opt.val ? (opt.val === 'Sim' ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_hemoderivados: opt.val, plan_hemo_ch: opt.val==='Não'?'':formData.plan_hemo_ch, plan_hemo_pfc: opt.val==='Não'?'':formData.plan_hemo_pfc, plan_hemo_plaq: opt.val==='Não'?'':formData.plan_hemo_plaq, plan_hemo_outros: opt.val==='Não'?'':formData.plan_hemo_outros })} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_hemoderivados === opt.val ? (opt.val === 'Sim' ? 'bg-rose-500/20 border-rose-500 text-rose-700 shadow-sm font-black' : 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                     {opt.label}
                                                                 </button>
                                                             ))}
@@ -1997,7 +2181,7 @@ Responda SOMENTE o bloco JSON.`;
                                                         <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-2">Protocolo de Recusa de Hemotransfusão? <span className="text-red-500">*</span></label>
                                                         <div className="flex flex-wrap gap-3 mb-4">
                                                             {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
-                                                                <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_recusa_hemo: opt.val})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_recusa_hemo === opt.val ? (opt.val === 'Sim' ? 'bg-amber-50 border-amber-500 text-amber-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                                <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, plan_recusa_hemo: opt.val})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.plan_recusa_hemo === opt.val ? (opt.val === 'Sim' ? 'bg-amber-500/20 border-amber-500 text-amber-700 shadow-sm font-black' : 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                     {opt.label}
                                                                 </button>
                                                             ))}
@@ -2005,50 +2189,50 @@ Responda SOMENTE o bloco JSON.`;
                                                     </div>
                                                 </div>
                                                 {formData.plan_hemoderivados === 'Sim' && (
-                                                    <div className="flex flex-wrap gap-x-8 gap-y-4 bg-rose-50/40 p-5 rounded-2xl border border-rose-100 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300 mt-2">
+                                                    <div className="flex flex-wrap gap-x-8 gap-y-4 bg-rose-500/20/40 p-5 rounded-2xl border border-rose-100 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300 mt-2">
                                                         <div>
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1.5" title="Concentrado de Hemácias">Hemácias (CH)</label>
                                                             <div className="flex items-center gap-2">
-                                                                <input disabled={isReadOnly} type="number" name="plan_hemo_ch" value={formData.plan_hemo_ch} onChange={handleChange} min="0" placeholder="0" className="w-16 px-2 py-1.5 text-center text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
+                                                                <input disabled={isReadOnly} type="number" name="plan_hemo_ch" value={formData.plan_hemo_ch} onChange={handleChange} min="0" placeholder="0" className="w-16 px-2 py-1.5 text-center text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
                                                                 <span className="text-[11px] text-slate-500 font-bold">un</span>
                                                             </div>
                                                         </div>
                                                         <div>
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1.5" title="Plasma Fresco">Plasma Fresco (PFC)</label>
                                                             <div className="flex items-center gap-2">
-                                                                <input disabled={isReadOnly} type="number" name="plan_hemo_pfc" value={formData.plan_hemo_pfc} onChange={handleChange} min="0" placeholder="0" className="w-16 px-2 py-1.5 text-center text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
+                                                                <input disabled={isReadOnly} type="number" name="plan_hemo_pfc" value={formData.plan_hemo_pfc} onChange={handleChange} min="0" placeholder="0" className="w-16 px-2 py-1.5 text-center text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
                                                                 <span className="text-[11px] text-slate-500 font-bold">un</span>
                                                             </div>
                                                         </div>
                                                         <div>
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1.5">Plaquetas</label>
                                                             <div className="flex items-center gap-2">
-                                                                <input disabled={isReadOnly} type="number" name="plan_hemo_plaq" value={formData.plan_hemo_plaq} onChange={handleChange} min="0" placeholder="0" className="w-16 px-2 py-1.5 text-center text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
+                                                                <input disabled={isReadOnly} type="number" name="plan_hemo_plaq" value={formData.plan_hemo_plaq} onChange={handleChange} min="0" placeholder="0" className="w-16 px-2 py-1.5 text-center text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
                                                                 <span className="text-[11px] text-slate-500 font-bold">un</span>
                                                             </div>
                                                         </div>
                                                         <div className="flex-1 min-w-[220px]">
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1.5">Outros Hemoderivados</label>
-                                                            <input disabled={isReadOnly} type="text" name="plan_hemo_outros" value={formData.plan_hemo_outros} onChange={handleChange} placeholder="Descrição detalhada..." className="w-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
+                                                            <input disabled={isReadOnly} type="text" name="plan_hemo_outros" value={formData.plan_hemo_outros} onChange={handleChange} placeholder="Descrição detalhada..." className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all shadow-sm" />
                                                         </div>
                                                     </div>
                                                 )}
                                             </div>
                                             <div className="mt-4">
                                                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">OBSERVAÇÕES DO PLANO</label>
-                                                <textarea disabled={isReadOnly} name="plan_obs" value={formData.plan_obs} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg"></textarea>
+                                                <textarea disabled={isReadOnly} name="plan_obs" value={formData.plan_obs} onChange={handleChange} rows="2" className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg"></textarea>
                                             </div>
                                         </section>
                                         <section>
-                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-slate-100 pb-1.5">14. Parecer Anestésico <span className="text-rose-500">*</span></h3>
+                                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5">14. Parecer Anestésico <span className="text-rose-500">*</span></h3>
                                             
                                             {/* Avaliação Especializada Prévia */}
-                                            <div className="mb-8 border-l-4 border-slate-200 pl-4 py-1">
+                                            <div className="mb-8 border-l-4 border-white/60 pl-4 py-1">
                                                 <div className="flex flex-col gap-2">
                                                     <label className="block text-[11px] font-black text-slate-600 uppercase tracking-wide">Necessita avaliação especializada prévia?</label>
                                                     <div className="flex gap-3 mt-1">
                                                         {[{val: 'Não', label: 'Não'}, {val: 'Sim', label: 'Sim'}].map(opt => (
-                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, parecer_aval_esp: opt.val, parecer_aval_especialidade: opt.val==='Não'?'':formData.parecer_aval_especialidade, parecer_aval_motivo: opt.val==='Não'?'':formData.parecer_aval_motivo})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.parecer_aval_esp === opt.val ? (opt.val === 'Sim' ? 'bg-orange-50 border-orange-500 text-orange-700 shadow-sm font-black' : 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+                                                            <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, parecer_aval_esp: opt.val, parecer_aval_especialidade: opt.val==='Não'?'':formData.parecer_aval_especialidade, parecer_aval_motivo: opt.val==='Não'?'':formData.parecer_aval_motivo})} className={`px-5 py-1.5 text-xs font-bold rounded-lg border transition-all ${formData.parecer_aval_esp === opt.val ? (opt.val === 'Sim' ? 'bg-orange-50 border-orange-500 text-orange-700 shadow-sm font-black' : 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm font-black') : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>
                                                                 {opt.label}
                                                             </button>
                                                         ))}
@@ -2058,24 +2242,24 @@ Responda SOMENTE o bloco JSON.`;
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4 bg-orange-50/40 p-5 rounded-2xl border border-orange-100 shadow-sm animate-in fade-in slide-in-from-left-2 duration-300">
                                                         <div className="flex flex-col md:col-span-1">
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1.5">Especialidade</label>
-                                                            <input disabled={isReadOnly} type="text" name="parecer_aval_especialidade" value={formData.parecer_aval_especialidade} onChange={handleChange} className="w-full px-3 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all shadow-sm" placeholder="Ex: Cardiologista" />
+                                                            <input disabled={isReadOnly} type="text" name="parecer_aval_especialidade" value={formData.parecer_aval_especialidade} onChange={handleChange} className="w-full px-3 py-2 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all shadow-sm" placeholder="Ex: Cardiologista" />
                                                         </div>
                                                         <div className="flex flex-col md:col-span-2">
                                                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1.5">Motivo</label>
-                                                            <textarea disabled={isReadOnly} name="parecer_aval_motivo" value={formData.parecer_aval_motivo} onChange={handleChange} rows="2" className="w-full px-3 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all resize-none shadow-sm" placeholder="Ex: Avaliar risco cirúrgico aumentado..."></textarea>
+                                                            <textarea disabled={isReadOnly} name="parecer_aval_motivo" value={formData.parecer_aval_motivo} onChange={handleChange} rows="2" className="w-full px-3 py-2 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all resize-none shadow-sm" placeholder="Ex: Avaliar risco cirúrgico aumentado..."></textarea>
                                                         </div>
                                                     </div>
                                                 )}
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-                                                <div onClick={!isReadOnly ? () => setParecer('Apto') : undefined} className={`p-3 py-2.5 rounded-lg border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Apto' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-slate-200 hover:border-slate-300 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
+                                                <div onClick={!isReadOnly ? () => setParecer('Apto') : undefined} className={`p-3 py-2.5 rounded-lg border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Apto' ? 'border-emerald-500 bg-emerald-500 text-white shadow-[0_4px_15px_rgba(16,185,129,0.4)] border-none shadow-sm' : 'border-white/60 hover:border-white hover:bg-white/90 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
                                                     <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">{parecer === 'Apto' && <div className="w-2 h-2 rounded-full bg-current" />}</div><span className="font-bold text-xs uppercase">APTO</span>
                                                 </div>
-                                                <div onClick={!isReadOnly ? () => setParecer('Restricao') : undefined} className={`p-3 py-2.5 rounded-lg border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Restricao' ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm' : 'border-slate-200 hover:border-slate-300 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
+                                                <div onClick={!isReadOnly ? () => setParecer('Restricao') : undefined} className={`p-3 py-2.5 rounded-lg border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Restricao' ? 'border-amber-500 bg-amber-500/20 text-amber-700 shadow-sm' : 'border-white/60 hover:border-white hover:bg-white/90 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
                                                     <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">{parecer === 'Restricao' && <div className="w-2 h-2 rounded-full bg-current" />}</div><span className="font-bold text-xs uppercase">APTO C/ RESTRIÇÕES</span>
                                                 </div>
-                                                <div onClick={!isReadOnly ? () => setParecer('Inapto') : undefined} className={`p-3 py-2.5 rounded-lg border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Inapto' ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-sm' : 'border-slate-200 hover:border-slate-300 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
+                                                <div onClick={!isReadOnly ? () => setParecer('Inapto') : undefined} className={`p-3 py-2.5 rounded-lg border-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2 ${parecer === 'Inapto' ? 'border-rose-500 bg-rose-500 text-white shadow-[0_4px_15px_rgba(244,63,94,0.4)] border-none shadow-sm' : 'border-white/60 hover:border-white hover:bg-white/90 text-slate-600'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
                                                     <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">{parecer === 'Inapto' && <div className="w-2 h-2 rounded-full bg-current" />}</div><span className="font-bold text-xs uppercase">INAPTO</span>
                                                 </div>
                                             </div>
@@ -2083,14 +2267,14 @@ Responda SOMENTE o bloco JSON.`;
                                                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">
                                                     JUSTIFICATIVAS / RECOMENDAÇÕES FINAIS {(parecer === 'Restricao' || parecer === 'Inapto') && <span className="text-rose-500 text-[11px]">*</span>}
                                                 </label>
-                                                <textarea disabled={isReadOnly} name="parecer_obs" value={formData.parecer_obs} onChange={handleChange} rows="3" className={`w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border rounded-lg transition-all ${(parecer === 'Restricao' || parecer === 'Inapto') && !formData.parecer_obs?.trim() ? 'border-rose-500 bg-rose-50/50 focus:ring-rose-500 outline-none focus:ring-1' : 'border-slate-200'}`}></textarea>
+                                                <textarea disabled={isReadOnly} name="parecer_obs" value={formData.parecer_obs} onChange={handleChange} rows="3" className={`w-full px-3 py-1.5 text-xs font-semibold bg-white/60 border rounded-lg transition-all ${(parecer === 'Restricao' || parecer === 'Inapto') && !formData.parecer_obs?.trim() ? 'border-rose-500 bg-rose-500/20/50 focus:ring-rose-500 outline-none focus:ring-1' : 'border-white/60'}`}></textarea>
                                             </div>
                                         </section>
                                     </div>
                                 )}
 
                                 {/* FOOTER WIZARD */}
-                                <div className="pt-6 border-t border-slate-100 flex justify-between items-center mt-6">
+                                <div className="pt-6 border-t border-white/40 flex justify-between items-center mt-6">
                                     <button 
                                         type="button"
                                         onClick={() => {
@@ -2099,7 +2283,7 @@ Responda SOMENTE o bloco JSON.`;
                                             if(currentIndex > 0) handleTabNavigation(tabs[currentIndex - 1].id);
                                         }}
                                         disabled={activeTab === tabs[0].id}
-                                        className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === tabs[0].id ? 'opacity-0 pointer-events-none' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                        className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === tabs[0].id ? 'opacity-0 pointer-events-none' : 'bg-white/70 text-slate-600 hover:bg-white/80'}`}
                                     >
                                         <ArrowLeft size={16} /> Etapa Anterior
                                     </button>
@@ -2118,7 +2302,7 @@ Responda SOMENTE o bloco JSON.`;
                                         </button>
                                     ) : (
                                         !isReadOnly && (
-                                            <button type="button" onClick={handleSalvarApa} className="px-6 py-2.5 rounded-xl font-bold text-sm bg-blue-600 text-white shadow-lg shadow-blue-600/30 hover:bg-blue-700 transition-all flex items-center gap-2">
+                                            <button type="button" onClick={handleSalvarApa} className="px-6 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-white shadow-lg shadow-blue-600/30 hover:bg-slate-900 transition-all flex items-center gap-2">
                                                 <Save size={16} /> Salvar e Finalizar
                                             </button>
                                         )
@@ -2133,29 +2317,29 @@ Responda SOMENTE o bloco JSON.`;
             {/* Modal de Validação de Extrato de Exames */}
             {aiValidationData && (
                 <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+                    <div className="bg-white/60 rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300">
                         {/* Header */}
-                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                        <div className="px-6 py-4 border-b border-white/40 flex justify-between items-center bg-white/60">
+                            <h2 className="text-lg font-black text-slate-900 drop-shadow-none flex items-center gap-2">
                                 <Sparkles className="text-indigo-600" size={20}/> Validação da Leitura
                             </h2>
-                            <button onClick={() => { setAiValidationData(null); setAiValidationFileUrl(null); }} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-all">✕</button>
+                            <button onClick={() => { setAiValidationData(null); setAiValidationFileUrl(null); }} className="p-2 text-slate-500 hover:text-slate-600 hover:bg-white/80 rounded-lg transition-all">✕</button>
                         </div>
                         
                         {/* Body */}
                         <div className="flex-1 flex overflow-hidden flex-col md:flex-row">
                             {/* Left: Document Viewer */}
-                            <div className="w-full md:w-1/2 bg-slate-100 border-r border-slate-200 p-2 flex items-center justify-center overflow-hidden">
+                            <div className="w-full md:w-1/2 bg-white/70 border-r border-white/60 p-2 flex items-center justify-center overflow-hidden">
                                 {aiValidationFileUrl?.type === 'application/pdf' ? (
-                                    <iframe src={aiValidationFileUrl.url} className="w-full h-full rounded-xl border border-slate-300 shadow-inner" />
+                                    <iframe src={aiValidationFileUrl.url} className="w-full h-full rounded-xl border border-white/80 shadow-inner" />
                                 ) : (
                                     <img src={aiValidationFileUrl?.url} className="max-w-full max-h-full rounded-xl object-contain shadow-sm" />
                                 )}
                             </div>
 
                             {/* Right: Extracted Data */}
-                            <div className="w-full md:w-1/2 overflow-y-auto p-5 bg-white">
-                                <p className="text-xs text-slate-500 font-semibold mb-4 bg-blue-50 text-blue-800 border border-blue-200 p-3 rounded-xl shadow-sm">
+                            <div className="w-full md:w-1/2 overflow-y-auto p-5 bg-white/60">
+                                <p className="text-xs text-slate-500 font-semibold mb-4 bg-blue-500/20 text-blue-800 border border-blue-200 p-3 rounded-xl shadow-sm">
                                     Confira os dados extraídos comparando com o documento original ao lado. Altere o que for necessário antes de confirmar a importação para a ficha.
                                 </p>
                                 
@@ -2178,7 +2362,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     type="text" 
                                                     value={value} 
                                                     onChange={(e) => setAiValidationData({...aiValidationData, [key]: e.target.value})}
-                                                    className="w-full px-3 py-1.5 text-xs font-bold bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-950 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all shadow-sm" 
+                                                    className="w-full px-3 py-1.5 text-xs font-bold bg-indigo-500/20 border border-indigo-100 rounded-lg text-indigo-950 focus:bg-white/60 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all shadow-sm" 
                                                 />
                                             </div>
                                         );
@@ -2188,8 +2372,8 @@ Responda SOMENTE o bloco JSON.`;
                         </div>
 
                         {/* Footer */}
-                        <div className="p-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
-                            <button onClick={() => { setAiValidationData(null); setAiValidationFileUrl(null); setPendingExameFile(null); }} className="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-200 transition-all border border-slate-300 bg-white">Cancelar</button>
+                        <div className="p-4 border-t border-white/40 flex justify-end gap-3 bg-white/60">
+                            <button onClick={() => { setAiValidationData(null); setAiValidationFileUrl(null); setPendingExameFile(null); }} className="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:bg-white/80 transition-all border border-white/80 bg-white/60">Cancelar</button>
                             <button onClick={() => { 
                                 setFormData(prev => ({ ...prev, ...aiValidationData })); 
                                 setExameFileToUpload(pendingExameFile);
@@ -2197,7 +2381,7 @@ Responda SOMENTE o bloco JSON.`;
                                 setAiValidationFileUrl(null); 
                                 setPendingExameFile(null);
                                 toast.success("Dados importados com sucesso!");
-                            }} className="px-6 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 hover:shadow-indigo-600/40 transition-all flex items-center gap-2">
+                            }} className="px-6 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-slate-800 shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 hover:shadow-indigo-600/40 transition-all flex items-center gap-2">
                                 <CheckSquare size={18} /> Confirmar Importação
                             </button>
                         </div>

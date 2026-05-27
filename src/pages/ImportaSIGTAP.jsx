@@ -93,26 +93,26 @@ const SigtapUploader = () => {
     };
 
     return (
-        <div className="min-h-full bg-slate-50 flex flex-col items-center justify-center p-4 font-sans">
-            <div className="bg-white p-10 rounded-[2.5rem] shadow-xl max-w-lg w-full text-center space-y-8 border border-slate-100">
+        <div className="min-h-full bg-white/60 flex flex-col items-center justify-center p-4 font-sans">
+            <div className="bg-white/60 p-10 rounded-[2.5rem] shadow-xl max-w-lg w-full text-center space-y-8 border border-white/40">
 
-                <div className="bg-blue-600 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto text-white shadow-lg shadow-blue-200">
+                <div className="bg-blue-600 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto text-slate-800 shadow-lg shadow-blue-200">
                     <FileText size={36} />
                 </div>
 
                 <div>
-                    <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tighter">Importador SIGTAP</h1>
-                    <p className="text-sm font-bold text-slate-400 mt-2 uppercase tracking-wide">
-                        Aceita o arquivo oficial <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded">tb_procedimento.txt</span>
+                    <h1 className="text-2xl font-black text-slate-900 drop-shadow-none uppercase tracking-widest">Importador SIGTAP</h1>
+                    <p className="text-sm font-bold text-slate-500 mt-2 uppercase tracking-wide">
+                        Aceita o arquivo oficial <span className="text-blue-600 bg-blue-500/20 px-2 py-0.5 rounded">tb_procedimento.txt</span>
                     </p>
                 </div>
 
                 {!loading && progress === 0 && (
                     <label className="block w-full cursor-pointer group">
                         <input type="file" accept=".txt" onChange={handleFileUpload} className="hidden" />
-                        <div className="w-full py-8 border-2 border-dashed border-slate-200 rounded-3xl group-hover:bg-blue-50 group-hover:border-blue-300 transition-all flex flex-col items-center gap-2">
-                            <UploadCloud size={32} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
-                            <span className="text-xs font-black text-slate-400 group-hover:text-blue-600 uppercase tracking-widest transition-colors">
+                        <div className="w-full py-8 border-2 border-dashed border-white/60 rounded-3xl group-hover:bg-blue-500/20 group-hover:border-blue-300 transition-all flex flex-col items-center gap-2">
+                            <UploadCloud size={32} className="text-slate-600 group-hover:text-blue-500 transition-colors" />
+                            <span className="text-xs font-black text-slate-500 group-hover:text-blue-600 uppercase tracking-widest transition-colors">
                                 Clique para selecionar o arquivo TXT
                             </span>
                         </div>
@@ -121,13 +121,13 @@ const SigtapUploader = () => {
 
                 {loading && (
                     <div className="space-y-6">
-                        <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                        <div className="w-full bg-white/70 rounded-full h-3 overflow-hidden">
                             <div
                                 className="bg-blue-600 h-full transition-all duration-300 rounded-full"
                                 style={{ width: `${(progress / total) * 100}%` }}
                             ></div>
                         </div>
-                        <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                        <div className="flex justify-between text-[11px] font-black text-slate-500 uppercase tracking-widest">
                             <span>{progress} processados</span>
                             <span>{total} total</span>
                         </div>
@@ -139,14 +139,14 @@ const SigtapUploader = () => {
                 )}
 
                 {!loading && progress > 0 && progress === total && (
-                    <div className="bg-emerald-50 text-emerald-600 p-6 rounded-3xl border border-emerald-100 flex flex-col items-center gap-2 font-black animate-in zoom-in duration-300">
+                    <div className="bg-emerald-500/20 text-emerald-600 p-6 rounded-3xl border border-emerald-100 flex flex-col items-center gap-2 font-black animate-in zoom-in duration-300">
                         <CheckCircle size={32} />
                         <span className="uppercase text-sm tracking-widest">Importação Finalizada!</span>
                         <span className="text-[11px] opacity-70 font-bold">Pode fechar esta tela agora.</span>
                     </div>
                 )}
 
-                <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 flex items-start gap-3 text-left">
+                <div className="bg-amber-500/20 p-4 rounded-xl border border-amber-100 flex items-start gap-3 text-left">
                     <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
                     <p className="text-[11px] text-amber-700 font-bold leading-relaxed">
                         ATENÇÃO: Este processo pode levar alguns minutos pois o arquivo do governo é grande. Não feche a janela até a barra completar.

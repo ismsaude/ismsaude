@@ -99,7 +99,7 @@ export default function ApaPrintTemplate({ data }) {
     const Checkbox = ({ label, checked }) => (
         <label className="flex items-center gap-1 text-[8.5px] text-gray-800 font-medium">
             <div className={`w-3 h-3 border border-gray-400 flex flex-shrink-0 items-center justify-center rounded-[2px] ${checked ? 'bg-[#002776] border-[#002776]' : 'bg-white'}`}>
-                {checked && <span className="text-white text-[9px] font-bold leading-none">✓</span>}
+                {checked && <span className="text-slate-800 text-[9px] font-bold leading-none">✓</span>}
             </div>
             <span>{label}</span>
         </label>
@@ -169,7 +169,7 @@ export default function ApaPrintTemplate({ data }) {
     }
 
     return (
-        <div className="w-full max-w-[210mm] mx-auto bg-white text-slate-800 text-[11px] leading-tight font-sans tracking-tight" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+        <div className="w-full max-w-[210mm] mx-auto bg-white text-slate-800 text-[11px] leading-tight font-sans tracking-normal" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
             <style type="text/css" media="print">
                 {`
                     @page { size: A4 portrait; margin: 10mm; }

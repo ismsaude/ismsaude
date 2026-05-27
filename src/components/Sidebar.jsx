@@ -26,7 +26,9 @@ import {
     X,
     Save,
     Syringe,
-    Moon
+    Moon,
+    DollarSign,
+    ArrowRightLeft
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import toast from 'react-hot-toast';
@@ -115,6 +117,17 @@ const Sidebar = () => {
             ]
         },
         {
+            id: 'financeiro', icon: DollarSign, label: 'Financeiro', show: hasPermission('Acessar Relatórios'),
+            subItems: [
+                { path: '/finance/dashboard', icon: LayoutDashboard, label: 'Cockpit', show: hasPermission('Acessar Relatórios') },
+                { path: '/finance/transacoes', icon: Activity, label: 'Extratos', show: hasPermission('Acessar Relatórios') },
+                { path: '/finance/conciliacao', icon: ArrowRightLeft, label: 'Conciliar', show: hasPermission('Acessar Relatórios') },
+                { path: '/finance/repasse', icon: Users, label: 'Repasses', show: hasPermission('Acessar Relatórios') },
+                { path: '/finance/glosas', icon: ShieldCheck, label: 'Glosas', show: hasPermission('Acessar Relatórios') },
+                { path: '/finance/configuracoes', icon: Settings, label: 'Ajustes', show: hasPermission('Acessar Configurações') }
+            ]
+        },
+        {
             id: 'admin', icon: Settings, label: 'Administração', show: hasPermission('Acessar Configurações'),
             subItems: [
                 { path: '/configuracoes', icon: Settings, label: 'Ajustes', show: hasPermission('Acessar Configurações') }
@@ -124,11 +137,11 @@ const Sidebar = () => {
 
     return (
         <>
-            <aside className="fixed left-0 top-0 h-screen w-24 bg-white/40 backdrop-blur-xl border-r border-white/50 shadow-lg flex flex-col items-center py-5 z-50 print:hidden">
+            <aside className="fixed left-0 top-0 h-screen w-24 bg-white/40 backdrop-blur-xl border-r border-white/400 shadow-lg flex flex-col items-center py-5 z-50 print:hidden">
 
                 {/* Logo Compacto Clickable */}
                 <div className="flex items-center justify-center mt-2 mb-3">
-                    <Link to="/dashboard" className="cursor-pointer transition-transform hover:scale-105 active:scale-95">
+                    <Link to="/home" className="cursor-pointer transition-transform hover:scale-105 active:scale-95">
                         <img src={theme.logoUrl} alt="Logo do Sistema" className="h-8 w-auto object-contain drop-shadow-sm" />
                     </Link>
                 </div>
@@ -153,7 +166,7 @@ const Sidebar = () => {
                                             }`}
                                     >
                                         <item.icon size={20} className="mb-1" strokeWidth={isOpen ? 2.5 : 2} />
-                                        <span className="text-[10px] font-bold uppercase tracking-tighter text-center leading-[1]">{item.label}</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-center leading-[1]">{item.label}</span>
 
 
                                     </button>
@@ -171,7 +184,7 @@ const Sidebar = () => {
                                                         className="z-10 group w-[64px] ml-1 py-2 flex flex-col items-center justify-center rounded-xl transition-all duration-300 bg-white/30 text-slate-500 opacity-50 cursor-not-allowed"
                                                     >
                                                         <sub.icon size={16} className="mb-1" strokeWidth={2} />
-                                                        <span className="text-[9px] font-bold uppercase tracking-tighter text-center leading-[1]">{sub.label}</span>
+                                                        <span className="text-[9px] font-bold uppercase tracking-widest text-center leading-[1]">{sub.label}</span>
                                                         <span className="text-[6px] text-amber-500 font-black tracking-widest uppercase mt-0.5">BREVE</span>
                                                     </div>
                                                 ) : (
@@ -180,12 +193,12 @@ const Sidebar = () => {
                                                         to={sub.path}
                                                         title={sub.label}
                                                         className={`z-10 group w-[64px] ml-1 py-2 flex flex-col items-center justify-center rounded-xl transition-all duration-300 ${isActive(sub.path)
-                                                            ? 'bg-white/80 text-blue-600 font-bold shadow-sm border border-white/50'
+                                                            ? 'bg-white/80 text-blue-600 font-bold shadow-sm border border-white/400'
                                                             : 'bg-white/30 text-slate-500 hover:bg-white/60 hover:text-blue-600'
                                                             }`}
                                                     >
                                                         <sub.icon size={16} className="mb-1" strokeWidth={isActive(sub.path) ? 2.5 : 2} />
-                                                        <span className="text-[9px] font-bold uppercase tracking-tighter text-center leading-[1]">{sub.label}</span>
+                                                        <span className="text-[9px] font-bold uppercase tracking-widest text-center leading-[1]">{sub.label}</span>
                                                     </Link>
                                                 )
                                             ))}
@@ -201,12 +214,12 @@ const Sidebar = () => {
                                 to={item.path}
                                 title={item.label}
                                 className={`group w-[72px] mx-auto py-2 flex flex-col items-center justify-center rounded-xl transition-all duration-300 ${isActive(item.path)
-                                    ? 'bg-white/60 text-blue-600 font-bold shadow-sm border border-white/50'
+                                    ? 'bg-white/60 text-blue-600 font-bold shadow-sm border border-white/400'
                                     : 'text-slate-500 hover:bg-white/50 hover:text-blue-600'
                                     }`}
                             >
                                 <item.icon size={20} className="mb-1" strokeWidth={isActive(item.path) ? 2.5 : 2} />
-                                <span className="text-[10px] font-bold uppercase tracking-tighter text-center leading-[1]">{item.label}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-center leading-[1]">{item.label}</span>
 
 
                             </Link>
@@ -216,21 +229,29 @@ const Sidebar = () => {
 
                 {/* Botões do Rodapé: Perfil e Sair */}
                 <div className="mt-auto flex flex-col items-center w-full gap-2">
+                    <Link
+                        to="/home"
+                        title="Início (Hub)"
+                        className="w-[72px] mx-auto py-2.5 flex flex-col items-center justify-center rounded-xl text-slate-500 hover:bg-blue-50/50 hover:text-blue-600 transition-all duration-300 group shadow-sm border border-transparent hover:border-slate-300"
+                    >
+                        <LayoutDashboard size={20} className="mb-1" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-center leading-[1]">Home</span>
+                    </Link>
                     <button
                         title="Alternar Tema Claro/Escuro"
                         onClick={() => document.documentElement.classList.toggle('tema-escuro')}
                         className="w-[72px] mx-auto py-2.5 flex flex-col items-center justify-center rounded-xl text-slate-500 hover:bg-slate-200/50 hover:text-indigo-600 transition-all duration-300 group shadow-sm border border-transparent hover:border-slate-300 preserve-color"
                     >
                         <Moon size={20} className="mb-1" />
-                        <span className="text-[10px] font-bold uppercase tracking-tighter text-center leading-[1]">Tema</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-center leading-[1]">Tema</span>
                     </button>
                     <button
                         title="Meu Perfil"
                         onClick={() => setIsProfileOpen(true)}
-                        className="w-[72px] mx-auto py-2.5 flex flex-col items-center justify-center rounded-xl text-slate-500 hover:bg-white/60 hover:text-blue-600 transition-all duration-300 group shadow-sm border border-transparent hover:border-white/50"
+                        className="w-[72px] mx-auto py-2.5 flex flex-col items-center justify-center rounded-xl text-slate-500 hover:bg-white/60 hover:text-blue-600 transition-all duration-300 group shadow-sm border border-transparent hover:border-white/400"
                     >
                         <User size={20} className="mb-1" />
-                        <span className="text-[10px] font-bold uppercase tracking-tighter text-center leading-[1]">Perfil</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-center leading-[1]">Perfil</span>
                     </button>
                     <button
                         title="Sair"
@@ -238,7 +259,7 @@ const Sidebar = () => {
                         className="w-[72px] mx-auto py-2.5 flex flex-col items-center justify-center rounded-xl text-slate-500 hover:bg-rose-500/20 hover:text-rose-600 transition-all duration-300 group"
                     >
                         <LogOut size={20} className="mb-1" />
-                        <span className="text-[10px] font-bold uppercase tracking-tighter text-center leading-[1]">Sair</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-center leading-[1]">Sair</span>
                     </button>
                 </div>
             </aside>
@@ -253,30 +274,30 @@ const Sidebar = () => {
                                     <User size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-black text-slate-800 uppercase tracking-tighter leading-none">Meu Perfil</h2>
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Gerencie sua conta</p>
+                                    <h2 className="text-lg font-black text-slate-800 uppercase tracking-widest leading-none">Meu Perfil</h2>
+                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gerencie sua conta</p>
                                 </div>
                             </div>
-                            <button onClick={() => setIsProfileOpen(false)} className="text-slate-400 hover:text-rose-500 bg-white p-2 rounded-full shadow-sm hover:shadow transition-all"><X size={18} /></button>
+                            <button onClick={() => setIsProfileOpen(false)} className="text-slate-500 hover:text-rose-500 bg-white p-2 rounded-full shadow-sm hover:shadow transition-all"><X size={18} /></button>
                         </div>
                         <div className="p-6 space-y-6">
                             {/* Info do Usuário */}
                             <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                                 <div className="col-span-2">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nome Completo</label>
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Nome Completo</label>
                                     <div className="text-sm font-bold text-slate-800 uppercase">{currentUser?.name || currentUser?.displayName || '---'}</div>
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">E-mail</label>
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">E-mail</label>
                                     <div className="text-xs font-semibold text-slate-600">{currentUser?.email}</div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Perfil</label>
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Perfil</label>
                                     <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-[11px] font-black uppercase rounded">{currentUser?.role || '---'}</span>
                                 </div>
                                 {(currentUser?.crm || currentUser?.cpf) && (
                                     <div>
-                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Documento</label>
+                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Documento</label>
                                         <div className="text-xs font-bold text-slate-700">{currentUser?.crm || currentUser?.cpf}</div>
                                     </div>
                                 )}
@@ -292,7 +313,7 @@ const Sidebar = () => {
                                         placeholder="Nova Senha (min. 6 caracteres)"
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
-                                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 font-semibold outline-none focus:border-blue-500 placeholder:text-slate-400 placeholder:font-normal"
+                                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 font-semibold outline-none focus:border-blue-500 placeholder:text-slate-500 placeholder:font-normal"
                                     />
                                 </div>
                                 <div>
@@ -301,7 +322,7 @@ const Sidebar = () => {
                                         placeholder="Confirmar Nova Senha"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 font-semibold outline-none focus:border-blue-500 placeholder:text-slate-400 placeholder:font-normal"
+                                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 font-semibold outline-none focus:border-blue-500 placeholder:text-slate-500 placeholder:font-normal"
                                     />
                                 </div>
                                 <button

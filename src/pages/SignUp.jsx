@@ -47,17 +47,17 @@ const SignUp = () => {
     };
 
     return (
-        <div className="min-h-full bg-slate-50 flex items-center justify-center p-4">
-            <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100">
-                <button onClick={() => navigate('/login')} className="flex items-center gap-2 text-slate-400 mb-6 font-black text-[11px] uppercase">
+        <div className="min-h-full bg-white/60 flex items-center justify-center p-4">
+            <div className="bg-white/60 p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-white/40">
+                <button onClick={() => navigate('/login')} className="flex items-center gap-2 text-slate-500 mb-6 font-black text-[11px] uppercase">
                     <ArrowLeft size={16} /> Voltar
                 </button>
-                <h2 className="text-2xl font-black text-slate-900 uppercase text-center mb-8">Solicitar Acesso</h2>
+                <h2 className="text-2xl font-black text-slate-800 uppercase text-center mb-8">Solicitar Acesso</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <input required placeholder="Nome Completo" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold outline-none" />
-                    <input type="email" required placeholder="E-mail" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold outline-none" />
-                    <input type="password" required placeholder="Sua Senha" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold outline-none" />
-                    <button disabled={loading} className={`w-full py-4 bg-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:bg-blue-600 transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                    <input required placeholder="Nome Completo" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full p-4 bg-white/60 border-none rounded-2xl font-bold outline-none" />
+                    <input type="email" required placeholder="E-mail" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full p-4 bg-white/60 border-none rounded-2xl font-bold outline-none" />
+                    <input type="password" required placeholder="Sua Senha" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full p-4 bg-white/60 border-none rounded-2xl font-bold outline-none" />
+                    <button disabled={loading} className={`w-full py-4 bg-white/40 text-slate-800 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:bg-blue-600 transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                         {loading ? 'Enviando...' : 'Enviar Solicitação'}
                     </button>
                 </form>

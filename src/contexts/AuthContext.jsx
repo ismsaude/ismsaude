@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
                     for (let i = 0; i < retries; i++) {
                         const { data, error } = await supabase
                             .from('users')
-                            .select('name, crm, rqe, cpf, role, status, unidades_permitidas, sexo')
+                            .select('*')
                             .eq('email', sessionUser.email)
                             .maybeSingle(); // maybeSingle não joga erro se não achar, útil pra verificar dados nulos
 
@@ -95,6 +95,7 @@ export const AuthProvider = ({ children }) => {
                 sessionStorage.removeItem('login_timestamp');
                 sessionStorage.removeItem('apa_draft_state');
                 sessionStorage.removeItem('@sisgesp_unidade_sessao');
+                sessionStorage.removeItem('@sisgesp_hub_animation_seen');
                 setCurrentUser(null);
             } else if (event === 'USER_UPDATED') {
                 fetchProfile(session?.user ?? null);
@@ -112,6 +113,7 @@ export const AuthProvider = ({ children }) => {
                     sessionStorage.removeItem('login_timestamp');
                     sessionStorage.removeItem('apa_draft_state');
                     sessionStorage.removeItem('@sisgesp_unidade_sessao');
+                    sessionStorage.removeItem('@sisgesp_hub_animation_seen');
                 }
             }
         }, 300000);

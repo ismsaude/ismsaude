@@ -42,7 +42,7 @@ const AdminSetup = () => {
                     onChange={e => setEmail(e.target.value)}
                     required
                 />
-                <button type="submit" className="w-full bg-orange-500 text-white py-1.5 rounded text-sm hover:bg-orange-600">
+                <button type="submit" className="w-full bg-orange-500 text-slate-800 py-1.5 rounded text-sm hover:bg-orange-600">
                     Conceder Permissão de Admin
                 </button>
             </form>

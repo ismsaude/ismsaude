@@ -3,6 +3,7 @@ import { supabase } from '../services/supabase';
 import { useUnit } from '../contexts/UnitContext';
 import { Search, Plus, UserPlus, Activity, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { logAction } from '../utils/logger';
 import { NovoAtendimentoModal } from '../components/NovoAtendimentoModal';
 import UnitPrompt from '../components/UnitPrompt';
 
@@ -38,6 +39,8 @@ export default function Recepcao() {
             
             if (error) throw error;
 
+            await logAction('TRIAGEM', `Triagem realizada para ${pacienteTriagem.nomePaciente}. Classificação: ${formTriagem.classificacao}.`);
+
             toast.success("Triagem concluída! Paciente enviado para o Médico.");
             setIsTriagemModalOpen(false);
             setFormTriagem({ pa: '', fc: '', tax: '', spo2: '', queixa: '', classificacao: '', medico_destino: '' });
@@ -51,12 +54,12 @@ export default function Recepcao() {
 
     // Cores do Protocolo de Manchester
     const manchesterColors = {
-        'Emergência': 'bg-red-500 text-white border-red-600',
-        'Muito Urgente': 'bg-orange-500 text-white border-orange-600',
-        'Urgente': 'bg-yellow-400 text-slate-800 border-yellow-500',
-        'Pouco Urgente': 'bg-green-500 text-white border-green-600',
-        'Não Urgente': 'bg-blue-500 text-white border-blue-600',
-        'Não Classificado': 'bg-slate-100 text-slate-600 border-slate-200'
+        'Emergência': 'bg-red-500 text-slate-800 border-red-600',
+        'Muito Urgente': 'bg-orange-500 text-slate-800 border-orange-600',
+        'Urgente': 'bg-yellow-400 text-slate-900 drop-shadow-none border-yellow-500',
+        'Pouco Urgente': 'bg-green-500 text-slate-800 border-green-600',
+        'Não Urgente': 'bg-blue-500/200 text-slate-800 border-blue-600',
+        'Não Classificado': 'bg-white/70 text-slate-600 border-white/60'
     };
 
     useEffect(() => {
@@ -130,42 +133,42 @@ export default function Recepcao() {
             <div className="max-w-7xl mx-auto space-y-4">
 
                 {/* CABEÇALHO */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white/60 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-white/50 relative overflow-hidden">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white/60 backdrop-blur-md p-4 rounded-2xl shadow-sm backdrop-blur-md border border-white/400 relative overflow-hidden">
                     <div className="flex items-center gap-3 relative z-10">
                         <div className="p-2 bg-blue-100 text-blue-600 rounded-xl"><UserPlus size={22} /></div>
                         <div>
-                            <h1 className="text-lg font-black text-slate-800 uppercase tracking-tighter">Recepção & Triagem</h1>
+                            <h1 className="text-lg font-black text-slate-900 drop-shadow-none uppercase tracking-widest">Recepção & Triagem</h1>
                             <div className="flex items-center gap-2 text-[11px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">
                                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                 {unidadeAtual}
                             </div>
                         </div>
                     </div>
-                    <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 transition-all">
+                    <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-black shadow-[0_4px_15px_rgba(37,99,235,0.4)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.5)] border-none flex items-center gap-2 transition-all uppercase tracking-widest">
                         <Plus size={18} /> Novo Atendimento
                     </button>
                 </div>
 
                 {/* FILA VIVA (CARDS) */}
-                <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 p-4">
-                    <h2 className="text-xs font-black text-slate-700 uppercase tracking-tight mb-4 border-b border-white/50 pb-2 flex items-center justify-between">
+                <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm backdrop-blur-md border border-white/400 p-4">
+                    <h2 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-4 border-b border-white/400 pb-2 flex items-center justify-between">
                         <span>Fila de Espera ({atendimentos.length})</span>
                     </h2>
 
                     {loading ? (
                         <div className="flex justify-center p-8"><Activity className="animate-spin text-blue-500" size={24} /></div>
                     ) : atendimentos.length === 0 ? (
-                        <div className="text-center p-8 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Fila Vazia. Nenhum paciente aguardando.</span>
+                        <div className="text-center p-8 border-2 border-dashed border-white/60 rounded-xl bg-white/60">
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Fila Vazia. Nenhum paciente aguardando.</span>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                             {atendimentos.map(pac => (
-                                <div key={pac.id} className="bg-white border border-slate-100 p-3.5 rounded-xl shadow-sm hover:shadow-md hover:border-blue-100 transition-all cursor-pointer group">
+                                <div key={pac.id} className="bg-white/60 border border-white/40 p-3.5 rounded-xl shadow-sm hover:shadow-md hover:border-blue-100 transition-all cursor-pointer group">
                                     <div className="flex justify-between items-start mb-3">
                                         <div>
-                                            <div className="text-xs font-black text-slate-800 uppercase tracking-tight">{pac.nomePaciente}</div>
-                                            <div className="text-[11px] font-bold text-slate-400 uppercase mt-0.5">Idade: {pac.idadeInfo || '--'}</div>
+                                            <div className="text-xs font-black text-slate-900 drop-shadow-none uppercase tracking-wider">{pac.nomePaciente}</div>
+                                            <div className="text-[11px] font-bold text-slate-500 uppercase mt-0.5">Idade: {pac.idadeInfo || '--'}</div>
                                         </div>
                                         <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md border ${manchesterColors[pac.classificacaoRisco || 'Não Classificado']}`}>
                                             {pac.classificacaoRisco || 'Aguardando Triagem'}
@@ -184,7 +187,7 @@ export default function Recepcao() {
                                     {pac.status === 'Aguardando Triagem' && (
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setPacienteTriagem(pac); setIsTriagemModalOpen(true); }}
-                                            className="mt-3 w-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 py-1.5 rounded text-xs font-bold uppercase transition-colors"
+                                            className="mt-3 w-full bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none hover:bg-blue-600 hover:text-slate-800 border border-blue-200 py-1.5 rounded text-xs font-bold uppercase transition-colors"
                                         >
                                             Realizar Triagem
                                         </button>
@@ -203,24 +206,24 @@ export default function Recepcao() {
             {/* MODAL DE TRIAGEM */}
             {isTriagemModalOpen && pacienteTriagem && (
                 <>
-                    <div className="fixed top-16 inset-x-0 bottom-0 bg-slate-900/40 backdrop-blur-sm z-[9998]" onClick={() => setIsTriagemModalOpen(false)} />
+                    <div className="fixed top-16 inset-x-0 bottom-0 bg-white/40 backdrop-blur-sm backdrop-blur-sm z-[9998]" onClick={() => setIsTriagemModalOpen(false)} />
                     <div className="fixed top-16 inset-x-0 bottom-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
-                        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden pointer-events-auto border border-white">
-                            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                                <h3 className="font-black text-lg text-slate-800 uppercase tracking-tight flex items-center gap-2">
+                        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl backdrop-blur-xl w-full max-w-2xl overflow-hidden pointer-events-auto border border-white">
+                            <div className="px-6 py-4 border-b border-white/40 flex justify-between items-center bg-white/60">
+                                <h3 className="font-black text-lg text-slate-900 drop-shadow-none uppercase tracking-wider flex items-center gap-2">
                                     Triagem / Classificação de Risco
                                 </h3>
-                                <button onClick={() => setIsTriagemModalOpen(false)} className="p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-500 rounded-xl transition-colors">✕</button>
+                                <button onClick={() => setIsTriagemModalOpen(false)} className="p-2 text-slate-500 hover:bg-rose-500/20 hover:text-rose-500 rounded-xl transition-colors">✕</button>
                             </div>
 
                             <form onSubmit={handleSalvarTriagem} className="p-6 space-y-5">
-                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 mb-4">
-                                    <p className="text-sm font-black text-slate-800 uppercase">{pacienteTriagem.paciente_nome || pacienteTriagem.nomePaciente}</p>
+                                <div className="bg-white/60 p-3 rounded-xl border border-white/40 mb-4">
+                                    <p className="text-sm font-black text-slate-900 drop-shadow-none uppercase">{pacienteTriagem.paciente_nome || pacienteTriagem.nomePaciente}</p>
                                 </div>
 
                                 <div>
                                     <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">Encaminhar para *</label>
-                                    <select required value={formTriagem.medico_destino} onChange={e => setFormTriagem({...formTriagem, medico_destino: e.target.value})} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500/30">
+                                    <select required value={formTriagem.medico_destino} onChange={e => setFormTriagem({...formTriagem, medico_destino: e.target.value})} className="w-full h-10 px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500/30">
                                         <option value="">Selecione o Consultório...</option>
                                         <option value="DR. CARLOS">Consultório 1 - DR. CARLOS</option>
                                         <option value="DRA. MARIA">Consultório 2 - DRA. MARIA</option>
@@ -230,36 +233,36 @@ export default function Recepcao() {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div>
                                         <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">PA (mmHg)</label>
-                                        <input type="text" value={formTriagem.pa} onChange={e => setFormTriagem({...formTriagem, pa: e.target.value})} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 120x80" />
+                                        <input type="text" value={formTriagem.pa} onChange={e => setFormTriagem({...formTriagem, pa: e.target.value})} className="w-full h-10 px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 120x80" />
                                     </div>
                                     <div>
                                         <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">FC (bpm)</label>
-                                        <input type="text" value={formTriagem.fc} onChange={e => setFormTriagem({...formTriagem, fc: e.target.value})} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 85" />
+                                        <input type="text" value={formTriagem.fc} onChange={e => setFormTriagem({...formTriagem, fc: e.target.value})} className="w-full h-10 px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 85" />
                                     </div>
                                     <div>
                                         <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">Temp (ºC)</label>
-                                        <input type="text" value={formTriagem.tax} onChange={e => setFormTriagem({...formTriagem, tax: e.target.value})} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 37.5" />
+                                        <input type="text" value={formTriagem.tax} onChange={e => setFormTriagem({...formTriagem, tax: e.target.value})} className="w-full h-10 px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 37.5" />
                                     </div>
                                     <div>
                                         <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">SpO2 (%)</label>
-                                        <input type="text" value={formTriagem.spo2} onChange={e => setFormTriagem({...formTriagem, spo2: e.target.value})} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 98" />
+                                        <input type="text" value={formTriagem.spo2} onChange={e => setFormTriagem({...formTriagem, spo2: e.target.value})} className="w-full h-10 px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/30" placeholder="Ex: 98" />
                                     </div>
                                 </div>
 
                                 <div>
                                     <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block">Queixa Principal / Breve Histórico</label>
-                                    <textarea value={formTriagem.queixa} onChange={e => setFormTriagem({...formTriagem, queixa: e.target.value})} required className="w-full h-20 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500/30 resize-none" placeholder="Relato do paciente..."></textarea>
+                                    <textarea value={formTriagem.queixa} onChange={e => setFormTriagem({...formTriagem, queixa: e.target.value})} required className="w-full h-20 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500/30 resize-none" placeholder="Relato do paciente..."></textarea>
                                 </div>
 
                                 <div>
                                     <label className="text-[11px] font-black text-slate-500 uppercase ml-1 mb-2 block">Classificação de Risco (Manchester)</label>
                                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                                         {[
-                                            { cor: 'Emergência', bg: 'bg-red-500', text: 'text-white' },
-                                            { cor: 'Muito Urgente', bg: 'bg-orange-500', text: 'text-white' },
-                                            { cor: 'Urgente', bg: 'bg-yellow-400', text: 'text-slate-800' },
-                                            { cor: 'Pouco Urgente', bg: 'bg-green-500', text: 'text-white' },
-                                            { cor: 'Não Urgente', bg: 'bg-blue-500', text: 'text-white' }
+                                            { cor: 'Emergência', bg: 'bg-red-500', text: 'text-slate-800' },
+                                            { cor: 'Muito Urgente', bg: 'bg-orange-500', text: 'text-slate-800' },
+                                            { cor: 'Urgente', bg: 'bg-yellow-400', text: 'text-slate-900 drop-shadow-none' },
+                                            { cor: 'Pouco Urgente', bg: 'bg-green-500', text: 'text-slate-800' },
+                                            { cor: 'Não Urgente', bg: 'bg-blue-500/200', text: 'text-slate-800' }
                                         ].map(btn => (
                                             <button type="button" key={btn.cor} onClick={() => setFormTriagem({...formTriagem, classificacao: btn.cor})} className={`h-12 rounded-xl text-[11px] font-black uppercase transition-all border-2 ${formTriagem.classificacao === btn.cor ? `border-slate-800 scale-105 shadow-lg ${btn.bg} ${btn.text}` : `border-transparent opacity-60 hover:opacity-100 ${btn.bg} ${btn.text}`}`}>
                                                 {btn.cor}
@@ -268,8 +271,8 @@ export default function Recepcao() {
                                     </div>
                                 </div>
 
-                                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                                    <button type="button" onClick={() => setIsTriagemModalOpen(false)} className="h-10 px-6 text-slate-500 hover:bg-slate-100 font-bold text-xs uppercase rounded-lg transition-colors">Cancelar</button>
+                                <div className="flex justify-end gap-3 pt-4 border-t border-white/40">
+                                    <button type="button" onClick={() => setIsTriagemModalOpen(false)} className="h-10 px-6 text-slate-500 hover:bg-white/70 font-bold text-xs uppercase rounded-lg transition-colors">Cancelar</button>
                                     <button type="submit" disabled={savingTriagem} className="h-10 px-8 bg-blue-600 text-white font-bold text-xs uppercase rounded-lg shadow-md hover:bg-blue-700 transition-all flex items-center gap-2 disabled:opacity-50">
                                         {savingTriagem ? 'Salvando...' : 'Finalizar Triagem'}
                                     </button>

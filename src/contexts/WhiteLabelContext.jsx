@@ -10,7 +10,12 @@ export const WhiteLabelProvider = ({ children }) => {
         nomeInstituicao: 'Sistema de Gestão', // Fallback genérico em vez de Porto Feliz
         corPrincipal: '#2563eb', 
         logoUrl: null, // Sem logo por padrão até carregar
-        faviconUrl: ''
+        faviconUrl: '',
+        hubAssistant1Name: 'Lucas', hubAssistant1Whatsapp: '', hubAssistant1Photo: '',
+        hubAssistant2Name: 'Will', hubAssistant2Whatsapp: '', hubAssistant2Photo: '',
+        hubInstagramLink: '',
+        hubCarouselImages: [],
+        marqueeText: ''
     });
     const [isThemeLoading, setIsThemeLoading] = useState(true);
 
@@ -25,7 +30,16 @@ export const WhiteLabelProvider = ({ children }) => {
                     logoUrl: data.data.logoUrl || null,
                     faviconUrl: data.data.faviconUrl || '',
                     executanteNome: data.data.executanteNome || '',
-                    executanteCnes: data.data.executanteCnes || ''
+                    executanteCnes: data.data.executanteCnes || '',
+                    hubAssistant1Name: data.data.hubAssistant1Name || 'Lucas',
+                    hubAssistant1Whatsapp: data.data.hubAssistant1Whatsapp || '',
+                    hubAssistant1Photo: data.data.hubAssistant1Photo || '',
+                    hubAssistant2Name: data.data.hubAssistant2Name || 'Will',
+                    hubAssistant2Whatsapp: data.data.hubAssistant2Whatsapp || '',
+                    hubAssistant2Photo: data.data.hubAssistant2Photo || '',
+                    hubInstagramLink: data.data.hubInstagramLink || '',
+                    hubCarouselImages: data.data.hubCarouselImages || [],
+                    marqueeText: data.data.marqueeText || ''
                 };
                 setTheme(fetchedTheme);
                 document.title = fetchedTheme.nomeInstituicao;

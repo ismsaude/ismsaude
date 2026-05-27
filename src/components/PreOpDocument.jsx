@@ -56,7 +56,7 @@ export const PreOpDocument = ({ surgery }) => {
             {/* Cabeçalho Enxuto */}
             <div className="flex justify-between items-end border-b-2 border-slate-800 pb-2 mb-3 shrink-0">
                 <div>
-                    <h1 className="text-lg font-black uppercase text-slate-900 tracking-tighter leading-tight">Santa Casa<br/>De Misericórdia</h1>
+                    <h1 className="text-lg font-black uppercase text-slate-900 tracking-normal leading-tight">Santa Casa<br/>De Misericórdia</h1>
                     <h2 className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mt-0.5">Salto de Pirapora</h2>
                 </div>
                 <div className="text-right">

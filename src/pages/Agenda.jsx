@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../services/supabase';
+import { logAction } from '../utils/logger';
 import toast from 'react-hot-toast';
 import { useUnit } from '../contexts/UnitContext';
 import {
@@ -17,20 +18,20 @@ import UnitPrompt from '../components/UnitPrompt';
 const DIAS_NOME = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
 const STATUS_COLORS = {
-    'Agendado': { bg: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-800' },
-    'Aguardando': { bg: 'bg-amber-50', border: 'border-amber-400', text: 'text-amber-800' },
+    'Agendado': { bg: 'bg-blue-500/20', border: 'border-blue-400', text: 'text-blue-800' },
+    'Aguardando': { bg: 'bg-amber-500/20', border: 'border-amber-400', text: 'text-amber-800' },
     'Em Atendimento': { bg: 'bg-purple-50', border: 'border-purple-400', text: 'text-purple-800' },
-    'Atendido': { bg: 'bg-emerald-50', border: 'border-emerald-400', text: 'text-emerald-800' },
-    'Cancelado': { bg: 'bg-rose-50', border: 'border-rose-400', text: 'text-rose-800' },
-    'Faltou': { bg: 'bg-rose-50', border: 'border-rose-600', text: 'text-rose-800' },
-    'Desistiu': { bg: 'bg-slate-100', border: 'border-slate-400', text: 'text-slate-600' }
+    'Atendido': { bg: 'bg-emerald-500/20', border: 'border-emerald-400', text: 'text-emerald-800' },
+    'Cancelado': { bg: 'bg-rose-500/20', border: 'border-rose-400', text: 'text-rose-800' },
+    'Faltou': { bg: 'bg-rose-500/20', border: 'border-rose-600', text: 'text-rose-800' },
+    'Desistiu': { bg: 'bg-white/70', border: 'border-slate-400', text: 'text-slate-600' }
 };
 
 const DOCTOR_COLORS = [
-    { bg: 'bg-indigo-50/70', borderL: 'border-l-indigo-400', border: 'border-indigo-200/50', headerBg: 'bg-indigo-100/90', text: 'text-indigo-800', icon: 'text-indigo-600' },
-    { bg: 'bg-emerald-50/70', borderL: 'border-l-emerald-400', border: 'border-emerald-200/50', headerBg: 'bg-emerald-100/90', text: 'text-emerald-800', icon: 'text-emerald-600' },
-    { bg: 'bg-rose-50/70', borderL: 'border-l-rose-400', border: 'border-rose-200/50', headerBg: 'bg-rose-100/90', text: 'text-rose-800', icon: 'text-rose-600' },
-    { bg: 'bg-amber-50/70', borderL: 'border-l-amber-400', border: 'border-amber-200/50', headerBg: 'bg-amber-100/90', text: 'text-amber-800', icon: 'text-amber-600' },
+    { bg: 'bg-indigo-500/20/70', borderL: 'border-l-indigo-400', border: 'border-indigo-200/50', headerBg: 'bg-indigo-100/90', text: 'text-indigo-800', icon: 'text-indigo-600' },
+    { bg: 'bg-emerald-500/20/70', borderL: 'border-l-emerald-400', border: 'border-emerald-200/50', headerBg: 'bg-emerald-100/90', text: 'text-emerald-800', icon: 'text-emerald-600' },
+    { bg: 'bg-rose-500/20/70', borderL: 'border-l-rose-400', border: 'border-rose-200/50', headerBg: 'bg-rose-100/90', text: 'text-rose-800', icon: 'text-rose-600' },
+    { bg: 'bg-amber-500/20/70', borderL: 'border-l-amber-400', border: 'border-amber-200/50', headerBg: 'bg-amber-100/90', text: 'text-amber-800', icon: 'text-amber-600' },
     { bg: 'bg-fuchsia-50/70', borderL: 'border-l-fuchsia-400', border: 'border-fuchsia-200/50', headerBg: 'bg-fuchsia-100/90', text: 'text-fuchsia-800', icon: 'text-fuchsia-600' },
     { bg: 'bg-cyan-50/70', borderL: 'border-l-cyan-400', border: 'border-cyan-200/50', headerBg: 'bg-cyan-100/90', text: 'text-cyan-800', icon: 'text-cyan-600' },
     { bg: 'bg-orange-50/70', borderL: 'border-l-orange-400', border: 'border-orange-200/50', headerBg: 'bg-orange-100/90', text: 'text-orange-800', icon: 'text-orange-600' },
@@ -49,7 +50,7 @@ const getDoctorColorSet = (name) => {
 };
 
 // --- CONFIGURAÇÃO DA GRADE MATRIZ ---
-const ROW_HEIGHT = 160;
+const ROW_HEIGHT = 240;
 const PIXELS_PER_MINUTE = ROW_HEIGHT / 60;
 const DEFAULT_INTERVAL = 15;
 
@@ -62,7 +63,7 @@ const getDuration = (c, defaultInterval = 15) => {
 };
 
 const Agenda = () => {
-    const { unidadeAtual } = useUnit();
+    const { unidadeAtual, unidades } = useUnit();
     const [now, setNow] = useState(new Date());
     const scrollRef = useRef(null);
     const hasInitialScrolled = useRef(false);
@@ -102,20 +103,21 @@ const Agenda = () => {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
+                const { data: usersData } = await supabase.from('users').select('name').eq('role', 'Médico');
+                if (usersData) {
+                    const arrDocs = usersData
+                        .map(u => ({ 
+                            nome: u.name ? u.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim() : '', 
+                            especialidade: '' 
+                        }))
+                        .filter(u => u.nome)
+                        .sort((a, b) => a.nome.localeCompare(b.nome));
+                    setMedicosDisponiveis(arrDocs.map(c => c.nome));
+                    setMedicosObjetos(arrDocs);
+                }
+
                 const { data, error } = await supabase.from('settings').select('data').eq('id', 'general').maybeSingle();
                 if (data && data.data) {
-                    if (data.data.cirurgioes) {
-                        const arrDocs = data.data.cirurgioes.map(c => {
-                            if (typeof c === 'string') return { nome: c.toUpperCase().trim(), especialidade: '' };
-                            return {
-                                ...c,
-                                nome: c.nome ? c.nome.toUpperCase().trim() : '',
-                                especialidade: c.especialidade ? c.especialidade.toUpperCase().trim() : ''
-                            };
-                        });
-                        setMedicosDisponiveis(arrDocs.map(c => c.nome));
-                        setMedicosObjetos(arrDocs);
-                    }
                     if (data.data.cidades) setCidadesDisponiveis(data.data.cidades.map(c => {
                         const name = typeof c === 'string' ? c : (c.nome || c.cidade || c);
                         return typeof name === 'string' ? name.toUpperCase().trim() : name;
@@ -143,14 +145,12 @@ const Agenda = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [detalhesConsulta, setDetalhesConsulta] = useState(null);
 
-    // ACTION MENU & GRADE BLOCKS
     const [actionMenu, setActionMenu] = useState(null);
     const [quickPatient, setQuickPatient] = useState(null);
     const [reschedulingMode, setReschedulingMode] = useState(null);
     const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
-    const [gradeForm, setGradeForm] = useState({ tipo: 'Grade', data: '', inicio: '', fim: '', medico: '', observacoes: '', replicar: false });
+    const [gradeForm, setGradeForm] = useState({ tipo: 'Grade', data: '', inicio: '', fim: '', medico: '', unidade: unidadeAtual || '', observacoes: '', replicar: false, titulo: '' });
 
-    // Formulário
     const [saving, setSaving] = useState(false);
     const [buscaPaciente, setBuscaPaciente] = useState('');
     const [resultadosPacientes, setResultadosPacientes] = useState([]);
@@ -168,6 +168,7 @@ const Agenda = () => {
         paciente_telefone: '',
         paciente_nascimento: '',
         medico: '',
+        unidade: unidadeAtual || '',
         especialidade: 'Consulta',
         tipo_atendimento: 'Consulta',
         convenio: 'SUS',
@@ -210,12 +211,6 @@ const Agenda = () => {
     };
 
     const fetchConsultas = async () => {
-        if (!unidadeAtual) {
-            setConsultas([]);
-            setLoadingData(false);
-            return;
-        }
-
         setLoadingData(true);
         try {
             const startDate = paramDateStr(weekDays[0]);
@@ -224,7 +219,6 @@ const Agenda = () => {
             const { data, error } = await supabase
                 .from('consultas')
                 .select('*')
-                .eq('unidade', unidadeAtual)
                 .gte('data_agendamento', startDate)
                 .lte('data_agendamento', endDate);
 
@@ -251,7 +245,7 @@ const Agenda = () => {
         }
     };
 
-    useEffect(() => { fetchConsultas(); }, [referenceDate, unidadeAtual]);
+    useEffect(() => { fetchConsultas(); }, [referenceDate]);
 
     useEffect(() => {
         if (!loadingData && scrollRef.current && !hasInitialScrolled.current) {
@@ -301,6 +295,7 @@ const Agenda = () => {
             };
             const { data, error } = await supabase.from('pacientes').insert([payload]).select();
             if (error) throw error;
+            await logAction('CRIAÇÃO DE PACIENTE', `Novo paciente cadastrado pela Agenda: ${payload.nome} (${payload.cpf || 'Sem CPF'}).`);
             if (data && data[0]) {
                 toast.success("Paciente cadastrado com sucesso!");
                 selecionarPaciente(data[0]);
@@ -363,17 +358,17 @@ const Agenda = () => {
             if (formData.id) {
                 const { error } = await supabase.from('consultas').update(payload).eq('id', formData.id);
                 rError = error;
+                if (!error) await logAction('EDIÇÃO DE AGENDAMENTO', `Agendamento editado para ${payload.paciente_nome || 'Desconhecido'}.`);
             } else {
                 payload.status = 'Agendado';
-                payload.unidade = unidadeAtual;
                 const { error } = await supabase.from('consultas').insert([payload]);
                 rError = error;
+                if (!error) await logAction('CRIAÇÃO DE AGENDAMENTO', `Novo agendamento para ${payload.paciente_nome || 'Desconhecido'} no dia ${payload.data_agendamento}.`);
             }
 
             if (rError) throw rError;
             toast.success(formData.id ? "Agendamento atualizado com sucesso!" : "Agendamento criado!");
             setSelectedFile(null);
-            setIsModalOpen(true);
             setIsModalOpen(false);
             fetchConsultas();
         } catch (error) {
@@ -391,6 +386,7 @@ const Agenda = () => {
 
             const { error } = await supabase.from('consultas').update(payload).eq('id', id);
             if (error) throw error;
+            await logAction('ATUALIZAÇÃO DE STATUS', `Status/Confirmação de agendamento alterado para ${novoStatus || (confirmacao ? 'Confirmado' : 'Não Confirmado')}.`);
             toast.success(novoStatus ? `Status alterado!` : (confirmacao ? "Presença confirmada!" : "Confirmação removida."));
             fetchConsultas();
             setDetalhesConsulta(null);
@@ -403,6 +399,7 @@ const Agenda = () => {
         try {
             const { error } = await supabase.from('consultas').update({ data_agendamento: formData.data_agendamento, horario: formData.horario }).eq('id', consultaToReagendar.id);
             if (error) throw error;
+            await logAction('REAGENDAMENTO', `Consulta reagendada para ${formData.data_agendamento} às ${formData.horario}.`);
             toast.success("Reagendado!");
             setIsReagendarModalOpen(false);
             setDetalhesConsulta(null);
@@ -417,6 +414,7 @@ const Agenda = () => {
         try {
             const { error } = await supabase.from('consultas').update({ data_agendamento: novaData, horario: novoHorario }).eq('id', id);
             if (error) throw error;
+            await logAction('REAGENDAMENTO VISUAL', `Consulta arrastada para ${novaData} às ${novoHorario}.`);
             toast.success("Paciente reagendado com sucesso!", { id: loadToast });
             setReschedulingMode(null);
             fetchConsultas();
@@ -469,7 +467,6 @@ const Agenda = () => {
             targetMap[dStr].push({ ...c, rawTime: hString, top, height });
         });
 
-        // Anti-Overlap Ajuste Vertical para Agendamentos
         Object.keys(mapa.agendamentos).forEach(dStr => {
             let dayAps = mapa.agendamentos[dStr];
             dayAps.sort((a, b) => a.top - b.top);
@@ -505,7 +502,6 @@ const Agenda = () => {
         const mm = snappedMinutes % 60;
         const hrObj = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 
-        // Descobrir dinamicamente se clicou dentro de uma Grade
         let foundMedico = '';
         const gradesDoDia = mapConsultas.grades[dataStr] || [];
         for (const g of gradesDoDia) {
@@ -519,7 +515,6 @@ const Agenda = () => {
             }
         }
 
-        // Descobrir se caiu em Bloqueio
         let isBlocked = false;
         const bloqueiosDoDia = mapConsultas.bloqueios[dataStr] || [];
         for (const b of bloqueiosDoDia) {
@@ -560,6 +555,7 @@ const Agenda = () => {
             inicio: menuData.horario,
             fim: addMins(menuData.horario, tipo === 'SubReserva' ? 60 : 120),
             medico: menuData.preMedico || '',
+            unidade: unidadeAtual || '',
             titulo: '',
             observacoes: '',
             replicar: false
@@ -567,7 +563,7 @@ const Agenda = () => {
         setIsGradeModalOpen(true);
     };
 
-    const handleSaveGradeBlock = async (e) => {
+    const handleSaveGrade = async (e) => {
         e.preventDefault();
         const [h1, m1] = gradeForm.inicio.split(':').map(Number);
         const [h2, m2] = gradeForm.fim.split(':').map(Number);
@@ -599,7 +595,7 @@ const Agenda = () => {
                 horario: gradeForm.inicio,
                 status: gradeForm.tipo,
                 observacoes: obsEspecial,
-                unidade: unidadeAtual
+                unidade: gradeForm.unidade
             };
 
             const payloads = [];
@@ -618,6 +614,7 @@ const Agenda = () => {
 
             const { error } = await supabase.from('consultas').insert(payloads);
             if (error) throw error;
+            await logAction('CRIAÇÃO DE GRADE', `Criado bloco de ${gradeForm.tipo} para ${gradeForm.medico || 'N/A'}.`);
             toast.success(`${gradeForm.tipo} inserido com sucesso!`);
             setIsGradeModalOpen(false);
             fetchConsultas();
@@ -646,27 +643,24 @@ const Agenda = () => {
     };
 
     const hojePuro = paramDateStr(now);
-    const inputStyle = "w-full h-9 px-3 bg-white border border-slate-300 rounded text-xs outline-none focus:border-blue-500 text-slate-800";
+    const inputStyle = "w-full h-9 px-3 bg-white/60 border border-white/80 rounded text-xs outline-none focus:border-blue-500 text-slate-900 drop-shadow-none";
     const labelStyle = "text-[11px] font-semibold text-slate-500 uppercase ml-1 block mb-1";
 
-    if (!unidadeAtual) return <UnitPrompt />;
-
     return (
-        <div className="flex flex-col h-full bg-slate-50 font-sans" onClick={() => actionMenu && setActionMenu(null)}>
+        <div className="flex flex-col h-full bg-white/60 font-sans" onClick={() => actionMenu && setActionMenu(null)}>
 
-            {/* MINI HEADER */}
-            <div className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0 z-50">
+            <div className="h-14 bg-white/60 border-b border-white/60 flex items-center justify-between px-4 shrink-0 z-50">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-600 text-white rounded shadow-sm"><CalendarDays size={16} /></div>
-                    <h1 className="text-sm font-black text-slate-800 uppercase tracking-tight">Grade Semanal</h1>
+                    <h1 className="text-sm font-black text-slate-900 drop-shadow-none uppercase tracking-wider">Agenda de Consultas</h1>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <div className="relative w-48 hidden md:block">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                        <input type="text" placeholder="Buscar Paciente..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-8 pl-8 pr-3 bg-slate-100 border-none rounded text-xs outline-none focus:ring-1 focus:ring-blue-500 transition-all font-medium" />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+                        <input type="text" placeholder="Buscar Paciente..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-8 pl-8 pr-3 bg-white/70 border-none rounded text-xs outline-none focus:ring-1 focus:ring-blue-500 transition-all font-medium" />
                     </div>
-                    <button onClick={() => setIsConfigModalOpen(true)} className="h-8 px-3 bg-slate-50 border border-slate-200 text-slate-600 hover:text-blue-600 rounded text-[11px] font-bold uppercase transition-all flex items-center gap-1.5 shadow-sm" title="Personalizar visualização da grade neste dispositivo">
+                    <button onClick={() => setIsConfigModalOpen(true)} className="h-8 px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl text-slate-600 hover:text-blue-600 rounded text-[11px] font-bold uppercase transition-all flex items-center gap-1.5 shadow-sm" title="Personalizar visualização da grade neste dispositivo">
                         <Settings size={14} /> Ajustar Grade
                     </button>
                     <button onClick={() => abrirNovoAgendamento(hojePuro, '08:00', '')} className="h-8 px-3 bg-blue-600 text-white rounded text-[11px] font-bold uppercase shadow-sm hover:bg-blue-700 transition-all flex items-center gap-1.5">
@@ -675,15 +669,14 @@ const Agenda = () => {
                 </div>
             </div>
 
-            {/* CONTROLES DA SEMANA */}
-            <div className="h-10 bg-slate-50 border-b border-slate-200 flex items-center justify-between px-4 shrink-0 z-40">
+            <div className="h-10 bg-white/60 border-b border-white/60 flex items-center justify-between px-4 shrink-0 z-40">
                 <div className="flex items-center gap-2">
-                    <button onClick={prevWeek} className="p-1 hover:bg-slate-200 text-slate-600 rounded"><ChevronLeft size={16} /></button>
+                    <button onClick={prevWeek} className="p-1 hover:bg-white/80 text-slate-600 rounded"><ChevronLeft size={16} /></button>
                     <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide px-2 min-w-[140px] text-center">
                         {weekDays[0].getDate()}/{weekDays[0].getMonth() + 1} - {weekDays[4].getDate()}/{weekDays[4].getMonth() + 1}
                     </div>
-                    <button onClick={nextWeek} className="p-1 hover:bg-slate-200 text-slate-600 rounded"><ChevronRight size={16} /></button>
-                    <button onClick={() => setReferenceDate(new Date(new Date().setHours(12, 0, 0, 0)))} className="ml-2 px-3 py-1 bg-white border border-slate-300 text-[11px] font-bold text-slate-600 uppercase rounded hover:bg-slate-100 hover:text-slate-800 transition shadow-sm">Hoje</button>
+                    <button onClick={nextWeek} className="p-1 hover:bg-white/80 text-slate-600 rounded"><ChevronRight size={16} /></button>
+                    <button onClick={() => setReferenceDate(new Date(new Date().setHours(12, 0, 0, 0)))} className="ml-2 px-3 py-1 bg-white/60 border border-white/80 text-[11px] font-bold text-slate-600 uppercase rounded hover:bg-white/70 hover:text-slate-900 drop-shadow-none transition shadow-sm">Hoje</button>
                 </div>
                 <div className="flex items-center gap-4 text-[10px] font-semibold text-slate-500 uppercase tracking-widest hidden sm:flex">
                     <span className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-400 border border-blue-600"></div> Agendado</span>
@@ -694,18 +687,16 @@ const Agenda = () => {
                 </div>
             </div>
 
-            {/* MAIN CALENDAR GRID - ABSOLUTE POSITIONING (CENTRO CIRURGICO STYLE) */}
-            <div className="flex-1 overflow-auto bg-slate-100 relative" ref={scrollRef}>
-                <div className="min-w-[900px] flex flex-col relative pb-20">
+            <div className="flex-1 overflow-auto bg-white/70 relative" ref={scrollRef}>
+                <div className="min-w-[1100px] flex flex-col relative pb-20">
 
-                    {/* CABEÇALHO */}
-                    <div className="flex sticky top-0 z-50 bg-white border-b border-slate-300 shadow-sm">
-                        <div className="w-16 shrink-0 border-r border-slate-200 bg-slate-50"></div>
+                    <div className="flex sticky top-0 z-50 bg-white/60 border-b border-white/80 shadow-sm">
+                        <div className="w-16 shrink-0 border-r border-white/60 bg-white/60"></div>
                         {weekDays.map((dayObj, i) => {
                             const isToday = paramDateStr(dayObj) === hojePuro;
                             return (
-                                <div key={i} className={`flex-1 min-w-0 border-r border-slate-200 h-10 flex flex-col items-center justify-center relative ${isToday ? 'bg-[#fffae6]' : 'bg-white'}`}>
-                                    <span className={`text-xs font-bold uppercase tracking-tight ${isToday ? 'text-blue-600' : 'text-slate-700'}`}>
+                                <div key={i} className={`flex-1 min-w-0 border-r border-white/60 h-10 flex flex-col items-center justify-center relative ${isToday ? 'bg-[#fffae6]' : 'bg-white/5'}`}>
+                                    <span className={`text-xs font-bold uppercase tracking-wider ${isToday ? 'text-blue-600' : 'text-slate-700'}`}>
                                         {DIAS_NOME[i]} {dayObj.getDate().toString().padStart(2, '0')}/{String(dayObj.getMonth() + 1).padStart(2, '0')}
                                     </span>
                                     {isToday && <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
@@ -714,16 +705,14 @@ const Agenda = () => {
                         })}
                     </div>
 
-                    {/* CORPO DA GRADE */}
-                    <div className="flex relative bg-white mt-10" style={{ height: `${(END_HOUR - START_HOUR + 1) * ROW_HEIGHT}px` }}>
+                    <div className="flex relative bg-white/60 mt-10" style={{ height: `${(END_HOUR - START_HOUR + 1) * ROW_HEIGHT}px` }}>
                         {loadingData && (
-                            <div className="absolute inset-0 z-50 bg-white/70 flex items-center justify-center">
+                            <div className="absolute inset-0 z-50 bg-white/60 flex items-center justify-center">
                                 <Loader2 size={30} className="animate-spin text-blue-500" />
                             </div>
                         )}
 
-                        {/* COLUNA HORÁRIOS (Y-AXIS) */}
-                        <div className="w-16 shrink-0 border-r border-slate-200 bg-slate-50 relative z-40">
+                        <div className="w-16 shrink-0 border-r border-white/60 bg-white/60 relative z-40">
                             {Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, idx) => {
                                 const h = START_HOUR + idx;
                                 const steps = 60 / gradeConfig.intervalo;
@@ -734,7 +723,7 @@ const Agenda = () => {
                                         {Array.from({ length: steps }).map((_, stepIdx) => {
                                             const min = stepIdx * gradeConfig.intervalo;
                                             return (
-                                                <div key={stepIdx} className="w-full flex justify-center items-start pt-1 text-[10px] font-semibold text-slate-400 border-r border-slate-100" style={{ height: `${stepPx}px` }}>
+                                                <div key={stepIdx} className="w-full flex justify-center items-start pt-1 text-[10px] font-semibold text-slate-500 border-r border-slate-200" style={{ height: `${stepPx}px` }}>
                                                     <div className={`${stepIdx === 0 ? 'text-[11px] font-bold text-slate-500' : 'opacity-60 text-[8.5px]'} px-1 leading-none uppercase`}>
                                                         {String(h).padStart(2, '0')}:{String(min).padStart(2, '0')}
                                                     </div>
@@ -746,7 +735,6 @@ const Agenda = () => {
                             })}
                         </div>
 
-                        {/* COLUNAS DOS DIAS (ABSOLUTE CONTAINERS) */}
                         {weekDays.map((dayObj, i) => {
                             const dataLocalStr = paramDateStr(dayObj);
                             const isToday = dataLocalStr === hojePuro;
@@ -754,25 +742,23 @@ const Agenda = () => {
                             return (
                                 <div
                                     key={dataLocalStr}
-                                    className={`flex-1 min-w-0 border-r border-slate-200 relative cursor-pointer ${isToday ? 'bg-[#fffae6]/30' : 'bg-white'}`}
+                                    className={`flex-1 min-w-0 border-r border-white/60 relative cursor-pointer ${isToday ? 'bg-[#fffae6]/30' : 'bg-white/5'}`}
                                     onClick={(e) => handleAreaClick(e, dataLocalStr)}
                                 >
-                                    {/* Linhas Horizontais (Grid Lines) */}
                                     <div className="absolute inset-0 z-0 pointer-events-none day-column">
                                         {Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, idx) => {
                                             const steps = 60 / gradeConfig.intervalo;
                                             const stepPx = ROW_HEIGHT / steps;
                                             return (
-                                                <div key={idx} className="w-full border-b border-slate-200 grid-line flex flex-col" style={{ height: `${ROW_HEIGHT}px` }}>
+                                                <div key={idx} className="w-full border-b border-slate-200/80 grid-line flex flex-col" style={{ height: `${ROW_HEIGHT}px` }}>
                                                     {Array.from({ length: steps }).map((_, stepIdx) => (
-                                                        <div key={stepIdx} className={`w-full ${stepIdx < steps - 1 ? 'border-b border-dotted border-slate-200/60' : ''}`} style={{ height: `${stepPx}px` }}></div>
+                                                        <div key={stepIdx} className={`w-full ${stepIdx < steps - 1 ? 'border-b border-dashed border-slate-200/60' : ''}`} style={{ height: `${stepPx}px` }}></div>
                                                     ))}
                                                 </div>
                                             );
                                         })}
                                     </div>
 
-                                    {/* 1. Blocos de Grade Médica */}
                                     {mapConsultas.grades[dataLocalStr]?.map(grade => {
                                         const color = getDoctorColorSet(grade.medico);
                                         return (
@@ -783,11 +769,11 @@ const Agenda = () => {
                                             >
                                                 <div className={`absolute left-[-4px] right-[-1px] pointer-events-auto flex flex-col shadow-sm border ${color.border} border-l-[4px] ${color.borderL} rounded-t-lg z-20`} style={{ transform: 'translateY(-100%)', top: '0px', backgroundColor: 'white' }}>
                                                     <div className={`${color.headerBg} px-2 py-0.5 flex justify-between items-center border-b ${color.border} rounded-t-lg backdrop-blur-sm`}>
-                                                        <div className={`text-[11px] font-black uppercase tracking-tight flex items-center gap-1.5 ${color.text}`}>
+                                                        <div className={`text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 ${color.text}`}>
                                                             <CalendarCheck size={10} className={color.icon} />
                                                             {grade.medico}
                                                         </div>
-                                                        <button onClick={(eb) => { eb.stopPropagation(); handleDeleteGrade(grade.id); }} className={`p-0.5 text-slate-400 hover:text-rose-500 rounded pointer-events-auto transition-colors focus:outline-none`} title="Apagar Bloco de Horário"><X size={12} /></button>
+                                                        <button onClick={(eb) => { eb.stopPropagation(); handleDeleteGrade(grade.id); }} className={`p-0.5 text-slate-500 hover:text-rose-500 rounded pointer-events-auto transition-colors focus:outline-none`} title="Apagar Bloco de Horário"><X size={12} /></button>
                                                     </div>
                                                     {grade.observacoes && grade.observacoes.replace(/\[DUR:\d+\]/, '').trim() && (
                                                         <div className={`px-2 py-1 text-[10px] font-bold uppercase flex-1 leading-tight ${color.text} opacity-80`}>
@@ -799,30 +785,28 @@ const Agenda = () => {
                                         )
                                     })}
 
-                                    {/* 2. Bloqueios Fixos */}
                                     {mapConsultas.bloqueios[dataLocalStr]?.map((bloq, idx) => (
                                         <div
                                             key={bloq.id}
-                                            className="absolute left-[2px] right-[2px] rounded border border-slate-300 border-dashed z-20 p-1.5 overflow-hidden flex flex-col items-center justify-center pointer-events-none"
+                                            className="absolute left-[2px] right-[2px] rounded border border-white/80 border-dashed z-20 p-1.5 overflow-hidden flex flex-col items-center justify-center pointer-events-none"
                                             style={{
                                                 top: `${bloq.top}px`,
                                                 height: `${bloq.height}px`,
                                                 backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,0,0,0.02), rgba(0,0,0,0.02) 10px, transparent 10px, transparent 20px)'
                                             }}
                                         >
-                                            <div className="text-[11px] font-black uppercase text-slate-500 flex items-center gap-1 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-200">
+                                            <div className="text-[11px] font-black uppercase text-slate-500 flex items-center gap-1 bg-white/60 px-2 py-0.5 rounded shadow-sm border border-white/60">
                                                 <AlertCircle size={10} /> BLOQUEADO
                                             </div>
                                             {bloq.observacoes && bloq.observacoes.replace(/\[DUR:\d+\]/, '').trim() && (
-                                                <div className="text-[10px] font-bold text-slate-500 mt-1 uppercase text-center bg-white px-1.5 py-0.5 rounded max-w-full truncate border border-slate-100">
+                                                <div className="text-[10px] font-bold text-slate-500 mt-1 uppercase text-center bg-white/60 px-1.5 py-0.5 rounded max-w-full truncate border border-white/40">
                                                     {bloq.observacoes.replace(/\[DUR:\d+\]/, '').trim()}
                                                 </div>
                                             )}
-                                            <button onClick={(eb) => { eb.stopPropagation(); handleDeleteGrade(bloq.id, true); }} className="absolute top-1 right-1 p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 pointer-events-auto bg-white rounded shadow-sm border border-slate-200 transition-colors z-50" title="Desfazer Bloqueio"><X size={12} strokeWidth={3} className="opacity-70" /></button>
+                                            <button onClick={(eb) => { eb.stopPropagation(); handleDeleteGrade(bloq.id, true); }} className="absolute top-1 right-1 p-1 text-slate-500 hover:text-red-500 hover:bg-red-50 pointer-events-auto bg-white/60 rounded shadow-sm border border-white/60 transition-colors z-50" title="Desfazer Bloqueio"><X size={12} strokeWidth={3} className="opacity-70" /></button>
                                         </div>
                                     ))}
 
-                                    {/* 2.5 Sub-Reservas */}
                                     {mapConsultas.subreservas[dataLocalStr]?.map((subr) => (
                                         <div
                                             key={subr.id}
@@ -840,49 +824,47 @@ const Agenda = () => {
                                                     {subr.observacoes.replace(/\[DUR:\d+\]/, '').trim()}
                                                 </div>
                                             )}
-                                            <button onClick={(eb) => { eb.stopPropagation(); handleDeleteGrade(subr.id, false, true); }} className="absolute top-1 right-1 p-1 text-slate-400 hover:text-cyan-600 hover:bg-cyan-100 pointer-events-auto bg-white rounded shadow-sm border border-cyan-200 transition-colors z-[60]" title="Excluir Sub-reserva"><X size={12} strokeWidth={3} className="opacity-70" /></button>
+                                            <button onClick={(eb) => { eb.stopPropagation(); handleDeleteGrade(subr.id, false, true); }} className="absolute top-1 right-1 p-1 text-slate-500 hover:text-cyan-600 hover:bg-cyan-100 pointer-events-auto bg-white/60 rounded shadow-sm border border-cyan-200 transition-colors z-[60]" title="Excluir Sub-reserva"><X size={12} strokeWidth={3} className="opacity-70" /></button>
                                         </div>
                                     ))}
 
-                                    {/* 3. Agendamentos */}
                                     {mapConsultas.agendamentos[dataLocalStr]?.map(agend => {
                                         const st = STATUS_COLORS[agend.status] || STATUS_COLORS['Agendado'];
                                         return (
                                             <div
                                                 key={agend.id}
                                                 onClick={(e) => { e.stopPropagation(); setQuickPatient({ x: e.clientX, y: e.clientY, agend }); }}
-                                                className={`absolute left-[6px] right-[6px] rounded shadow-sm border ${st.bg} border-slate-200 border-l-[3px] ${st.border} z-30 px-1.5 py-1 cursor-pointer hover:shadow-md transition-shadow hover:scale-[1.01] flex flex-col justify-start overflow-hidden`}
+                                                className={`absolute left-[6px] right-[6px] rounded shadow-sm border ${st.bg} border-white/60 border-l-[3px] ${st.border} z-30 px-1.5 py-1 cursor-pointer hover:shadow-md transition-shadow hover:scale-[1.01] flex flex-col justify-start overflow-hidden`}
                                                 style={{ top: `${agend.top}px`, height: `${agend.height}px` }}
                                             >
-                                                <div className="flex justify-between items-start">
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className={`text-[10px] font-bold leading-none flex items-center gap-1 mt-0.5 ${agend.status === 'Cancelado' || agend.status === 'Faltou' || agend.status === 'Desistiu' ? 'opacity-60 text-slate-700' : 'text-slate-800'}`}>
-                                                            <span className="bg-white/60 text-slate-600 px-1 py-[1px] rounded text-[9px] font-black tracking-tight shrink-0">{agend.rawTime}</span>
-                                                            <span className={`truncate flex-1 min-w-0 ${agend.status === 'Cancelado' || agend.status === 'Desistiu' ? 'line-through' : ''}`} title={agend.paciente_nome}>
-                                                                {agend.paciente_nome}
-                                                            </span>
-                                                            <span className="opacity-70 shrink-0 font-semibold tracking-tighter text-[9px]">({agend.paciente_telefone || 'S/ Fone'})</span>
+                                                <div className="flex flex-col flex-1 min-w-0">
+                                                    <div className={`text-[11px] font-bold leading-none flex items-center gap-1 mt-0.5 ${agend.status === 'Cancelado' || agend.status === 'Faltou' || agend.status === 'Desistiu' ? 'opacity-60 text-slate-700' : 'text-slate-900 drop-shadow-none'}`}>
+                                                        <span className="bg-white/70 text-slate-700 px-1 py-[1px] rounded text-[10px] font-black tracking-normal shrink-0 border border-white/40">{agend.rawTime}</span>
+                                                        <div className="flex gap-0.5 shrink-0 ml-0.5">
+                                                            {agend.confirmado && <ThumbsUp size={12} className="text-blue-500" title="Confirmado" />}
+                                                            {agend.status === 'Aguardando' && <UserCheck size={12} className="text-amber-500" title="Na Recepção" />}
+                                                            {agend.status === 'Atendido' && <CheckCircle2 size={12} className="text-emerald-500" title="Atendido" />}
+                                                            {agend.status === 'Faltou' && <UserX size={12} className="text-rose-600" title="Faltou" />}
+                                                            {agend.status === 'Desistiu' && <Ban size={12} className="text-slate-500" title="Desistiu" />}
+                                                            {agend.status === 'Cancelado' && <XCircle size={12} className="text-rose-500" title="Cancelado" />}
                                                         </div>
-                                                        {agend.height >= 30 && (
-                                                            <div className={`text-[9px] font-bold ${agend.status === 'Agendado' ? 'text-blue-600/80' : 'text-slate-500'} mt-[3px] truncate flex items-center gap-1 uppercase leading-tight tracking-tight`}>
-                                                                {agend.convenio} {agend.medico && `• ${agend.medico.split(' ')[0]}`}
-                                                            </div>
-                                                        )}
+                                                        <span className={`truncate flex-1 min-w-0 ml-0.5 ${agend.status === 'Cancelado' || agend.status === 'Desistiu' ? 'line-through' : ''}`} title={agend.paciente_nome}>
+                                                            {agend.paciente_nome}
+                                                        </span>
+                                                        <span className="opacity-70 shrink-0 font-semibold tracking-normal text-[10px] whitespace-nowrap">
+                                                            {agend.paciente_telefone || 'S/ Fone'}
+                                                        </span>
                                                     </div>
-                                                    <div className="flex gap-0.5 shrink-0 mt-0.5 ml-1 bg-white/50 rounded px-0.5 py-0.5">
-                                                        {agend.confirmado && <ThumbsUp size={10} className="text-blue-500" title="Confirmado" />}
-                                                        {agend.status === 'Aguardando' && <UserCheck size={10} className="text-amber-500" title="Na Recepção" />}
-                                                        {agend.status === 'Atendido' && <CheckCircle2 size={10} className="text-emerald-500" title="Atendido" />}
-                                                        {agend.status === 'Faltou' && <UserX size={10} className="text-rose-600" title="Faltou" />}
-                                                        {agend.status === 'Desistiu' && <Ban size={10} className="text-slate-500" title="Desistiu" />}
-                                                        {agend.status === 'Cancelado' && <XCircle size={10} className="text-rose-500" title="Cancelado" />}
-                                                    </div>
+                                                    {agend.height >= 25 && (
+                                                        <div className={`text-[10px] font-bold ${agend.status === 'Agendado' ? 'text-blue-600/90' : 'text-slate-600'} mt-[3px] truncate flex items-center gap-1 uppercase leading-tight tracking-normal`}>
+                                                            {agend.unidade || 'S/ UNIDADE'} {agend.medico && `• ${agend.medico.split(' ').slice(0, 2).join(' ')}`}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         )
                                     })}
 
-                                    {/* Linha Vermelha de Agora */}
                                     {isToday && getLinhaTempoPx() !== null && (
                                         <div className="absolute left-0 right-0 z-40 pointer-events-none" style={{ top: `${getLinhaTempoPx()}px` }}>
                                             <div className="h-[2px] w-full bg-red-500 relative">
@@ -897,53 +879,52 @@ const Agenda = () => {
                 </div>
             </div>
 
-            {/* ACTION MENU POPOVER */}
             {actionMenu && (
                 <>
                     <div className="fixed inset-0 z-[9998]" onClick={() => setActionMenu(null)}></div>
                     <div
-                        className="fixed z-[9999] bg-white rounded-lg shadow-xl border border-slate-200 w-56 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-100"
-                        style={{ top: Math.min(actionMenu.y, window.innerHeight - 180), left: Math.min(actionMenu.x, window.innerWidth - 224) }}
+                        className="fixed z-[9999] bg-white/60 rounded-lg shadow-xl border border-white/60 w-56 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+                        style={{ top: Math.min(actionMenu.y, window.innerHeight - 250), left: Math.min(actionMenu.x, window.innerWidth - 224) }}
                     >
-                        <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex justify-between items-start">
+                        <div className="bg-white/60 border-b border-white/60 px-3 py-2 flex justify-between items-start">
                             <div>
-                                <div className="text-[11px] font-black text-slate-400 uppercase tracking-tight">Data e Horário Referência</div>
+                                <div className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Data e Horário Referência</div>
                                 <div className="text-xs font-bold text-blue-900 mt-0.5">{actionMenu.dataStr.split('-').reverse().join('/')} às {actionMenu.horario}</div>
                                 {actionMenu.preMedico && <div className="text-[10px] font-bold text-blue-600 mt-0.5 uppercase bg-blue-100 px-1 inline-block rounded">Bloco: {actionMenu.preMedico}</div>}
                             </div>
-                            <button onClick={() => setActionMenu(null)} className="text-slate-400 hover:bg-slate-200 rounded p-0.5"><X size={14} /></button>
+                            <button onClick={() => setActionMenu(null)} className="text-slate-500 hover:bg-white/80 rounded p-0.5"><X size={14} /></button>
                         </div>
 
                         {!actionMenu.isBlocked ? (
                             <button
                                 onClick={() => { abrirNovoAgendamento(actionMenu.dataStr, actionMenu.horario, actionMenu.preMedico); setActionMenu(null); }}
-                                className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-700 text-left border-b border-slate-100 transition-colors"
+                                className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-blue-500/20 hover:text-blue-700 text-left border-b border-white/40 transition-colors"
                             >
                                 <UserPlus size={14} className="text-blue-500" /> Agendar Paciente
                             </button>
                         ) : (
-                            <div className="px-3 py-2.5 text-xs font-bold text-rose-400 bg-rose-50 flex items-center gap-2 border-b border-rose-100">
+                            <div className="px-3 py-2.5 text-xs font-bold text-rose-400 bg-rose-500/20 flex items-center gap-2 border-b border-rose-100">
                                 <AlertCircle size={14} className="text-rose-500" /> Horário Bloqueado
                             </div>
                         )}
 
                         <button
                             onClick={() => { abrirGradeFixaModal('Grade', actionMenu); setActionMenu(null); }}
-                            className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 text-left border-b border-slate-100 transition-colors"
+                            className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-emerald-500/20 hover:text-emerald-700 text-left border-b border-white/40 transition-colors"
                         >
                             <CalendarCheck size={14} /> Reservar Bloco Médico
                         </button>
 
                         <button
                             onClick={() => { abrirGradeFixaModal('SubReserva', actionMenu); setActionMenu(null); }}
-                            className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-cyan-50 hover:text-cyan-700 text-left border-b border-slate-100 transition-colors"
+                            className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-cyan-50 hover:text-cyan-700 text-left border-b border-white/40 transition-colors"
                         >
                             <CalendarClock size={14} className="text-cyan-500" /> Criar Sub-Reserva
                         </button>
 
                         <button
                             onClick={() => { abrirGradeFixaModal('Bloqueio', actionMenu); setActionMenu(null); }}
-                            className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-rose-50 hover:text-rose-700 text-left transition-colors"
+                            className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-rose-500/20 hover:text-rose-700 text-left transition-colors"
                         >
                             <AlertCircle size={14} /> Bloquear Horário
                         </button>
@@ -951,15 +932,14 @@ const Agenda = () => {
                 </>
             )}
 
-            {/* PATIENT QUICK ACTIONS POPOVER */}
             {quickPatient && (
                 <>
                     <div className="fixed inset-0 z-[9998]" onClick={() => setQuickPatient(null)}></div>
                     <div
-                        className="fixed z-[9999] bg-white rounded-lg shadow-xl border border-slate-200 w-56 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-100"
-                        style={{ top: Math.min(quickPatient.y, window.innerHeight - 200), left: Math.min(quickPatient.x, window.innerWidth - 224) }}
+                        className="fixed z-[9999] bg-white/60 rounded-lg shadow-xl border border-white/60 w-56 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+                        style={{ top: Math.min(quickPatient.y, window.innerHeight - 420), left: Math.min(quickPatient.x, window.innerWidth - 224) }}
                     >
-                        <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex justify-between items-start">
+                        <div className="bg-white/60 border-b border-white/60 px-3 py-2 flex justify-between items-start">
                             <div className="flex-1 min-w-0 pr-2">
                                 <div className="flex items-center gap-1.5">
                                     <div className={`text-[11px] font-black uppercase flex-1 truncate ${STATUS_COLORS[quickPatient.agend.status]?.text || 'text-slate-500'}`} title={quickPatient.agend.paciente_nome}>{quickPatient.agend.paciente_nome}</div>
@@ -975,6 +955,7 @@ const Agenda = () => {
                                             especialidade: quickPatient.agend.especialidade ? quickPatient.agend.especialidade.toUpperCase().trim() : '',
                                             tipo_atendimento: quickPatient.agend.tipo_atendimento,
                                             convenio: quickPatient.agend.convenio,
+                                            unidade: quickPatient.agend.unidade,
                                             data_agendamento: quickPatient.agend.data_agendamento,
                                             horario: quickPatient.agend.horario,
                                             observacoes: quickPatient.agend.observacoes,
@@ -984,21 +965,21 @@ const Agenda = () => {
                                         setSelectedFile(null);
                                         setIsModalOpen(true);
                                         setQuickPatient(null);
-                                    }} className="text-slate-400 hover:text-amber-500 shrink-0 transition-colors" title="Editar Agendamento"><Pencil size={10} strokeWidth={3} /></button>
-                                    <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Agendado', false); setQuickPatient(null); }} className="text-slate-400 shrink-0 hover:text-blue-600 transition-colors" title="Limpar todos os status (Voltar p/ Agendado)"><RefreshCw size={10} strokeWidth={3} /></button>
+                                    }} className="text-slate-500 hover:text-amber-500 shrink-0 transition-colors" title="Editar Agendamento"><Pencil size={10} strokeWidth={3} /></button>
+                                    <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Agendado', false); setQuickPatient(null); }} className="text-slate-500 shrink-0 hover:text-blue-600 transition-colors" title="Limpar todos os status (Voltar p/ Agendado)"><RefreshCw size={10} strokeWidth={3} /></button>
                                 </div>
-                                <div className="text-[10px] font-bold text-slate-400 mt-0.5 truncate" title={`${quickPatient.agend.paciente_cidade || 'Sem Cidade'} • ${quickPatient.agend.medico?.split(' ')[0]}`}>{quickPatient.agend.paciente_cidade || 'Sem Cidade'} • {quickPatient.agend.medico?.split(' ')[0]}</div>
+                                <div className="text-[10px] font-bold text-slate-500 mt-0.5 truncate" title={`${quickPatient.agend.paciente_cidade || 'Sem Cidade'} • ${quickPatient.agend.medico?.split(' ')[0]}`}>{quickPatient.agend.paciente_cidade || 'Sem Cidade'} • {quickPatient.agend.medico?.split(' ')[0]}</div>
                             </div>
-                            <button onClick={() => setQuickPatient(null)} className="text-slate-400 hover:bg-slate-200 rounded p-0.5 shrink-0"><X size={14} /></button>
+                            <button onClick={() => setQuickPatient(null)} className="text-slate-500 hover:bg-white/80 rounded p-0.5 shrink-0"><X size={14} /></button>
                         </div>
 
                         {!quickPatient.agend.confirmado ? (
-                            <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, null, true); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-700 text-left border-b border-slate-100 transition-colors">
+                            <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, null, true); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-blue-500/20 hover:text-blue-700 text-left border-b border-white/40 transition-colors">
                                 <ThumbsUp size={14} className="text-blue-500" /> Confirmar Presença
                             </button>
                         ) : (
-                            <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, null, false); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 text-left border-b border-slate-100 transition-colors">
-                                <ThumbsDown size={14} className="text-slate-400" /> Desfazer Confirmação
+                            <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, null, false); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-white/70 text-left border-b border-white/40 transition-colors">
+                                <ThumbsDown size={14} className="text-slate-500" /> Desfazer Confirmação
                             </button>
                         )}
 
@@ -1017,39 +998,38 @@ const Agenda = () => {
                                 }
                             }
 
-                            // Caso seja um agendamento avulso sem paciente base, altera status direto
                             handleUpdateStatus(agendId, 'Aguardando');
-                        }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-700 text-left border-b border-slate-100 transition-colors">
+                        }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-amber-500/20 hover:text-amber-700 text-left border-b border-white/40 transition-colors">
                             <UserCheck size={14} className="text-amber-500" /> Fazer Check-in (Recepção)
                         </button>
 
-                        <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Faltou'); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-rose-50 hover:text-rose-700 text-left border-b border-slate-100 transition-colors">
+                        <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Faltou'); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-rose-500/20 hover:text-rose-700 text-left border-b border-white/40 transition-colors">
                             <UserX size={14} className="text-rose-500" /> Marcar Faltou
                         </button>
 
-                        <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Desistiu'); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-600 text-left border-b border-slate-100 transition-colors">
+                        <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Desistiu'); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-white/70 hover:text-slate-600 text-left border-b border-white/40 transition-colors">
                             <Ban size={14} className="text-slate-500" /> Marcar Desistiu
                         </button>
 
-                        <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Em Atendimento'); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 text-left border-b border-slate-100 transition-colors">
+                        <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Em Atendimento'); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 text-left border-b border-white/40 transition-colors">
                             <Stethoscope size={14} className="text-purple-500" /> Chamar Consultório
                         </button>
 
-                        <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Atendido'); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 text-left border-b border-slate-100 transition-colors">
+                        <button onClick={() => { handleUpdateStatus(quickPatient.agend.id, 'Atendido'); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-emerald-500/20 hover:text-emerald-700 text-left border-b border-white/40 transition-colors">
                             <CheckCircle2 size={14} className="text-emerald-500" /> Finalizar Atendimento
                         </button>
 
-                        <button onClick={() => { setReschedulingMode(quickPatient.agend); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-700 text-left border-b border-slate-100 transition-colors">
+                        <button onClick={() => { setReschedulingMode(quickPatient.agend); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-amber-500/20 hover:text-amber-700 text-left border-b border-white/40 transition-colors">
                             <CalendarClock size={14} className="text-amber-500" /> Mover / Reagendar
                         </button>
 
                         {quickPatient.agend.link_anexo && quickPatient.agend.link_anexo.split(',').filter(l => l.trim()).map((link, idx, arr) => (
-                            <a key={idx} href={link.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 text-left border-b border-slate-100 transition-colors">
+                            <a key={idx} href={link.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-white/70 hover:text-slate-800 text-left border-b border-white/40 transition-colors">
                                 <Paperclip size={14} className="text-slate-500" /> Visualizar Anexo {arr.length > 1 ? idx + 1 : ''}
                             </a>
                         ))}
 
-                        <button onClick={() => { if (window.confirm('Excluir este agendamento definitivamente?')) handleDeleteAgendamento(quickPatient.agend.id); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 text-left transition-colors">
+                        <button onClick={() => { if (window.confirm('Excluir este agendamento definitivamente?')) handleDeleteAgendamento(quickPatient.agend.id); setQuickPatient(null); }} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-500/20 text-left transition-colors">
                             <XCircle size={14} /> Excluir Registro
                         </button>
                     </div>
@@ -1057,48 +1037,35 @@ const Agenda = () => {
             )}
 
             {reschedulingMode && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-5">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] bg-white/40 border border-slate-700 text-slate-800 px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-5">
                     <div className="flex items-center gap-2">
                         <CalendarClock size={18} className="text-amber-400" />
                         <span className="text-sm font-medium">Selecione o novo horário na Agenda para <strong className="text-amber-400 font-bold uppercase">{reschedulingMode.paciente_nome}</strong></span>
                     </div>
                     <div className="h-6 w-px bg-slate-700"></div>
-                    <button onClick={() => setReschedulingMode(null)} className="text-[11px] font-black text-slate-400 hover:text-white uppercase px-2 hover:bg-slate-800 rounded py-1 transition-colors">Cancelar</button>
+                    <button onClick={() => setReschedulingMode(null)} className="text-[11px] font-black text-slate-500 hover:text-slate-800 uppercase px-2 hover:bg-white/50 rounded py-1 transition-colors">Cancelar</button>
                 </div>
             )}
 
-            {/* MODAL GRADE/BLOQUEIO */}
             {isGradeModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/40 z-[9999] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
-                        <div className={`px-5 py-3 border-b flex justify-between items-center ${gradeForm.tipo === 'Grade' ? 'bg-emerald-50' : (gradeForm.tipo === 'SubReserva' ? 'bg-cyan-50' : 'bg-rose-50')}`}>
+                <div className="fixed inset-0 bg-white/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white/60 rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
+                        <div className={`px-5 py-3 border-b flex justify-between items-center ${gradeForm.tipo === 'Grade' ? 'bg-emerald-500/20' : (gradeForm.tipo === 'SubReserva' ? 'bg-cyan-50' : 'bg-rose-500/20')}`}>
                             <h3 className={`text-sm font-black uppercase flex items-center gap-1.5 ${gradeForm.tipo === 'Grade' ? 'text-emerald-800' : (gradeForm.tipo === 'SubReserva' ? 'text-cyan-800' : 'text-rose-800')}`}>
                                 {gradeForm.tipo === 'Grade' ? <CalendarCheck size={16} /> : (gradeForm.tipo === 'SubReserva' ? <CalendarClock size={16} /> : <AlertCircle size={16} />)}
                                 {gradeForm.tipo === 'Grade' ? 'Definir Bloco Médico' : (gradeForm.tipo === 'SubReserva' ? 'Criar Sub-Reserva' : 'Bloquear Agenda')}
                             </h3>
-                            <button onClick={() => setIsGradeModalOpen(false)} className="text-slate-400 hover:text-slate-700"><X size={16} /></button>
+                            <button type="button" onClick={() => setIsGradeModalOpen(false)} className="text-slate-400 hover:text-slate-700 transition"><X size={18} /></button>
                         </div>
-                        <form onSubmit={handleSaveGradeBlock} className="p-5 space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
+                        <form onSubmit={handleSaveGrade} className="p-5 flex flex-col gap-4">
+                            <div className="grid grid-cols-3 gap-4">
                                 <div><label className={labelStyle}>Data</label><input required type="date" value={gradeForm.data} onChange={e => setGradeForm({ ...gradeForm, data: e.target.value })} className={inputStyle} readOnly /></div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
                                 <div><label className={labelStyle}>Início (H)</label><input required type="time" value={gradeForm.inicio} onChange={e => setGradeForm({ ...gradeForm, inicio: e.target.value })} className={inputStyle} /></div>
                                 <div><label className={labelStyle}>Término (H)</label><input required type="time" value={gradeForm.fim} onChange={e => setGradeForm({ ...gradeForm, fim: e.target.value })} className={inputStyle} /></div>
                             </div>
-
                             {gradeForm.tipo === 'SubReserva' && (
-                                <div><label className={labelStyle}>Título da Sub-Reserva</label>
+                                <div><label className={labelStyle}>Título</label>
                                     <input required type="text" value={gradeForm.titulo} onChange={e => setGradeForm({ ...gradeForm, titulo: e.target.value })} className={inputStyle} placeholder="Ex: PREFEITURA DE BURI" />
-                                </div>
-                            )}
-
-                            {(gradeForm.tipo === 'Grade' || gradeForm.tipo === 'SubReserva') && (
-                                <div><label className={labelStyle}>Médico Responsável (Opcional p/ Sub)</label>
-                                    <select value={gradeForm.medico} onChange={e => setGradeForm({ ...gradeForm, medico: e.target.value })} className={inputStyle} required={gradeForm.tipo === 'Grade'}>
-                                        <option value="">Selecione o médico...</option>
-                                        {medicosDisponiveis.map(m => <option key={m} value={m}>{m}</option>)}
-                                    </select>
                                 </div>
                             )}
 
@@ -1111,12 +1078,12 @@ const Agenda = () => {
                                 ></textarea>
                             </div>
 
-                            <label className="flex items-center gap-2 cursor-pointer bg-slate-50 p-2 rounded border border-slate-200 mt-2 hover:bg-slate-100 transition-colors">
+                            <label className="flex items-center gap-2 cursor-pointer bg-white/60 p-2 rounded border border-white/60 mt-2 hover:bg-white/70 transition-colors">
                                 <input type="checkbox" checked={gradeForm.replicar} onChange={e => setGradeForm({ ...gradeForm, replicar: e.target.checked })} className="w-4 h-4 accent-blue-600 rounded" />
                                 <span className="text-xs font-bold text-slate-700">Replicar blocos para este mês</span>
                             </label>
 
-                            <button type="submit" disabled={saving} className={`w-full h-10 text-white font-bold text-xs uppercase rounded flex justify-center items-center gap-2 transition shadow-sm ${gradeForm.tipo === 'Grade' ? 'bg-emerald-600 hover:bg-emerald-700' : (gradeForm.tipo === 'SubReserva' ? 'bg-cyan-600 hover:bg-cyan-700' : 'bg-rose-600 hover:bg-rose-700')}`}>
+                            <button type="submit" disabled={saving} className={`w-full h-10 text-slate-800 font-bold text-xs uppercase rounded flex justify-center items-center gap-2 transition shadow-sm ${gradeForm.tipo === 'Grade' ? 'bg-emerald-600 hover:bg-emerald-700' : (gradeForm.tipo === 'SubReserva' ? 'bg-cyan-600 hover:bg-cyan-700' : 'bg-rose-600 hover:bg-rose-700')}`}>
                                 {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                                 {gradeForm.tipo === 'Grade' ? 'Salvar Bloco' : (gradeForm.tipo === 'SubReserva' ? 'Salvar Sub-Reserva' : 'Salvar Bloqueio')}
                             </button>
@@ -1127,14 +1094,14 @@ const Agenda = () => {
 
             {/* MODAL CONFIG */}
             {isConfigModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/40 z-[9999] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-                        <div className="px-5 py-3 border-b flex justify-between items-center bg-slate-50">
+                <div className="fixed inset-0 bg-white/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white/60 rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+                        <div className="px-5 py-3 border-b flex justify-between items-center bg-white/60">
                             <h3 className="text-sm font-bold uppercase text-slate-700"><Settings size={14} className="inline mr-1" /> Configuração da Tela</h3>
-                            <button onClick={() => setIsConfigModalOpen(false)} className="text-slate-400 hover:text-slate-700"><X size={16} /></button>
+                            <button onClick={() => setIsConfigModalOpen(false)} className="text-slate-500 hover:text-slate-700"><X size={16} /></button>
                         </div>
                         <form onSubmit={(e) => { e.preventDefault(); setIsConfigModalOpen(false); toast.success("Configuração Salva"); }} className="p-5 space-y-4">
-                            <div className="bg-amber-50 p-2 text-[11px] font-bold text-amber-800 border border-amber-200 rounded">
+                            <div className="bg-amber-500/20 p-2 text-[11px] font-bold text-amber-800 border border-amber-200 rounded">
                                 Estas configurações são salvas apenas neste dispositivo (PC atual) para permitir que diferentes recepções configurem a agenda como preferirem.
                             </div>
 
@@ -1158,28 +1125,28 @@ const Agenda = () => {
 
             {/* MODAL AGENDAMENTO */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/40 z-[9999] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-xl overflow-hidden">
-                        <div className="px-5 py-3 border-b border-slate-200 bg-blue-50/50 flex justify-between items-center">
+                <div className="fixed inset-0 bg-white/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white/60 rounded-lg shadow-xl w-full max-w-xl overflow-hidden">
+                        <div className="px-5 py-3 border-b border-white/60 bg-blue-500/20/50 flex justify-between items-center">
                             <h3 className="font-bold text-[13px] text-blue-900 uppercase">
                                 Inserir Agendamento • {formData.data_agendamento.split('-').reverse().join('/')} às {formData.horario}
                             </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700"><X size={16} /></button>
+                            <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-slate-700"><X size={16} /></button>
                         </div>
                         <form onSubmit={handleSaveAgendamento} className="p-5">
                             <div className="relative mb-4 z-50">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
                                 <input autoFocus required type="text" value={buscaPaciente || formData.paciente_nome} onChange={e => { setBuscaPaciente(cleanText(e.target.value)); setFormData({ ...formData, paciente_nome: cleanText(e.target.value), paciente_id: null }); }} className={`${inputStyle} pl-8 shadow-sm`} placeholder="BUSCAR OU NOME DO PACIENTE" />
                                 {!formData.paciente_id && buscaPaciente.length >= 3 && (
-                                    <div className="absolute w-full mt-1 bg-white border rounded shadow-lg max-h-40 overflow-auto">
-                                        {resultadosPacientes.map(p => <div key={p.id} onClick={() => selecionarPaciente(p)} className="p-2 border-b text-xs hover:bg-blue-50 cursor-pointer uppercase font-semibold">{p.nome} <span className="text-[10px] text-slate-400 ml-2">{p.cpf}</span></div>)}
+                                    <div className="absolute w-full mt-1 bg-white/60 border rounded shadow-lg max-h-40 overflow-auto">
+                                        {resultadosPacientes.map(p => <div key={p.id} onClick={() => selecionarPaciente(p)} className="p-2 border-b text-xs hover:bg-blue-500/20 cursor-pointer uppercase font-semibold">{p.nome} <span className="text-[10px] text-slate-500 ml-2">{p.cpf}</span></div>)}
                                         {resultadosPacientes.length === 0 && !buscandoPacientes && (
                                             <div
                                                 onClick={() => {
                                                     setNovoPacienteForm({ ...novoPacienteForm, nome: buscaPaciente });
                                                     setIsNovoPacienteModalOpen(true);
                                                 }}
-                                                className="p-3 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 cursor-pointer text-center"
+                                                className="p-3 text-xs font-bold text-blue-600 bg-blue-500/20 hover:bg-blue-100 cursor-pointer text-center"
                                             >
                                                 + "{buscaPaciente}" não encontrado. Clique para cadastrar.
                                             </div>
@@ -1194,7 +1161,7 @@ const Agenda = () => {
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 mb-4 relative z-10">
-                                <div><label className={labelStyle}>Médico (Vincular)</label>
+                                <div><label className={labelStyle}>Médico</label>
                                     <select required value={formData.medico} onChange={e => {
                                         const docName = e.target.value;
                                         const docObj = medicosObjetos.find(d => typeof d === 'object' && d.nome === docName);
@@ -1204,10 +1171,10 @@ const Agenda = () => {
                                         <option value="">Selecione...</option>{medicosDisponiveis.map(m => <option key={m} value={m}>{m}</option>)}
                                     </select>
                                 </div>
-                                <div><label className={labelStyle}>Especialidade</label>
-                                    <select value={formData.especialidade} onChange={e => setFormData({ ...formData, especialidade: e.target.value })} className={inputStyle}>
+                                <div><label className={labelStyle}>Local</label>
+                                    <select value={formData.unidade} onChange={e => setFormData({ ...formData, unidade: e.target.value })} className={inputStyle} required>
                                         <option value="">Selecione...</option>
-                                        {especialidadesDisponiveis.map(e => <option key={e} value={e}>{e}</option>)}
+                                        {unidades.map(u => <option key={u} value={u}>{u}</option>)}
                                     </select>
                                 </div>
                                 <div><label className={labelStyle}>Tipo</label>
@@ -1224,7 +1191,7 @@ const Agenda = () => {
                             </div>
                             <div className="mb-4">
                                 <label className={labelStyle}>Anexar Arquivo do Computador (PDF, Imagens)</label>
-                                <input type="file" onChange={(e) => setSelectedFile(e.target.files[0])} className={`${inputStyle} file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 p-[3px]`} />
+                                <input type="file" onChange={(e) => setSelectedFile(e.target.files[0])} className={`${inputStyle} file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-500/20 file:text-blue-700 hover:file:bg-blue-100 p-[3px]`} />
                                 {formData.link_anexo && !selectedFile && (
                                     <div className="text-[11px] text-emerald-600 mt-1 font-bold">✓ Já possui anexo(s) salvo(s) (você pode carregar mais arquivos para esse agendamento).</div>
                                 )}
@@ -1233,7 +1200,7 @@ const Agenda = () => {
 
 
                             <div className="flex justify-end gap-2 pt-2">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 h-8 bg-slate-100 text-slate-600 font-bold text-xs rounded hover:bg-slate-200">Canc</button>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 h-8 bg-white/70 text-slate-600 font-bold text-xs rounded hover:bg-white/80">Canc</button>
                                 <button type="submit" disabled={saving} className="px-6 h-8 bg-blue-600 text-white font-bold text-xs rounded hover:bg-blue-700 flex items-center gap-2">{saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} {saving ? (selectedFile ? "Enviando Arquivo..." : "Salvando...") : "Salvar"}</button>
                             </div>
                         </form>
@@ -1245,9 +1212,9 @@ const Agenda = () => {
 
             {/* MODAL REAGENDAR */}
             {isReagendarModalOpen && consultaToReagendar && (
-                <div className="fixed inset-0 bg-slate-900/40 z-[9999] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-sm">
-                        <div className="bg-blue-600 p-3 flex justify-between rounded-t-lg"><h3 className="text-white text-xs font-bold uppercase">Reagendar</h3><button onClick={() => setIsReagendarModalOpen(false)} className="text-white"><X size={16} /></button></div>
+                <div className="fixed inset-0 bg-white/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white/60 rounded-lg shadow-xl w-full max-w-sm">
+                        <div className="bg-blue-600 p-3 flex justify-between rounded-t-lg"><h3 className="text-slate-800 text-xs font-bold uppercase">Reagendar</h3><button onClick={() => setIsReagendarModalOpen(false)} className="text-slate-800"><X size={16} /></button></div>
                         <form onSubmit={handleReagendar} className="p-4 space-y-3">
                             <div className="mb-2"><div className="text-[11px] text-slate-500 font-bold uppercase">Paciente</div><div className="text-xs font-bold">{consultaToReagendar.paciente_nome}</div></div>
                             <div><label className={labelStyle}>Data</label><input required type="date" value={formData.data_agendamento} onChange={e => setFormData({ ...formData, data_agendamento: e.target.value })} className={inputStyle} /></div>
@@ -1261,10 +1228,10 @@ const Agenda = () => {
             {/* MODAL CADASTRO RÁPIDO NOVO PACIENTE */}
             {isNovoPacienteModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/60 z-[10000] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="p-4 border-b flex justify-between items-center bg-blue-50/50">
+                    <div className="bg-white/60 rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-4 border-b flex justify-between items-center bg-blue-500/20/50">
                             <h3 className="text-sm font-bold text-blue-900 uppercase">Novo Paciente (Rápido)</h3>
-                            <button onClick={() => setIsNovoPacienteModalOpen(false)} className="text-slate-400 hover:text-slate-700"><X size={16} /></button>
+                            <button onClick={() => setIsNovoPacienteModalOpen(false)} className="text-slate-500 hover:text-slate-700"><X size={16} /></button>
                         </div>
                         <form onSubmit={handleSaveNovoPaciente} className="p-4 space-y-3">
                             <div><label className={labelStyle}>Nome Completo *</label>
@@ -1289,7 +1256,7 @@ const Agenda = () => {
                                     </select>
                                 </div>
                             </div>
-                            <button type="submit" disabled={novoPacienteSaving} className="w-full mt-2 h-9 flex justify-center items-center gap-2 bg-emerald-600 text-white font-bold text-xs uppercase rounded hover:bg-emerald-700 transition">
+                            <button type="submit" disabled={novoPacienteSaving} className="w-full mt-2 h-9 flex justify-center items-center gap-2 bg-emerald-600 text-slate-800 font-bold text-xs uppercase rounded hover:bg-emerald-700 transition">
                                 {novoPacienteSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Salvar e Usar
                             </button>
                         </form>

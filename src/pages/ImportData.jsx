@@ -233,23 +233,23 @@ const ImportData = () => {
     };
 
     return (
-        <div className="min-h-full bg-slate-50/50 p-6 md:p-12 font-sans animate-in fade-in duration-500">
+        <div className="min-h-full bg-white/60 p-6 md:p-12 font-sans animate-in fade-in duration-500">
             <div className="max-w-4xl mx-auto">
 
                 {/* Header Navigation */}
                 <div className="flex items-center gap-4 mb-8">
                     <button
                         onClick={() => navigate('/settings')}
-                        className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500"
+                        className="p-2 hover:bg-white/80 rounded-full transition-colors text-slate-500"
                     >
                         <ArrowLeft size={24} />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter flex items-center gap-2">
+                        <h1 className="text-2xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                             <UploadCloud size={28} className="text-blue-600" />
                             Importar Dados
                         </h1>
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-wide">
+                        <p className="text-sm font-bold text-slate-500 uppercase tracking-wide">
                             Carregue pacientes e cirurgias via CSV (Excel/Sheets)
                         </p>
                     </div>
@@ -264,7 +264,7 @@ const ImportData = () => {
                             onClick={triggerFileInput}
                             onDragOver={handleDragOver}
                             onDrop={handleDrop}
-                            className="bg-white rounded-3xl shadow-sm border-2 border-dashed border-slate-300 p-16 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer group relative select-none"
+                            className="bg-white/60 rounded-3xl shadow-sm border-2 border-dashed border-white/80 p-16 text-center hover:border-blue-400 hover:bg-blue-500/20/30 transition-all cursor-pointer group relative select-none"
                         >
                             <input
                                 ref={fileInputRef}
@@ -275,18 +275,18 @@ const ImportData = () => {
                             />
 
                             <div className="flex flex-col items-center gap-6 group-hover:scale-105 transition-transform duration-300">
-                                <div className="p-6 bg-blue-50 text-blue-600 rounded-full shadow-inner ring-4 ring-white">
+                                <div className="p-6 bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none rounded-full shadow-inner ring-4 ring-white">
                                     <FileText size={48} />
                                 </div>
                                 <div className="space-y-2">
-                                    <h3 className="text-xl font-black text-slate-700 uppercase tracking-tight">
+                                    <h3 className="text-xl font-black text-slate-700 uppercase tracking-wider">
                                         Clique para selecionar o CSV
                                     </h3>
-                                    <p className="text-sm text-slate-400 font-medium">
+                                    <p className="text-sm text-slate-500 font-medium">
                                         ou arraste o arquivo para esta área
                                     </p>
                                 </div>
-                                <div className="bg-slate-100 px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wide border border-slate-200">
+                                <div className="bg-white/70 px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wide border border-white/60">
                                     <HelpCircle size={14} className="text-blue-500" />
                                     Colunas esperadas: Nome, Procedimento, CNS, Nascimento, Link
                                 </div>
@@ -296,21 +296,21 @@ const ImportData = () => {
 
                     {/* LOADING STATE */}
                     {(loading || importing) && (
-                        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-16 text-center flex flex-col items-center justify-center gap-6">
+                        <div className="bg-white/60 rounded-3xl shadow-sm border border-white/40 p-16 text-center flex flex-col items-center justify-center gap-6">
                             <div className="relative">
-                                <div className="w-20 h-20 border-4 border-slate-100 rounded-full"></div>
+                                <div className="w-20 h-20 border-4 border-white/40 rounded-full"></div>
                                 <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-slate-800 uppercase animate-pulse">
+                                <h3 className="text-xl font-black text-slate-900 drop-shadow-none uppercase animate-pulse">
                                     {importing ? `Importando... ${progress}/${total}` : 'Processando Arquivo...'}
                                 </h3>
-                                <p className="text-slate-400 font-bold text-xs uppercase mt-2 tracking-widest">
+                                <p className="text-slate-500 font-bold text-xs uppercase mt-2 tracking-widest">
                                     Isso pode levar alguns segundos
                                 </p>
                             </div>
                             {importing && (
-                                <div className="w-64 h-3 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="w-64 h-3 bg-white/70 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-blue-600 transition-all duration-300 ease-out"
                                         style={{ width: `${(progress / total) * 100}%` }}
@@ -322,15 +322,15 @@ const ImportData = () => {
 
                     {/* PREVIEW TABLE */}
                     {allData.length > 0 && !importing && (
-                        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+                        <div className="bg-white/60 rounded-3xl shadow-xl shadow-slate-200/50 border border-white/40 overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
                             {/* Card Header */}
-                            <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
+                            <div className="p-6 border-b border-white/40 flex flex-col md:flex-row justify-between items-center gap-4 bg-white/60">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-emerald-100 text-emerald-600 rounded-2xl shadow-sm">
+                                    <div className="p-3 bg-emerald-100 text-emerald-600 rounded-2xl shadow-sm backdrop-blur-md">
                                         <CheckCircle size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-slate-800 uppercase text-lg leading-tight">Sucesso na Leitura!</h3>
+                                        <h3 className="font-black text-slate-900 drop-shadow-none uppercase text-lg leading-tight">Sucesso na Leitura!</h3>
                                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
                                             {allData.length} registros prontos para importar
                                         </p>
@@ -339,7 +339,7 @@ const ImportData = () => {
                                 <div className="flex gap-3 w-full md:w-auto">
                                     <button
                                         onClick={() => { setFile(null); setAllData([]); setPreviewData([]); }}
-                                        className="flex-1 md:flex-none px-6 py-3 text-xs font-black uppercase text-rose-500 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100"
+                                        className="flex-1 md:flex-none px-6 py-3 text-xs font-black uppercase text-rose-500 hover:bg-rose-500/20 rounded-xl transition-colors border border-transparent hover:border-rose-100"
                                     >
                                         Cancelar
                                     </button>
@@ -355,7 +355,7 @@ const ImportData = () => {
                             {/* Table */}
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-sm">
-                                    <thead className="bg-slate-50 text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                                    <thead className="bg-white/60 text-[11px] font-black uppercase text-slate-500 tracking-wider">
                                         <tr>
                                             <th className="px-6 py-4">Paciente / CNS</th>
                                             <th className="px-6 py-4">Nascimento</th>
@@ -365,10 +365,10 @@ const ImportData = () => {
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {previewData.map((row, index) => (
-                                            <tr key={index} className="hover:bg-blue-50/30 transition-colors group">
+                                            <tr key={index} className="hover:bg-blue-500/20/30 transition-colors group">
                                                 <td className="px-6 py-4 align-top">
                                                     <div className="font-bold text-slate-700 group-hover:text-blue-700 transition-colors uppercase text-xs">{row.nomePaciente}</div>
-                                                    <div className="text-[11px] text-slate-400 font-bold mt-1 bg-slate-100 px-1.5 py-0.5 rounded inline-block">CNS: {row.cns || '---'}</div>
+                                                    <div className="text-[11px] text-slate-500 font-bold mt-1 bg-white/70 px-1.5 py-0.5 rounded inline-block">CNS: {row.cns || '---'}</div>
                                                 </td>
                                                 <td className="px-6 py-4 font-bold text-slate-500 text-xs">
                                                     {row.nascimento || '---'}
@@ -378,11 +378,11 @@ const ImportData = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     {row.arquivoUrl ? (
-                                                        <div className="flex items-center gap-2 text-emerald-600 font-black text-[11px] uppercase bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 w-fit">
+                                                        <div className="flex items-center gap-2 text-emerald-600 font-black text-[11px] uppercase bg-emerald-500/20 px-2 py-1 rounded-lg border border-emerald-100 w-fit">
                                                             <CheckCircle size={14} /> Link OK
                                                         </div>
                                                     ) : (
-                                                        <span className="text-slate-300 text-[11px] uppercase font-bold">-</span>
+                                                        <span className="text-slate-600 text-[11px] uppercase font-bold">-</span>
                                                     )}
                                                 </td>
                                             </tr>
@@ -393,7 +393,7 @@ const ImportData = () => {
 
                             {/* Footer */}
                             {allData.length > 5 && (
-                                <div className="p-4 bg-slate-50 text-center border-t border-slate-100 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                <div className="p-4 bg-white/60 text-center border-t border-white/40 text-[11px] font-black text-slate-500 uppercase tracking-widest">
                                     ... e mais {allData.length - previewData.length} registros não exibidos
                                 </div>
                             )}

@@ -15,7 +15,7 @@ const Login = () => {
 
     React.useEffect(() => {
         if (currentUser) {
-            navigate('/dashboard');
+            navigate('/home');
         }
     }, [currentUser, navigate]);
 
@@ -23,8 +23,8 @@ const Login = () => {
         e.preventDefault();
         try {
             await login(email, password);
-            toast.success("Bem-vindo ao SISGESP!");
-            navigate('/dashboard');
+            // toast removed
+            navigate('/home');
         } catch (error) {
             console.error("Erro de Login:", error);
             if (error.message?.includes('Invalid login credentials')) {
@@ -56,43 +56,43 @@ const Login = () => {
                 backgroundPosition: 'center'
             }}
         >
-            <div className="w-full md:w-1/2 lg:w-1/3 min-h-full bg-white/70 backdrop-blur-md border-l border-white/40 shadow-2xl p-10 flex flex-col justify-center animate-in fade-in slide-in-from-right duration-700 relative z-10">
+            <div className="w-full md:w-1/2 lg:w-1/3 min-h-full bg-white/60 backdrop-blur-md border-l border-white/40 shadow-2xl p-10 flex flex-col justify-center animate-in fade-in slide-in-from-right duration-700 relative z-10">
                 <div className="text-center mb-12">
                     {theme.logoUrl && (
                         <div className="flex justify-center mb-8">
                             <img src={theme.logoUrl} alt="Logo" className="h-[4.5rem] w-auto object-contain drop-shadow-md" />
                         </div>
                     )}
-                    <h1 className="text-3xl font-extrabold text-slate-900 uppercase tracking-tighter leading-tight drop-shadow-md mt-4">
+                    <h1 className="text-3xl font-extrabold text-slate-800 uppercase tracking-widest leading-tight drop-shadow-md mt-4">
                         BEM-VINDO
                     </h1>
-                    <p className="text-xs font-extrabold text-slate-900 uppercase tracking-widest mt-5 leading-relaxed px-4 drop-shadow-sm">
-                        Plataforma de Saúde Inteligente da <br /> ISM Health Solutions
+                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mt-5 leading-relaxed px-4">
+                        Um sistema de saúde inteligente do <br /> Grupo ISM Health Solutions
                     </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-800 uppercase ml-1">E-mail</label>
+                        <label className="text-[10px] font-bold text-slate-900 drop-shadow-none uppercase ml-1">E-mail</label>
                         <div className="relative">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                             <input
                                 type="email" required
                                 value={email} onChange={(e) => setEmail(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/50 font-bold placeholder:text-slate-500 transition-all shadow-sm"
+                                className="w-full pl-12 pr-4 py-3.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl text-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/50 font-bold placeholder:text-slate-500 transition-all shadow-sm"
                                 placeholder="seu@email.com"
                             />
                         </div>
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-800 uppercase ml-1">Senha de Acesso</label>
+                        <label className="text-[10px] font-bold text-slate-900 drop-shadow-none uppercase ml-1">Senha de Acesso</label>
                         <div className="relative">
                             <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                             <input
                                 type="password" required
                                 value={password} onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/50 font-bold placeholder:text-slate-500 transition-all shadow-sm"
+                                className="w-full pl-12 pr-4 py-3.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl text-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/50 font-bold placeholder:text-slate-500 transition-all shadow-sm"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -108,13 +108,13 @@ const Login = () => {
                         </button>
                     </div>
 
-                    <button className="w-full py-4 bg-blue-600/95 hover:bg-blue-600 backdrop-blur-md text-white border border-blue-500/20 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/20 transition-all active:scale-95">
+                    <button className="w-full py-4 bg-blue-50/90 hover:bg-blue-100 backdrop-blur-xl text-blue-800 border-2 border-blue-200/60 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/10 transition-all active:scale-95">
                         Entrar no Sistema
                     </button>
                 </form>
 
                 <div className="mt-8 pt-8 border-t border-slate-300/40 text-center">
-                    <p className="text-[11px] font-bold text-slate-800">
+                    <p className="text-[11px] font-bold text-slate-900 drop-shadow-none">
                         Não tem acesso? <span className="text-blue-700 font-bold cursor-pointer hover:text-blue-800 transition-colors" onClick={() => navigate('/signup')}>Solicite seu cadastro</span>
                     </p>
                 </div>

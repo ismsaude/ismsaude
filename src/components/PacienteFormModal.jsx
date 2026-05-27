@@ -14,11 +14,11 @@ import { usePermission } from '../contexts/PermissionContext';
 import ApaPrintTemplate from './ApaPrintTemplate';
 
 const STATUS_COLORS = {
-    'Aguardando': 'bg-slate-50 text-slate-500 border-slate-200',
-    'Agendado': 'bg-blue-50 text-blue-600 border-blue-100',
-    'Realizado': 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    'Cancelado': 'bg-rose-50 text-rose-500 border-rose-100',
-    'Aguardando Autorização': 'bg-amber-50 text-amber-600 border-amber-100',
+    'Aguardando': 'bg-white/60 text-slate-500 border-white/60',
+    'Agendado': 'bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none border-blue-100',
+    'Realizado': 'bg-emerald-500/20 text-emerald-600 border-emerald-100',
+    'Cancelado': 'bg-rose-500/20 text-rose-500 border-rose-100',
+    'Aguardando Autorização': 'bg-amber-500/20 text-amber-600 border-amber-100',
     'Mensagem Enviada': 'bg-sky-50 text-sky-600 border-sky-100'
 };
 
@@ -261,7 +261,7 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
         }
     };
 
-    const inputStyle = "w-full h-9 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-800 placeholder:text-slate-400";
+    const inputStyle = "w-full h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-900 drop-shadow-none placeholder:text-slate-500";
     const labelStyle = "text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-wider";
 
     const handleVisualizarPdf = (apa) => {
@@ -292,19 +292,19 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
     return (
         <>
             {/* 1. O Fundo Escuro Isolado (Recebe o clique e fecha) */}
-            <div className="fixed top-16 inset-x-0 bottom-0 bg-slate-900/40 backdrop-blur-sm z-[99998] animate-in fade-in" onClick={onClose} />
+            <div className="fixed top-16 inset-x-0 bottom-0 bg-white/40 backdrop-blur-sm backdrop-blur-sm z-[99998] animate-in fade-in" onClick={onClose} />
             
             {/* 2. Container centralizador invisível aos cliques (pointer-events-none) */}
             <div className="fixed top-16 inset-x-0 bottom-0 z-[99999] flex items-center justify-center p-4 font-sans pointer-events-none print:hidden">
                 
                 {/* 3. A Caixa do Modal (pointer-events-auto restaura os cliques nela) */}
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] pointer-events-auto">
+                <div className="bg-white/60 rounded-2xl shadow-2xl backdrop-blur-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] pointer-events-auto">
                 {/* Header Modal */}
-                <div className="px-6 py-4 flex justify-between items-start bg-slate-50">
+                <div className="px-6 py-4 flex justify-between items-start bg-white/60">
                     <div>
                         {editingId ? (
                             <>
-                                <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+                                <h2 className="text-xl font-black text-slate-900 drop-shadow-none uppercase tracking-wider flex items-center gap-2">
                                     {formData.nome || 'Carregando...'}
                                 </h2>
                                 <div className="flex items-center gap-3 mt-1">
@@ -314,21 +314,21 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                             </>
                         ) : (
                             <>
-                                <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">
+                                <h2 className="text-lg font-black text-slate-900 drop-shadow-none uppercase tracking-wider">
                                     Novo Paciente
                                 </h2>
                                 <p className="text-[11px] font-bold tracking-widest uppercase text-blue-600">Ficha Demográfica</p>
                             </>
                         )}
                     </div>
-                    <button onClick={() => { setAbaAtiva('cadastro'); onClose(); }} className="p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-500 rounded-xl transition-colors shrink-0">
+                    <button onClick={() => { setAbaAtiva('cadastro'); onClose(); }} className="p-2 text-slate-500 hover:bg-rose-500/20 hover:text-rose-500 rounded-xl transition-colors shrink-0">
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Navegação de Abas */}
                 {editingId && (
-                    <div className="flex border-b border-slate-200 px-6 bg-slate-50 overflow-x-auto custom-scrollbar">
+                    <div className="flex border-b border-white/60 px-6 bg-white/60 overflow-x-auto custom-scrollbar">
                         <button type="button" onClick={() => setAbaAtiva('cadastro')} className={`px-4 py-3 text-xs font-bold uppercase transition-all border-b-2 whitespace-nowrap ${abaAtiva === 'cadastro' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>Dados Cadastrais</button>
                         <button type="button" onClick={() => setAbaAtiva('historico')} className={`px-4 py-3 text-xs font-bold uppercase transition-all border-b-2 whitespace-nowrap ${abaAtiva === 'historico' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>Histórico Cirúrgico</button>
                         <button type="button" onClick={() => setAbaAtiva('aih')} className={`px-4 py-3 text-xs font-bold uppercase transition-all border-b-2 whitespace-nowrap ${abaAtiva === 'aih' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>AIHs</button>
@@ -340,7 +340,7 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                 {abaAtiva === 'cadastro' && (
                     <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-6">
                         {/* Bloco 1: Dados Pessoais */}
-                        <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                        <div className="bg-white/60 p-5 rounded-xl border border-white/40">
                             <h3 className="text-xs font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <User size={14} /> Dados Pessoais
                             </h3>
@@ -378,7 +378,7 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                         </div>
 
                         {/* Bloco 2: Contato e Endereço */}
-                        <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                        <div className="bg-white/60 p-5 rounded-xl border border-white/40">
                             <h3 className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <MapPin size={14} /> Contato e Endereço
                             </h3>
@@ -415,12 +415,12 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                         </div>
 
                         {/* Footer Moda/Ações */}
-                        <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
-                            <button type="button" onClick={onClose} className="h-10 px-6 text-slate-500 font-bold text-xs uppercase hover:bg-slate-100 rounded-lg transition-colors">
+                        <div className="pt-4 flex justify-end gap-3 border-t border-white/40">
+                            <button type="button" onClick={onClose} className="h-10 px-6 text-slate-500 font-bold text-xs uppercase hover:bg-white/70 rounded-lg transition-colors">
                                 {podeEditar ? 'Cancelar' : 'Fechar'}
                             </button>
                             {podeEditar && (
-                                <button type="submit" disabled={saving} className="h-10 px-8 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase rounded-lg shadow-lg shadow-blue-500/30 transition-all flex items-center gap-2 disabled:opacity-50">
+                                <button type="submit" disabled={saving} className="h-10 px-8 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs uppercase rounded-lg shadow-lg shadow-slate-800/30 transition-all flex items-center gap-2 disabled:opacity-50">
                                     {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                                     {customSaveText}
                                 </button>
@@ -431,7 +431,7 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
 
                 {/* ABA 2: HISTÓRICO CIRÚRGICO */}
                 {abaAtiva === 'historico' && (
-                    <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-start text-center border-t border-slate-100">
+                    <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-start text-center border-t border-white/40">
                         {loadingHistorico ? (
                             <div className="mt-24">
                                 <Loader2 className="animate-spin text-blue-500 mx-auto mb-4" size={40} />
@@ -439,10 +439,10 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                             </div>
                         ) : historicoCirurgias.length === 0 ? (
                             <div className="mt-24 flex flex-col items-center max-w-sm">
-                                <div className="p-6 bg-slate-50 rounded-full mb-6 text-slate-400">
+                                <div className="p-6 bg-white/60 rounded-full mb-6 text-slate-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-activity opacity-50"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
                                 </div>
-                                <h3 className="text-base font-black uppercase tracking-tight text-slate-800 mb-2">Nenhum registro encontrado</h3>
+                                <h3 className="text-base font-black uppercase tracking-wider text-slate-900 drop-shadow-none mb-2">Nenhum registro encontrado</h3>
                                 <p className="text-xs font-semibold text-slate-500">Este paciente não possui cirurgias documentadas em seu histórico.</p>
                             </div>
                         ) : (
@@ -453,23 +453,23 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                                         <div
                                             key={cir.id}
                                             onClick={() => setCirurgiaEmEdicao(cir)}
-                                            className="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 cursor-pointer hover:shadow-md hover:border-blue-400 transition-all"
+                                            className="p-5 bg-white/60 border-2 border-white/40 rounded-2xl shadow-sm backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-5 cursor-pointer hover:shadow-md hover:border-blue-400 transition-all"
                                         >
                                             <div className="flex-1">
-                                                <div className="text-sm font-black uppercase text-slate-800 line-clamp-1" title={cir.procedimento}>{cir.procedimento || 'PROCEDIMENTO NÃO INFORMADO'}</div>
+                                                <div className="text-sm font-black uppercase text-slate-900 drop-shadow-none line-clamp-1" title={cir.procedimento}>{cir.procedimento || 'PROCEDIMENTO NÃO INFORMADO'}</div>
                                                 <div className="flex items-center gap-3 text-xs font-bold text-slate-500 uppercase mt-2">
                                                     <span className="flex items-center gap-1"><User size={12} className="text-blue-400" /> Dr(a). {cir.cirurgiao || 'Não def.'}</span>
-                                                    <span className="w-1 h-1 rounded-full bg-slate-200"></span>
+                                                    <span className="w-1 h-1 rounded-full bg-white/80"></span>
                                                     <span className="text-emerald-500">{cir.especialidade || 'Geral'}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 border-slate-100 pt-3 md:pt-0">
+                                            <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 border-white/40 pt-3 md:pt-0">
                                                 <div className="text-left md:text-right">
-                                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Data Agendada</div>
-                                                    <div className="text-xs font-bold text-slate-800 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 inline-block">{cir.dataAgendado ? cir.dataAgendado.split('-').reverse().join('/') : '---'}</div>
+                                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Data Agendada</div>
+                                                    <div className="text-xs font-bold text-slate-900 drop-shadow-none bg-white/60 px-3 py-1.5 rounded-lg border border-white/40 inline-block">{cir.dataAgendado ? cir.dataAgendado.split('-').reverse().join('/') : '---'}</div>
                                                 </div>
                                                 <div className="shrink-0">
-                                                    <span className={`px-4 py-2 text-[11px] font-black uppercase border rounded-xl shadow-sm tracking-wide ${STATUS_COLORS[cir.status] || 'bg-slate-100 border-slate-200 text-slate-500'}`}>
+                                                    <span className={`px-4 py-2 text-[11px] font-black uppercase border rounded-xl shadow-sm tracking-wide ${STATUS_COLORS[cir.status] || 'bg-white/70 border-white/60 text-slate-500'}`}>
                                                         {cir.status || 'Aguardando'}
                                                     </span>
                                                 </div>
@@ -484,7 +484,7 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
 
                 {/* ABA 3: AIHs */}
                 {abaAtiva === 'aih' && (
-                    <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-start text-center border-t border-slate-100">
+                    <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-start text-center border-t border-white/40">
                         {loadingAihs ? (
                             <div className="mt-24">
                                 <Loader2 className="animate-spin text-blue-500 mx-auto mb-4" size={40} />
@@ -492,10 +492,10 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                             </div>
                         ) : historicoAihs.length === 0 ? (
                             <div className="mt-24 flex flex-col items-center max-w-sm">
-                                <div className="p-6 bg-slate-50 rounded-full mb-6 text-slate-400">
+                                <div className="p-6 bg-white/60 rounded-full mb-6 text-slate-500">
                                     <FileText size={48} className="opacity-50" />
                                 </div>
-                                <h3 className="text-base font-black uppercase tracking-tight text-slate-800 mb-2">Nenhum laudo encontrado</h3>
+                                <h3 className="text-base font-black uppercase tracking-wider text-slate-900 drop-shadow-none mb-2">Nenhum laudo encontrado</h3>
                                 <p className="text-xs font-semibold text-slate-500">Nenhuma AIH emitida para este paciente.</p>
                             </div>
                         ) : (
@@ -503,23 +503,23 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                                 <h3 className="text-xs font-black tracking-widest uppercase text-slate-500 mb-5 flex items-center gap-2 px-1"><FileText size={16} /> Histórico de Internações</h3>
                                 <div className="space-y-4">
                                     {historicoAihs.map(aih => (
-                                        <div key={aih.id} className="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 hover:border-blue-100 hover:shadow-md transition-all">
+                                        <div key={aih.id} className="p-5 bg-white/60 border-2 border-white/40 rounded-2xl shadow-sm backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-5 hover:border-blue-100 hover:shadow-md transition-all">
                                             <div className="flex-1">
-                                                <div className="text-sm font-black uppercase text-slate-800 line-clamp-1" title={aih.procedimento}>{aih.procedimento || 'PROCEDIMENTO NÃO INFORMADO'}</div>
+                                                <div className="text-sm font-black uppercase text-slate-900 drop-shadow-none line-clamp-1" title={aih.procedimento}>{aih.procedimento || 'PROCEDIMENTO NÃO INFORMADO'}</div>
                                                 <div className="flex items-center gap-3 text-xs font-bold text-slate-500 uppercase mt-2">
                                                     <span className="flex items-center gap-1"><User size={12} className="text-blue-400" /> Dr(a). {aih.medico || 'Não def.'}</span>
-                                                    <span className="w-1 h-1 rounded-full bg-slate-200"></span>
+                                                    <span className="w-1 h-1 rounded-full bg-white/80"></span>
                                                     <span className="text-emerald-500 font-black">{aih.caraterInternacao || 'ELETIVA'}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 border-slate-100 pt-3 md:pt-0">
+                                            <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 border-white/40 pt-3 md:pt-0">
                                                 <div className="text-left md:text-right">
-                                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Data Solicitação</div>
-                                                    <div className="text-xs font-bold text-slate-800 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 inline-block">{aih.dataSolicitacao ? aih.dataSolicitacao.split('-').reverse().join('/') : '---'}</div>
+                                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Data Solicitação</div>
+                                                    <div className="text-xs font-bold text-slate-900 drop-shadow-none bg-white/60 px-3 py-1.5 rounded-lg border border-white/40 inline-block">{aih.dataSolicitacao ? aih.dataSolicitacao.split('-').reverse().join('/') : '---'}</div>
                                                 </div>
                                                 {aih.codigoProcedimento && (
-                                                    <div className="shrink-0 mb-2 md:mb-0 mr-2 border-r border-slate-100 pr-4">
-                                                        <span className="px-4 py-2 text-[11px] font-black uppercase border rounded-xl shadow-sm tracking-wide bg-blue-50 text-blue-600 border-blue-100 block md:inline-block">
+                                                    <div className="shrink-0 mb-2 md:mb-0 mr-2 border-r border-white/40 pr-4">
+                                                        <span className="px-4 py-2 text-[11px] font-black uppercase border rounded-xl shadow-sm tracking-wide bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none border-blue-100 block md:inline-block">
                                                             COD: {aih.codigoProcedimento}
                                                         </span>
                                                     </div>
@@ -527,7 +527,7 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                                                 <div className="shrink-0">
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); gerarPdfAih(aih); }}
-                                                        className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl shadow-sm transition-all border border-blue-100 flex items-center justify-center gap-2 text-[11px] font-black uppercase"
+                                                        className="px-4 py-2 bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none hover:bg-blue-600 hover:text-slate-800 rounded-xl shadow-sm transition-all border border-blue-100 flex items-center justify-center gap-2 text-[11px] font-black uppercase"
                                                         title="Imprimir Laudo AIH"
                                                     >
                                                         <Printer size={14} /> PDF
@@ -544,7 +544,7 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
 
                 {/* ABA 4: APAs */}
                 {abaAtiva === 'apa' && (
-                    <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-start text-center border-t border-slate-100">
+                    <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-start text-center border-t border-white/40">
                         {loadingApas ? (
                             <div className="mt-24">
                                 <Loader2 className="animate-spin text-blue-500 mx-auto mb-4" size={40} />
@@ -552,10 +552,10 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                             </div>
                         ) : historicoApas.length === 0 ? (
                             <div className="mt-24 flex flex-col items-center max-w-sm">
-                                <div className="p-6 bg-slate-50 rounded-full mb-6 text-slate-400">
+                                <div className="p-6 bg-white/60 rounded-full mb-6 text-slate-500">
                                     <Activity size={48} className="opacity-50" />
                                 </div>
-                                <h3 className="text-base font-black uppercase tracking-tight text-slate-800 mb-2">Nenhuma APA encontrada</h3>
+                                <h3 className="text-base font-black uppercase tracking-wider text-slate-900 drop-shadow-none mb-2">Nenhuma APA encontrada</h3>
                                 <p className="text-xs font-semibold text-slate-500">Nenhuma avaliação pré-anestésica registrada para este paciente.</p>
                             </div>
                         ) : (
@@ -563,19 +563,19 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                                 <h3 className="text-xs font-black tracking-widest uppercase text-slate-500 mb-5 flex items-center gap-2 px-1"><Activity size={16} /> Histórico de Avaliações Pré-Anestésicas</h3>
                                 <div className="space-y-4">
                                     {historicoApas.map(apa => (
-                                        <div key={apa.id} className="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 hover:border-blue-100 hover:shadow-md transition-all">
+                                        <div key={apa.id} className="p-5 bg-white/60 border-2 border-white/40 rounded-2xl shadow-sm backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-5 hover:border-blue-100 hover:shadow-md transition-all">
                                             <div className="flex-1">
-                                                <div className="text-sm font-black uppercase text-slate-800 line-clamp-1" title={apa.procedimento}>{apa.procedimento || 'PROCEDIMENTO NÃO INFORMADO'}</div>
+                                                <div className="text-sm font-black uppercase text-slate-900 drop-shadow-none line-clamp-1" title={apa.procedimento}>{apa.procedimento || 'PROCEDIMENTO NÃO INFORMADO'}</div>
                                                 <div className="flex items-center gap-3 text-xs font-bold text-slate-500 uppercase mt-2">
                                                     <span className="flex items-center gap-1"><User size={12} className="text-blue-400" /> Dr(a). {apa.profissional || 'Não def.'}</span>
-                                                    <span className="w-1 h-1 rounded-full bg-slate-200"></span>
+                                                    <span className="w-1 h-1 rounded-full bg-white/80"></span>
                                                     <span className={`font-black ${apa.parecerFinal === 'Apto' ? 'text-emerald-500' : apa.parecerFinal === 'Restricao' ? 'text-amber-500' : 'text-rose-500'}`}>{apa.parecerFinal === 'Restricao' ? 'APTO COM RESTRIÇÕES' : apa.parecerFinal?.toUpperCase() || 'AVALIAÇÃO PENDENTE'}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 border-slate-100 pt-3 md:pt-0">
+                                            <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 border-white/40 pt-3 md:pt-0">
                                                 <div className="text-left md:text-right">
-                                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Data Registro</div>
-                                                    <div className="text-xs font-bold text-slate-800 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 inline-block">
+                                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Data Registro</div>
+                                                    <div className="text-xs font-bold text-slate-900 drop-shadow-none bg-white/60 px-3 py-1.5 rounded-lg border border-white/40 inline-block">
                                                         {apa.dataRegistro ? new Date(apa.dataRegistro).toLocaleDateString('pt-BR') : '---'}
                                                     </div>
                                                 </div>
@@ -585,7 +585,7 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                                                             e.stopPropagation();
                                                             handleVisualizarPdf(apa);
                                                         }}
-                                                        className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl shadow-sm transition-all border border-blue-100 flex items-center justify-center gap-2 text-[11px] font-black uppercase"
+                                                        className="px-4 py-2 bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none hover:bg-blue-600 hover:text-slate-800 rounded-xl shadow-sm transition-all border border-blue-100 flex items-center justify-center gap-2 text-[11px] font-black uppercase"
                                                         title="Visualizar / Imprimir APA"
                                                     >
                                                         <Printer size={14} /> APA

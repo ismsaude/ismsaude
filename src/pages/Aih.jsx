@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, FileText, Plus, ArrowLeft, Printer, Loader2, Trash2, AlertTriangle } from 'lucide-react';
 import { gerarPdfAih } from '../utils/geradorPdfAih';
 import { supabase } from '../services/supabase';
 import { logAction } from '../utils/logger';
-import { useNavigate } from 'react-router-dom';
+
 import toast from 'react-hot-toast';
 import cidData from '../utils/cid10.json';
 import { maskCPF, maskTelefone, maskCEP, maskCNS } from '../utils/masks';
@@ -17,6 +18,7 @@ import UnitPrompt from '../components/UnitPrompt';
 
 const Aih = ({ paciente }) => {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const { hasPermission } = usePermission();
     const { unidadeAtual, unidadesObj } = useUnit();
     const { theme } = useWhiteLabel();
@@ -26,7 +28,6 @@ const Aih = ({ paciente }) => {
     const [caraterConfig, setCaraterConfig] = useState([]);
     const [medicosConfig, setMedicosConfig] = useState([]);
     const [showCid, setShowCid] = useState(false);
-    const { currentUser } = useAuth();
 
     // Gestão de visualização (Dashboard vs Formulário)
     const [modoVisao, setModoVisao] = useState('lista');
@@ -105,25 +106,37 @@ const Aih = ({ paciente }) => {
 
     // PREENCHIMENTO AUTOMÁTICO VIA PROP (Quando aberto do PEP)
     useEffect(() => {
-        if (paciente) {
-            setFormData(prev => ({
-                ...prev,
-                pacienteId: paciente.paciente_id || paciente.id,
-                pacienteNome: paciente.paciente_nome || paciente.nome,
-                pacienteCpf: paciente.paciente_cpf || paciente.cpf || '',
-                cns: paciente.cns || '',
-                dataNascimento: paciente.dataNascimento || paciente.nascimento || '',
-                sexo: paciente.sexo ? (paciente.sexo.toUpperCase().startsWith('M') ? 'M' : paciente.sexo.toUpperCase().startsWith('F') ? 'F' : '') : '',
-                nomeMae: paciente.nomeMae || '',
-                telefone: paciente.telefone || paciente.telefone1 || '',
-                endereco: `${paciente.rua || ''} ${paciente.numero || ''} ${paciente.bairro || ''}`.trim() || '',
-                municipio: paciente.municipio || '',
-                uf: paciente.uf || 'SP',
-                cep: paciente.cep || '',
-                prontuario: paciente.prontuario || ''
-            }));
-            setModoVisao('formulario');
-        }
+        const fetchDetalhesPaciente = async () => {
+            if (paciente) {
+                let p = { ...paciente };
+                const pid = paciente.paciente_id || paciente.id;
+                if (pid) {
+                    try {
+                        const { data } = await supabase.from('pacientes').select('*').eq('id', pid).single();
+                        if (data) p = { ...p, ...data };
+                    } catch (e) {}
+                }
+
+                setFormData(prev => ({
+                    ...prev,
+                    pacienteId: p.paciente_id || p.id,
+                    pacienteNome: p.paciente_nome || p.nome || '',
+                    pacienteCpf: p.paciente_cpf || p.cpf || '',
+                    cns: p.cns || '',
+                    dataNascimento: p.dataNascimento || p.nascimento || p.paciente_nascimento || '',
+                    sexo: p.sexo ? (p.sexo.toUpperCase().startsWith('M') ? 'M' : p.sexo.toUpperCase().startsWith('F') ? 'F' : '') : '',
+                    nomeMae: p.nomeMae || '',
+                    telefone: p.telefone || p.telefone1 || '',
+                    endereco: `${p.rua || ''} ${p.numero || ''} ${p.bairro || ''}`.trim() || '',
+                    municipio: p.municipio || '',
+                    uf: p.uf || 'SP',
+                    cep: p.cep || '',
+                    prontuario: p.prontuario || ''
+                }));
+                setModoVisao('formulario');
+            }
+        };
+        fetchDetalhesPaciente();
     }, [paciente]);
 
     useEffect(() => {
@@ -424,10 +437,10 @@ const Aih = ({ paciente }) => {
     };
 
     // Estilos reutilizáveis (Compact Mode)
-    const glassCard = "bg-white/40 backdrop-blur-md border border-white/50 shadow-sm p-4 rounded-xl mb-4 relative";
+    const glassCard = "bg-white/60 backdrop-blur-md border border-white/400 shadow-sm p-4 rounded-xl mb-4 relative";
     const labelStyle = "block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1";
-    const inputStyle = "w-full bg-white/50 border border-white/60 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 placeholder-slate-400 transition-all";
-    const readOnlyStyle = "w-full bg-slate-100/50 border border-slate-200 text-slate-500 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center h-[34px] cursor-not-allowed";
+    const inputStyle = "w-full bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl text-slate-900 drop-shadow-none text-xs font-semibold px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 placeholder-slate-400 transition-all";
+    const readOnlyStyle = "w-full bg-slate-100/50 border border-white/60 text-slate-500 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center h-[34px] cursor-not-allowed";
 
     const currentUnitObj = (unidadesObj || []).find(u => u.nome === unidadeAtual) || null;
 
@@ -440,13 +453,25 @@ const Aih = ({ paciente }) => {
             <div className="max-w-7xl mx-auto space-y-3">
 
                 {/* Cabeçalho Global */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3 border-b border-slate-200 pb-3">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3 border-b border-white/60 pb-3">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-600 rounded-lg text-white shadow-lg shadow-blue-600/20">
-                            <FileText size={20} />
+                        {modoVisao === 'lista' && (
+                            <>
+                                <button 
+                                    onClick={() => navigate('/pep-hub')}
+                                    className="p-2 md:p-2.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-500/20 rounded-xl transition-colors shrink-0"
+                                    title="Voltar para a Central"
+                                >
+                                    <ArrowLeft size={22} strokeWidth={2.5} />
+                                </button>
+                                <div className="w-px h-8 bg-white/80 shrink-0 hidden md:block"></div>
+                            </>
+                        )}
+                        <div className="p-2 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-xl text-blue-600 shadow-sm flex items-center justify-center">
+                            <FileText size={22} strokeWidth={2} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-black text-slate-800 uppercase tracking-tighter">
+                            <h1 className="text-xl font-black text-slate-900 drop-shadow-none uppercase tracking-widest">
                                 {modoVisao === 'lista' ? 'Central de AIHs' : 'Emissão de AIH'}
                             </h1>
                             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -469,7 +494,7 @@ const Aih = ({ paciente }) => {
                                 }));
                                 setModoVisao('formulario');
                             }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold uppercase text-xs tracking-wide shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-2"
+                            className="bg-white/80 hover:bg-white text-blue-600 border border-slate-200 px-5 py-2.5 rounded-xl font-bold uppercase text-xs tracking-wide shadow-sm transition-all flex items-center justify-center gap-2"
                         >
                             <Plus size={16} /> Nova AIH
                         </button>
@@ -479,23 +504,23 @@ const Aih = ({ paciente }) => {
                 {modoVisao === 'lista' ? (
                     /* ====== MODO LISTA / DASHBOARD ====== */
                     <div className="space-y-6">
-                        <div className="bg-white/60 backdrop-blur-lg p-4 rounded-xl shadow-sm border border-white/50">
+                        <div className="bg-white/60 backdrop-blur-lg p-4 rounded-xl shadow-sm border border-white/400">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                 <input
                                     type="text"
                                     placeholder="Pesquisar por Paciente, Prontuário ou CNS..."
                                     value={searchAih}
                                     onChange={(e) => setSearchAih(e.target.value)}
-                                    className="w-full h-9 pl-9 pr-4 py-2 bg-white/50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 font-semibold text-xs placeholder:text-slate-400"
+                                    className="w-full h-9 pl-9 pr-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 font-semibold text-xs placeholder:text-slate-500"
                                 />
                             </div>
                         </div>
 
-                        <div className="bg-white/60 backdrop-blur-lg rounded-xl shadow-sm border border-white/50 overflow-hidden">
+                        <div className="bg-white/60 backdrop-blur-lg rounded-xl shadow-sm border border-white/400 overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-slate-200">
-                                    <thead className="bg-white/40">
+                                    <thead className="bg-white/60">
                                         <tr className="text-left text-[11px] font-black text-slate-500 uppercase tracking-widest">
                                             <th className="py-1.5 px-3">Emissão / Solicitação</th>
                                             <th className="py-1.5 px-3">Paciente</th>
@@ -509,14 +534,14 @@ const Aih = ({ paciente }) => {
                                             <tr><td colSpan="5" className="py-20 text-center"><Loader2 className="animate-spin text-blue-500 mx-auto" size={32} /></td></tr>
                                         ) : filteredAihs.length > 0 ? (
                                             filteredAihs.map(aih => (
-                                                <tr key={aih.id} className="hover:bg-slate-50/50 transition-colors group">
+                                                <tr key={aih.id} className="hover:bg-white/60 transition-colors group">
                                                     <td className="px-3 py-1.5">
                                                         <div className="text-xs font-black text-slate-700">{aih.dataEmissao ? new Date(aih.dataEmissao).toLocaleDateString('pt-BR') : '---'}</div>
-                                                        <div className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Sol: {aih.dataSolicitacao ? aih.dataSolicitacao.split('-').reverse().join('/') : '---'}</div>
+                                                        <div className="text-[10px] font-bold text-slate-500 uppercase mt-0.5">Sol: {aih.dataSolicitacao ? aih.dataSolicitacao.split('-').reverse().join('/') : '---'}</div>
                                                     </td>
                                                     <td className="px-3 py-1.5">
                                                         <div className="flex items-center gap-2">
-                                                            <div className="font-bold text-slate-800 text-xs uppercase">{aih.pacienteNome || 'NÃO INFORMADO'}</div>
+                                                            <div className="font-bold text-slate-900 drop-shadow-none text-xs uppercase">{aih.pacienteNome || 'NÃO INFORMADO'}</div>
                                                             {/* Etiqueta de Status Inteligente */}
                                                             {aih.status === 'autorizada' ? (
                                                                 <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded uppercase tracking-wider">Autorizada</span>
@@ -524,15 +549,15 @@ const Aih = ({ paciente }) => {
                                                                 <span className="px-2 py-0.5 bg-rose-100 text-rose-700 text-[10px] font-black rounded uppercase tracking-wider">Devolvida</span>
                                                             ) : (
                                                                 <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded uppercase tracking-wider flex items-center gap-1 shadow-sm border border-amber-200">
-                                                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Pendente
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500/200 animate-pulse"></span> Pendente
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <div className="text-[10px] font-semibold text-slate-400 uppercase mt-0.5">CNS: {aih.cns || '---'}</div>
+                                                        <div className="text-[10px] font-semibold text-slate-500 uppercase mt-0.5">CNS: {aih.cns || '---'}</div>
                                                     </td>
                                                     <td className="px-3 py-1.5">
                                                         <div className="text-[11px] font-bold text-slate-700 uppercase line-clamp-1" title={aih.procedimento}>{aih.procedimento || '---'}</div>
-                                                        {aih.codigoProcedimento && <div className="text-[10px] font-bold text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded inline-block mt-0.5">CÓD: {aih.codigoProcedimento}</div>}
+                                                        {aih.codigoProcedimento && <div className="text-[10px] font-bold text-blue-500 bg-blue-500/20 px-1.5 py-0.5 rounded inline-block mt-0.5">CÓD: {aih.codigoProcedimento}</div>}
                                                     </td>
                                                     <td className="px-3 py-1.5">
                                                         <div className="text-[11px] font-bold text-slate-700 uppercase">Dr(a). {aih.medico || '---'}</div>
@@ -542,15 +567,15 @@ const Aih = ({ paciente }) => {
                                                         <div className="flex items-center justify-center gap-1.5">
                                                             <button
                                                                 onClick={() => exportarParaPDF(aih)}
-                                                                className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all shadow-sm opacity-0 group-hover:opacity-100"
+                                                                className="p-1.5 bg-blue-50 text-blue-600 border border-blue-100 shadow-sm hover:bg-blue-600 hover:text-white rounded-lg transition-all opacity-0 group-hover:opacity-100"
                                                                 title="Re-imprimir Laudo"
                                                             >
-                                                                <Printer size={14} />
+                                                                <Printer size={16} />
                                                             </button>
                                                             {hasPermission('Excluir AIH/APA') && (
                                                                 <button
                                                                     onClick={() => handleExcluirAih(aih.id)}
-                                                                    className="p-1.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all shadow-sm opacity-0 group-hover:opacity-100"
+                                                                    className="p-1.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-slate-800 rounded-lg transition-all shadow-sm opacity-0 group-hover:opacity-100"
                                                                     title="Excluir Laudo"
                                                                 >
                                                                     <Trash2 size={14} />
@@ -561,7 +586,7 @@ const Aih = ({ paciente }) => {
                                                 </tr>
                                             ))
                                         ) : (
-                                            <tr><td colSpan="5" className="py-20 text-center text-slate-400 font-bold uppercase text-sm">Nenhuma AIH encontrada no sistema central.</td></tr>
+                                            <tr><td colSpan="5" className="py-20 text-center text-slate-500 font-bold uppercase text-sm">Nenhuma AIH encontrada no sistema central.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -570,14 +595,14 @@ const Aih = ({ paciente }) => {
                     </div>
                 ) : (
                     /* ====== MODO FORMULÁRIO ====== */
-                    <div className="p-6 bg-white/60 backdrop-blur-lg border border-white/50 shadow-sm rounded-[2rem] min-h-[80vh] relative">
-                        <button onClick={() => setModoVisao('lista')} className="absolute top-6 right-6 text-[11px] font-black uppercase text-slate-400 hover:text-blue-600 flex items-center gap-1.5 transition-colors bg-white px-3 py-1.5 rounded-lg shadow-sm">
+                    <div className="p-6 bg-white/60 backdrop-blur-lg border border-white/400 shadow-sm rounded-[2rem] min-h-[80vh] relative">
+                        <button onClick={() => setModoVisao('lista')} className="absolute top-6 right-6 text-[11px] font-black uppercase text-slate-500 hover:text-blue-600 flex items-center gap-1.5 transition-colors bg-white/60 px-3 py-1.5 rounded-lg shadow-sm">
                             <ArrowLeft size={14} /> Voltar à Central
                         </button>
 
                         {/* Bloco 1: Identificação do Estabelecimento */}
                         <div className={`${glassCard} z-[40]`}>
-                            <h2 className="text-xs font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-white/50 pb-1.5">1. Identificação do Estabelecimento</h2>
+                            <h2 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/400 pb-1.5">1. Identificação do Estabelecimento</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                                 <div className="lg:col-span-3">
                                     <label className={labelStyle}>Estabelecimento Solicitante</label>
@@ -608,12 +633,12 @@ const Aih = ({ paciente }) => {
 
                         {/* Bloco 2: Identificação do Paciente */}
                         <div className={`${glassCard} z-[30]`}>
-                            <h2 className="text-xs font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-white/50 pb-1.5">2. Identificação do Paciente</h2>
+                            <h2 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/400 pb-1.5">2. Identificação do Paciente</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                                 <div className="lg:col-span-3 relative">
                                     <label className={labelStyle}>Nome do Paciente</label>
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
                                         <input
                                             type="text"
                                             name="pacienteNome"
@@ -626,14 +651,14 @@ const Aih = ({ paciente }) => {
                                         />
                                     </div>
                                     {showPacientes && formData.pacienteNome && (
-                                        <div className="absolute z-50 w-full mt-1 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto custom-scrollbar">
+                                        <div className="absolute z-50 w-full mt-1 bg-white/95 backdrop-blur-xl border border-white/60 rounded-xl shadow-2xl max-h-60 overflow-y-auto custom-scrollbar">
                                             {filteredPacientes.length > 0 ? filteredPacientes.map(p => (
-                                                <div key={p.id} onClick={() => handleSelectPaciente(p)} className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors">
-                                                    <div className="text-xs font-bold uppercase text-slate-800">{p.nome}</div>
+                                                <div key={p.id} onClick={() => handleSelectPaciente(p)} className="p-3 hover:bg-white/60 cursor-pointer border-b border-white/40 last:border-0 transition-colors">
+                                                    <div className="text-xs font-bold uppercase text-slate-900 drop-shadow-none">{p.nome}</div>
                                                     <div className="text-[11px] font-semibold text-slate-500 uppercase mt-0.5">CPF: {p.cpf || '---'} | CNS: {p.cns || '---'}</div>
                                                 </div>
                                             )) : (
-                                                <div className="p-3 bg-slate-50 flex flex-col items-center text-center gap-2 border-t border-slate-100">
+                                                <div className="p-3 bg-white/60 flex flex-col items-center text-center gap-2 border-t border-white/40">
                                                     <span className="text-[11px] font-bold text-slate-500 uppercase">Nenhum paciente encontrado.</span>
                                                     <button type="button" onClick={() => navigate('/pacientes')} className="text-[11px] font-black text-blue-600 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg uppercase transition-colors flex items-center gap-1">
                                                         Cadastre este paciente na aba Pacientes primeiro.
@@ -770,7 +795,7 @@ const Aih = ({ paciente }) => {
 
                         {/* Bloco 3: Dados Clínicos */}
                         <div className={`${glassCard} z-[20]`}>
-                            <h2 className="text-xs font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-white/50 pb-1.5">3. Dados Clínicos e Justificativa</h2>
+                            <h2 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/400 pb-1.5">3. Dados Clínicos e Justificativa</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                                 <div className="lg:col-span-4">
                                     <label className={labelStyle}>Justificativa da Internação</label>
@@ -812,7 +837,7 @@ const Aih = ({ paciente }) => {
                                     <div className="md:col-span-3 relative">
                                         <label className={labelStyle}>Diagnóstico Inicial</label>
                                         <div className="relative">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
                                             <input
                                                 type="text"
                                                 name="diagnosticoInicial"
@@ -825,14 +850,14 @@ const Aih = ({ paciente }) => {
                                             />
                                         </div>
                                         {showCid && formData.diagnosticoInicial && (
-                                            <div className="absolute z-[100] w-full mt-1 bg-white backdrop-blur-xl border border-slate-200 rounded-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.3)] max-h-60 overflow-y-auto custom-scrollbar">
+                                            <div className="absolute z-[100] w-full mt-1 bg-white/60 backdrop-blur-xl border border-white/60 rounded-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.3)] max-h-60 overflow-y-auto custom-scrollbar">
                                                 {filteredCid.length > 0 ? filteredCid.map((item, idx) => (
-                                                    <div key={idx} onClick={() => handleSelectCid(item)} className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors">
-                                                        <div className="text-xs font-bold uppercase text-slate-800">{item.d}</div>
+                                                    <div key={idx} onClick={() => handleSelectCid(item)} className="p-3 hover:bg-white/60 cursor-pointer border-b border-white/40 last:border-0 transition-colors">
+                                                        <div className="text-xs font-bold uppercase text-slate-900 drop-shadow-none">{item.d}</div>
                                                         <div className="text-[11px] font-semibold text-blue-500 uppercase mt-0.5">CID: {item.c}</div>
                                                     </div>
                                                 )) : (
-                                                    <div className="p-3 bg-slate-50 flex flex-col items-center text-center gap-2 border-t border-slate-100">
+                                                    <div className="p-3 bg-white/60 flex flex-col items-center text-center gap-2 border-t border-white/40">
                                                         <span className="text-[11px] font-bold text-slate-500 uppercase">Nenhum diagnóstico encontrado na base CID-10.</span>
                                                     </div>
                                                 )}
@@ -846,7 +871,7 @@ const Aih = ({ paciente }) => {
                                             name="cid10"
                                             value={formData.cid10}
                                             readOnly
-                                            className={`${inputStyle} bg-slate-100 border-slate-200 text-slate-600 font-bold cursor-not-allowed`}
+                                            className={`${inputStyle} bg-white/70 border-white/60 text-slate-600 font-bold cursor-not-allowed`}
                                             placeholder="Automático"
                                         />
                                     </div>
@@ -918,7 +943,7 @@ const Aih = ({ paciente }) => {
 
                         {/* Bloco 4: Profissional Solicitante */}
                         <div className={`${glassCard} z-[10]`}>
-                            <h2 className="text-xs font-black text-slate-700 uppercase tracking-tight mb-3 border-b border-white/50 pb-1.5">4. Profissional Solicitante</h2>
+                            <h2 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/400 pb-1.5">4. Profissional Solicitante</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 relative z-[40]">
                                 <div className="lg:col-span-2">
                                     <label className={labelStyle}>Profissional Solicitante (Selecione ou Digite)</label>
@@ -980,7 +1005,7 @@ const Aih = ({ paciente }) => {
                                         name="crm"
                                         value={formData.crm}
                                         readOnly
-                                        className={`${inputStyle} bg-slate-100 border-slate-200 text-slate-600 font-bold cursor-not-allowed uppercase`}
+                                        className={`${inputStyle} bg-white/70 border-white/60 text-slate-600 font-bold cursor-not-allowed uppercase`}
                                         placeholder="Automático"
                                     />
                                 </div>
@@ -991,7 +1016,7 @@ const Aih = ({ paciente }) => {
                                         name="numeroDocumento"
                                         value={formData.numeroDocumento || ''}
                                         readOnly
-                                        className={`${inputStyle} bg-slate-100 border-slate-200 text-slate-600 font-bold cursor-not-allowed`}
+                                        className={`${inputStyle} bg-white/70 border-white/60 text-slate-600 font-bold cursor-not-allowed`}
                                         placeholder="Automático"
                                     />
                                 </div>
@@ -1002,7 +1027,7 @@ const Aih = ({ paciente }) => {
                         <div className="flex justify-end mt-8">
                             <button
                                 onClick={handleSalvarNovaAih}
-                                className="w-full md:w-auto px-10 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-sm uppercase tracking-wide font-black rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2"
+                                className="w-full md:w-auto px-10 py-3.5 bg-slate-800 hover:bg-slate-900 text-white text-sm uppercase tracking-wide font-black rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
                             >
                                 <FileText size={18} />
                                 Gerar e Salvar Laudo AIH (PDF)

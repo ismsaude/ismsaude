@@ -26,30 +26,30 @@ import ApaPrintTemplate from '../components/ApaPrintTemplate';
 
 // --- CONFIGURAÇÕES VISUAIS ---
 const STATUS_COLORS = {
-    'Aguardando': 'bg-slate-50 text-slate-500 border-slate-200',
-    'Agendado': 'bg-blue-50 text-blue-600 border-blue-100',
-    'Realizado': 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    'Cancelado': 'bg-rose-50 text-rose-500 border-rose-100',
-    'Aguardando Autorização': 'bg-amber-50 text-amber-600 border-amber-100',
+    'Aguardando': 'bg-white/60 text-slate-500 border-white/60',
+    'Agendado': 'bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none border-blue-100',
+    'Realizado': 'bg-emerald-500/20 text-emerald-600 border-emerald-100',
+    'Cancelado': 'bg-rose-500/20 text-rose-500 border-rose-100',
+    'Aguardando Autorização': 'bg-amber-500/20 text-amber-600 border-amber-100',
     'Mensagem Enviada': 'bg-sky-50 text-sky-600 border-sky-100'
 };
 
 const PRIORITY_COLORS = {
-    'Emergência': 'bg-rose-600 text-white border-rose-700',
-    'Urgência': 'bg-rose-600 text-white border-rose-700',
-    'Prioritário': 'bg-orange-500 text-white border-orange-600',
+    'Emergência': 'bg-rose-600 text-slate-800 border-rose-700',
+    'Urgência': 'bg-rose-600 text-slate-800 border-rose-700',
+    'Prioritário': 'bg-orange-500 text-slate-800 border-orange-600',
     'Eletiva': 'bg-blue-600 text-white border-blue-700',
-    'Prioridade': 'bg-amber-500 text-white border-amber-600'
+    'Prioridade': 'bg-amber-500/200 text-slate-800 border-amber-600'
 };
 
 const getStatusStyle = (status) => {
-    if (!status) return 'bg-slate-50 text-slate-600 border-slate-200';
+    if (!status) return 'bg-white/60 text-slate-600 border-white/60';
     const s = String(status).toLowerCase();
-    if (s.includes('realizado')) return 'bg-emerald-50 text-emerald-700 border-emerald-300';
-    if (s.includes('agendado')) return 'bg-blue-50 text-blue-600 border-blue-200';
-    if (s.includes('cancelado') || s.includes('suspenso')) return 'bg-rose-50 text-rose-600 border-rose-200';
-    if (s.includes('autorização') || s.includes('autorizacao')) return 'bg-amber-50 text-amber-600 border-amber-200';
-    return 'bg-slate-50 text-slate-600 border-slate-200';
+    if (s.includes('realizado')) return 'bg-emerald-500 text-white shadow-[0_4px_15px_rgba(16,185,129,0.4)] border-none border-emerald-300';
+    if (s.includes('agendado')) return 'bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none border-blue-200';
+    if (s.includes('cancelado') || s.includes('suspenso')) return 'bg-rose-500/20 text-rose-600 border-rose-200';
+    if (s.includes('autorização') || s.includes('autorizacao')) return 'bg-amber-500/20 text-amber-600 border-amber-200';
+    return 'bg-white/60 text-slate-600 border-white/60';
 };
 
 const calculateAge = (dob) => {
@@ -526,32 +526,32 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
         }
     };
 
-    const inputStyle = "w-full h-8 px-2 py-1 bg-white/50 border border-white/60 rounded-lg text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100";
+    const inputStyle = "w-full h-8 px-2 py-1 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-900 drop-shadow-none disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white/70";
     const labelStyle = "text-[10px] font-black text-slate-600 uppercase ml-1 mb-0.5 block";
-    const sectionStyle = "bg-white/60 backdrop-blur-lg p-3.5 rounded-xl shadow-sm border border-white/50";
+    const sectionStyle = "bg-white/60 backdrop-blur-lg p-3.5 rounded-xl shadow-sm border border-white/400";
 
     return (
         <>
             {/* Fundo Escuro Isolado */}
-            <div className="fixed top-16 inset-x-0 bottom-0 bg-slate-900/40 backdrop-blur-sm z-[9998] print:hidden" onClick={onClose} />
+            <div className="fixed top-16 inset-x-0 bottom-0 bg-white/40 backdrop-blur-sm backdrop-blur-sm z-[9998] print:hidden" onClick={onClose} />
 
             {/* Container Invisível aos Cliques */}
-            <div className="fixed top-16 inset-x-0 bottom-0 z-[9999] flex items-center justify-center p-4 font-sans text-slate-900 pointer-events-none print:hidden">
+            <div className="fixed top-16 inset-x-0 bottom-0 z-[9999] flex items-center justify-center p-4 font-sans text-slate-800 pointer-events-none print:hidden">
 
                 {/* A Caixa Branca (Restaura cliques) */}
-                <div className="bg-white/90 backdrop-blur-3xl rounded-xl shadow-2xl w-full max-w-6xl overflow-hidden max-h-[95vh] flex flex-col border border-white/50 pointer-events-auto">
+                <div className="bg-white/90 backdrop-blur-3xl rounded-xl shadow-2xl w-full max-w-6xl overflow-hidden max-h-[95vh] flex flex-col border border-white/400 pointer-events-auto">
 
-                    <div className="px-6 py-4 border-b border-white/50 flex justify-between items-center bg-white/40 sticky top-0 z-10 backdrop-blur-md">
+                    <div className="px-6 py-4 border-b border-white/400 flex justify-between items-center bg-white/60 sticky top-0 z-10 backdrop-blur-md">
                         <div>
-                            <h3 className="font-bold text-lg text-slate-900 uppercase tracking-tight">
+                            <h3 className="font-bold text-lg text-slate-800 uppercase tracking-wider">
                                 {surgery.id ? 'Edição de Prontuário' : 'INSERIR NA FILA'}
                             </h3>
                             <p className="text-[11px] text-slate-600 font-semibold uppercase mt-0.5">Base unificada</p>
                         </div>
-                        <button onClick={onClose} className="p-2 hover:bg-rose-50 rounded-lg text-slate-600 hover:text-rose-600"><X size={20} /></button>
+                        <button onClick={onClose} className="p-2 hover:bg-rose-500/20 rounded-lg text-slate-600 hover:text-rose-600"><X size={20} /></button>
                     </div>
 
-                    <form onSubmit={handleInternalSave} className="p-4 overflow-y-auto space-y-3 bg-slate-50/50">
+                    <form onSubmit={handleInternalSave} className="p-4 overflow-y-auto space-y-3 bg-white/60">
 
                         {/* 1. DADOS PESSOAIS */}
                         <div className={sectionStyle}>
@@ -560,18 +560,18 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                 <div className="md:col-span-2 relative">
                                     <label className={labelStyle}>Nome Completo <span className="text-red-500 ml-1">*</span></label>
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
                                         <input value={searchPaciente} onChange={e => { setSearchPaciente(e.target.value); setShowPacientes(true); setFormData({ ...formData, nomePaciente: e.target.value }); }} onFocus={() => setShowPacientes(true)} placeholder="Buscar por Nome ou CPF..." className={`${inputStyle} pl-9 uppercase`} disabled={!podeEditar} required />
                                     </div>
                                     {showPacientes && searchPaciente && (
-                                        <div className="absolute z-50 w-full mt-1 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto custom-scrollbar">
+                                        <div className="absolute z-50 w-full mt-1 bg-white/95 backdrop-blur-xl border border-white/60 rounded-xl shadow-2xl max-h-60 overflow-y-auto custom-scrollbar">
                                             {filteredPacientes.length > 0 ? filteredPacientes.map(p => (
-                                                <div key={p.id} onClick={() => handleSelectPaciente(p)} className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors">
-                                                    <div className="text-xs font-bold uppercase text-slate-800">{p.nome}</div>
+                                                <div key={p.id} onClick={() => handleSelectPaciente(p)} className="p-3 hover:bg-white/60 cursor-pointer border-b border-white/40 last:border-0 transition-colors">
+                                                    <div className="text-xs font-bold uppercase text-slate-900 drop-shadow-none">{p.nome}</div>
                                                     <div className="text-[11px] font-semibold text-slate-500 uppercase mt-0.5">CPF: {p.cpf || '---'}</div>
                                                 </div>
                                             )) : (
-                                                <div className="p-3 bg-slate-50 flex flex-col items-center text-center gap-2 border-t border-slate-100">
+                                                <div className="p-3 bg-white/60 flex flex-col items-center text-center gap-2 border-t border-white/40">
                                                     <span className="text-[11px] font-bold text-slate-500 uppercase">Nenhum paciente encontrado.</span>
                                                     <button type="button" onClick={() => { setShowModalNovoPaciente(true); setShowPacientes(false); }} className="text-[11px] font-black text-blue-600 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg uppercase transition-colors flex items-center gap-1">
                                                         <Plus size={12} /> Deseja adicionar um novo cadastro?
@@ -597,7 +597,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                         )}
                                     </select>
                                 </div>
-                                <div><label className={`${labelStyle} text-center`}>Idade</label><div className={`bg-slate-100 text-slate-400 border border-slate-200 rounded-lg h-9 flex items-center justify-center font-semibold text-sm italic ${isLocked ? 'opacity-50' : ''}`}>{calculateAge(formData.dataNascimento || formData.nascimento)} anos</div></div>
+                                <div><label className={`${labelStyle} text-center`}>Idade</label><div className={`bg-white/70 text-slate-500 border border-white/60 rounded-lg h-9 flex items-center justify-center font-semibold text-sm italic ${isLocked ? 'opacity-50' : ''}`}>{calculateAge(formData.dataNascimento || formData.nascimento)} anos</div></div>
                             </div>
                         </div>
 
@@ -618,7 +618,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                 <div className="md:col-span-4"><label className={labelStyle}>Especialidade <span className="text-red-500 ml-1">*</span></label><select name="especialidade" value={String(formData.especialidade || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase`} required><option value="">SELECIONE...</option>{settings.especialidades?.map((esp, idx) => <option key={idx} value={String(esp).toUpperCase()}>{esp}</option>)}</select></div>
                                 <div className="md:col-span-4"><label className={labelStyle}>Tipo de Anestesia <span className="text-red-500 ml-1">*</span></label><select name="anestesia" value={String(formData.anestesia || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase`} required><option value="">SELECIONE...</option>{settings.anestesias?.map((a, idx) => <option key={idx} value={String(a).toUpperCase()}>{a}</option>)}</select></div>
                                 <div className="md:col-span-4"><label className={labelStyle}>Convênio <span className="text-red-500 ml-1">*</span></label><select name="convenio" value={String(formData.convenio || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase`} required><option value="">SELECIONE...</option>{settings.convenios?.map((c, idx) => <option key={idx} value={String(c).toUpperCase()}>{c}</option>)}</select></div>
-                                <div className="md:col-span-4"><label className={labelStyle}>Prioridade <span className="text-red-500 ml-1">*</span></label><select name="prioridade" value={String(formData.prioridade || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase text-slate-900`} required><option value="">SELECIONE...</option>{settings.prioridades?.map((p, idx) => <option key={idx} value={String(p).toUpperCase()}>{p}</option>)}</select></div>
+                                <div className="md:col-span-4"><label className={labelStyle}>Prioridade <span className="text-red-500 ml-1">*</span></label><select name="prioridade" value={String(formData.prioridade || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase text-slate-800`} required><option value="">SELECIONE...</option>{settings.prioridades?.map((p, idx) => <option key={idx} value={String(p).toUpperCase()}>{p}</option>)}</select></div>
                             </div>
                         </div>
 
@@ -632,7 +632,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                     type="button"
                                     onClick={handleManualSync}
                                     disabled={isSyncing || isLocked}
-                                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100 hover:border-blue-200 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-sm disabled:opacity-50"
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none hover:bg-blue-100 border border-blue-100 hover:border-blue-200 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-sm disabled:opacity-50"
                                     title="Vasculhar sistema por AIHs e APAs deste paciente"
                                 >
                                     <RefreshCw size={12} className={isSyncing ? "animate-spin" : ""} />
@@ -648,7 +648,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                             </div>
                             <div className={`grid grid-cols-2 md:grid-cols-4 gap-2 ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
                                 {['aih', 'autorizada', 'apa', 'opme'].map(field => (
-                                    <button key={field} type="button" disabled={disableInputs} onClick={podeEditar ? () => setFormData({ ...formData, [field]: !formData[field] }) : undefined} className={`py-2 px-3 rounded-xl border flex items-center justify-between transition-all ${formData[field] ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-400'} ${!podeEditar ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-blue-300'}`}><span className="text-[11px] font-bold uppercase">{field.toUpperCase()}</span><CheckCircle2 size={14} className={formData[field] ? 'opacity-100' : 'opacity-30'} /></button>
+                                    <button key={field} type="button" disabled={disableInputs} onClick={podeEditar ? () => setFormData({ ...formData, [field]: !formData[field] }) : undefined} className={`py-2 px-3 rounded-xl border flex items-center justify-between transition-all ${formData[field] ? 'bg-emerald-500/20 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-white/60 border-white/40 text-slate-500'} ${!podeEditar ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-blue-300'}`}><span className="text-[11px] font-bold uppercase">{field.toUpperCase()}</span><CheckCircle2 size={14} className={formData[field] ? 'opacity-100' : 'opacity-30'} /></button>
                                 ))}
                             </div>
                         </div>
@@ -669,13 +669,13 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                         </select>
                                         
                                         {formData.status?.toUpperCase() === 'SUSPENSA' && (
-                                            <div className="mt-4 p-4 bg-rose-50 border border-rose-200 rounded-xl animate-in fade-in slide-in-from-top-2">
+                                            <div className="mt-4 p-4 bg-rose-500/20 border border-rose-200 rounded-xl animate-in fade-in slide-in-from-top-2">
                                                 <label className="text-[11px] font-black text-rose-700 uppercase tracking-widest mb-2 block">Motivo da Suspensão <span className="text-red-500">*</span></label>
                                                 <select 
                                                     value={formData.motivo_suspensao_id || ''} 
                                                     onChange={(e) => setFormData({...formData, motivo_suspensao_id: e.target.value})}
                                                     disabled={disableInputs}
-                                                    className="w-full h-10 px-3 bg-white border border-rose-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-rose-500/30 uppercase"
+                                                    className="w-full h-10 px-3 bg-white/60 border border-rose-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-rose-500/30 uppercase"
                                                 >
                                                     <option value="">SELECIONE O MOTIVO...</option>
                                                     {motivosSuspensao.map(m => (
@@ -689,16 +689,16 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                     <div className="my-6">
                                         <div 
                                             onClick={() => !disableInputs && setIsObsOpen(!isObsOpen)}
-                                            className={`flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl transition-colors ${disableInputs ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:bg-slate-100'}`}
+                                            className={`flex items-center justify-between p-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl transition-colors ${disableInputs ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:bg-white/70'}`}
                                         >
                                             <span className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
                                                 📝 Observações e Evolução
                                             </span>
-                                            <span className="text-slate-400 text-[11px] font-bold uppercase tracking-widest">{isObsOpen ? 'Ocultar ▲' : 'Expandir ▼'}</span>
+                                            <span className="text-slate-500 text-[11px] font-bold uppercase tracking-widest">{isObsOpen ? 'Ocultar ▲' : 'Expandir ▼'}</span>
                                         </div>
                                         
                                         {isObsOpen && (
-                                            <div className="p-4 border border-t-0 border-slate-200 rounded-b-xl bg-white space-y-4 animate-in fade-in slide-in-from-top-2">
+                                            <div className="p-4 border border-t-0 border-white/60 rounded-b-xl bg-white/60 space-y-4 animate-in fade-in slide-in-from-top-2">
                                                 {(formData.observacoes || formData.obs) && (
                                                     <div className="p-3 bg-yellow-50/50 border border-yellow-100 rounded-lg text-xs font-medium text-slate-700 whitespace-pre-wrap">
                                                         {formData.observacoes || formData.obs}
@@ -711,7 +711,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                                         onChange={(e) => setNovaObs(e.target.value)}
                                                         disabled={disableInputs}
                                                         placeholder="Digite uma nova observação aqui..."
-                                                        className="w-full h-20 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-teal-500/30 resize-none font-medium"
+                                                        className="w-full h-20 p-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs outline-none focus:ring-2 focus:ring-teal-500/30 resize-none font-medium"
                                                     />
                                                     <button 
                                                         type="button"
@@ -724,7 +724,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                                             setNovaObs('');
                                                         }}
                                                         disabled={!novaObs.trim() || disableInputs}
-                                                        className="self-end h-8 px-4 bg-slate-800 text-white text-[11px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors shadow-sm"
+                                                        className="self-end h-8 px-4 bg-white/50 text-slate-800 text-[11px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors shadow-sm"
                                                     >
                                                         Adicionar à Ficha
                                                     </button>
@@ -739,11 +739,11 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                 <div><h3 className="text-xs font-black uppercase tracking-widest mb-2 text-slate-600 flex items-center gap-2"><Paperclip size={16} /> Central de Documentos</h3></div>
 
                                 {/* LISTA DE ARQUIVOS E GUIAS VIRTUAIS */}
-                                <div className="space-y-2 mb-4 max-h-32 overflow-y-auto custom-scrollbar bg-white/40 p-2 rounded-2xl border border-white/50">
+                                <div className="space-y-2 mb-4 max-h-32 overflow-y-auto custom-scrollbar bg-white/60 p-2 rounded-2xl border border-white/400">
                                     {documentosCompletos.length > 0 ? documentosCompletos.map((file, idx) => (
-                                        <div key={idx} className={`flex justify-between items-center p-2 rounded-xl shadow-sm backdrop-blur-md ${file.isVirtual ? 'bg-sky-50/70 border border-sky-200' : 'bg-white/60 border border-white/60'}`}>
+                                        <div key={idx} className={`flex justify-between items-center p-2 rounded-xl shadow-sm backdrop-blur-md ${file.isVirtual ? 'bg-sky-50/70 border border-sky-200' : 'bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl'}`}>
                                             <div className="flex items-center gap-2 overflow-hidden">
-                                                <div className={`p-1.5 rounded-lg ${file.isVirtual ? 'bg-sky-100' : 'bg-blue-50/50'}`}><FileText size={14} className={file.isVirtual ? 'text-sky-600' : 'text-blue-600'} /></div>
+                                                <div className={`p-1.5 rounded-lg ${file.isVirtual ? 'bg-sky-100' : 'bg-blue-500/20/50'}`}><FileText size={14} className={file.isVirtual ? 'text-sky-600' : 'text-blue-600'} /></div>
                                                 <span className={`text-[10px] font-bold truncate max-w-[150px] ${file.isVirtual ? 'text-sky-800' : 'text-slate-700'}`}>{file.name || 'Documento Anexo'}</span>
                                             </div>
                                             <div className="flex items-center gap-1">
@@ -751,7 +751,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                                     <button
                                                         type="button"
                                                         onClick={() => handlePrintVirtual(file.type)}
-                                                        className="text-blue-500 hover:text-white p-1 hover:bg-blue-500 rounded-lg transition-colors"
+                                                        className="text-blue-500 hover:text-slate-800 p-1 hover:bg-blue-500/200 rounded-lg transition-colors"
                                                         title={`Visualizar / Imprimir ${file.type}`}
                                                     >
                                                         <Printer size={14} />
@@ -779,8 +779,8 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                         <input type="file" ref={fileInputRef} multiple className="hidden" onChange={handleNewFileSelect} />
 
                                         {/* Botão de Adicionar */}
-                                        <div onClick={() => fileInputRef.current.click()} className="p-4 border-2 border-dashed border-white/60 rounded-2xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-white/50 hover:border-blue-300 transition-all group backdrop-blur-md">
-                                            <Paperclip size={18} className="text-slate-400 group-hover:text-blue-600 transition-colors" />
+                                        <div onClick={() => fileInputRef.current.click()} className="p-4 border-2 border-dashed border-white/60 rounded-2xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-white/60 hover:border-blue-300 transition-all group backdrop-blur-md">
+                                            <Paperclip size={18} className="text-slate-500 group-hover:text-blue-600 transition-colors" />
                                             <span className="text-[10px] font-black uppercase text-slate-500 group-hover:text-blue-600 transition-colors">Anexar Mais Arquivos</span>
                                         </div>
                                     </>
@@ -791,7 +791,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                     <div className="mt-2 space-y-1">
                                         <p className="text-[9px] font-black text-emerald-500 uppercase ml-1">Para enviar:</p>
                                         {newFiles.map((file, idx) => (
-                                            <div key={idx} className="flex justify-between items-center bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                                            <div key={idx} className="flex justify-between items-center bg-emerald-500/20 p-2 rounded-lg border border-emerald-100">
                                                 <span className="text-[10px] font-bold text-emerald-700 truncate">{file.name}</span>
                                                 <button type="button" onClick={() => removeNewFile(idx)} className="text-emerald-300 hover:text-rose-500"><X size={12} /></button>
                                             </div>
@@ -802,7 +802,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                         </div>
 
                         <div className="pt-4 flex justify-end gap-3">
-                            <button type="button" onClick={onClose} className="h-9 px-6 text-slate-400 font-semibold text-xs uppercase hover:text-slate-600">{podeEditar ? 'Cancelar' : 'Fechar'}</button>
+                            <button type="button" onClick={onClose} className="h-9 px-6 text-slate-500 font-semibold text-xs uppercase hover:text-slate-600">{podeEditar ? 'Cancelar' : 'Fechar'}</button>
                             {podeEditar && (
                                 <button type="submit" disabled={uploading} className="bg-blue-600 text-white h-10 px-8 rounded-lg font-bold text-xs uppercase shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2">
                                     {uploading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
@@ -1133,14 +1133,14 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
     const isSimplifiedContract = settings.cidades?.[0]?.toUpperCase().includes('SALTO');
 
     const QueueContent = (
-        <div className={`px-4 lg:px-6 space-y-3 pt-4 pb-16 font-sans text-slate-900 bg-slate-50/20 ${isModal ? 'min-h-0' : 'min-h-full'}`}>
+        <div className={`px-4 lg:px-6 space-y-3 pt-4 pb-16 font-sans text-slate-800 bg-slate-50/20 ${isModal ? 'min-h-0' : 'min-h-full'}`}>
             {!isModal && (
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-white/40">
                     <div className="flex items-center gap-3">
                         <ClipboardList size={28} className="text-blue-600" />
                         <div>
-                            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Fila Cirúrgica</h1>
-                            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Gestão de Espera</div>
+                            <h1 className="text-2xl font-black text-slate-900 drop-shadow-none tracking-normal">Fila Cirúrgica</h1>
+                            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Gestão de Espera</div>
                         </div>
                     </div>
                 </div>
@@ -1148,15 +1148,15 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
 
             {/* UPPER SPACE FREED */}
 
-            <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 backdrop-blur-lg p-3 rounded-2xl shadow-sm border border-blue-100/50 space-y-3">
+            <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 backdrop-blur-lg p-3 rounded-2xl shadow-sm backdrop-blur-md border border-blue-100/50 space-y-3">
                 <div className="flex flex-col md:flex-row gap-3 items-center">
                     <div className="relative w-full md:flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                        <input type="text" placeholder="Pesquisar paciente ou CNS..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-9 pl-9 pr-4 bg-white border border-slate-200/60 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 font-bold text-xs text-slate-700 placeholder:text-slate-400 shadow-sm transition-all" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                        <input type="text" placeholder="Pesquisar paciente ou CNS..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-9 pl-9 pr-4 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 font-bold text-xs text-slate-700 placeholder:text-slate-500 shadow-sm transition-all" />
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0 justify-end">
-                        <button onClick={resetFilters} className="h-9 px-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-all flex items-center gap-1.5 font-black text-[10px] uppercase border border-slate-200/60 bg-white shadow-sm"><FilterX size={14} /> Limpar</button>
+                        <button onClick={resetFilters} className="h-9 px-3 text-rose-500 hover:bg-rose-500/20 rounded-xl transition-all flex items-center gap-1.5 font-black text-[10px] uppercase border border-white/60 bg-white/60 shadow-sm"><FilterX size={14} /> Limpar</button>
                         
                         {hasPermission('Criar Agendamentos') && (
                             <button onClick={() => setEditingSurgery({
@@ -1165,7 +1165,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                 prioridade: 'ELETIVA',
                                 convenio: settings.convenios?.[0] || 'SUS',
                                 municipio: settings.cidades?.[0] || 'Porto Feliz'
-                            })} className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center gap-1.5 shadow-md shadow-blue-500/20">
+                            })} className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-slate-800 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center gap-1.5 shadow-md shadow-blue-500/20">
                                 <Plus size={14} /> Novo Paciente
                             </button>
                         )}
@@ -1173,21 +1173,21 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                 </div>
                 
                 <div className="grid grid-cols-2 lg:grid-cols-6 gap-2">
-                    <select value={filters.status?.toUpperCase() || ''} onChange={e => setFilters({ ...filters, status: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Status: Todos</option>{settings.status?.map(s => <option key={s} value={s.toUpperCase()}>{s.toUpperCase()}</option>)}</select>
-                    <select value={filters.procedimento} onChange={e => setFilters({ ...filters, procedimento: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Cirurgia: Todas</option>{uniqueProcedures.map(p => <option key={p} value={p}>{p}</option>)}</select>
-                    <select value={filters.cirurgiao} onChange={e => setFilters({ ...filters, cirurgiao: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Cirurgião: Todos</option>{settings.cirurgioes?.map((c, idx) => { const label = typeof c === 'string' ? c : c.nome; return <option key={idx} value={String(label).toUpperCase()}>{label}</option>; })}</select>
-                    <select value={filters.especialidade} onChange={e => setFilters({ ...filters, especialidade: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Especialidade: Todas</option>{settings.especialidades?.map(e => <option key={e} value={String(e).toUpperCase()}>{e}</option>)}</select>
-                    <select value={filters.convenio} onChange={e => setFilters({ ...filters, convenio: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Convênio: Todos</option>{settings.convenios?.map(c => <option key={c} value={c}>{c}</option>)}</select>
-                    <select value={filters.prioridade} onChange={e => setFilters({ ...filters, prioridade: e.target.value })} className="h-9 px-3 py-2 bg-white border border-slate-200/60 rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Class.: Todas</option>{settings.prioridades?.map(p => <option key={p} value={p}>{p}</option>)}</select>
+                    <select value={filters.status?.toUpperCase() || ''} onChange={e => setFilters({ ...filters, status: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Status: Todos</option>{settings.status?.map(s => <option key={s} value={s.toUpperCase()}>{s.toUpperCase()}</option>)}</select>
+                    <select value={filters.procedimento} onChange={e => setFilters({ ...filters, procedimento: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Cirurgia: Todas</option>{uniqueProcedures.map(p => <option key={p} value={p}>{p}</option>)}</select>
+                    <select value={filters.cirurgiao} onChange={e => setFilters({ ...filters, cirurgiao: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Cirurgião: Todos</option>{settings.cirurgioes?.map((c, idx) => { const label = typeof c === 'string' ? c : c.nome; return <option key={idx} value={String(label).toUpperCase()}>{label}</option>; })}</select>
+                    <select value={filters.especialidade} onChange={e => setFilters({ ...filters, especialidade: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Especialidade: Todas</option>{settings.especialidades?.map(e => <option key={e} value={String(e).toUpperCase()}>{e}</option>)}</select>
+                    <select value={filters.convenio} onChange={e => setFilters({ ...filters, convenio: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Convênio: Todos</option>{settings.convenios?.map(c => <option key={c} value={c}>{c}</option>)}</select>
+                    <select value={filters.prioridade} onChange={e => setFilters({ ...filters, prioridade: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Class.: Todas</option>{settings.prioridades?.map(p => <option key={p} value={p}>{p}</option>)}</select>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-blue-100/50">
                     {['atend', 'autoriz', 'agend'].map((type) => (
                         <div key={type} className="flex flex-col gap-1">
                             <span className="text-[9px] font-black text-blue-800/60 uppercase pl-1">{type === 'atend' ? 'Atendimento' : type === 'autoriz' ? 'Autorização' : 'Agendamento'}</span>
-                            <div className="flex items-center bg-white rounded-xl p-1 gap-1 border border-slate-200/60 shadow-sm h-8">
+                            <div className="flex items-center bg-white/60 rounded-xl p-1 gap-1 border border-white/60 shadow-sm h-8">
                                 <input type="date" value={filters[`${type}Inicio`]} onChange={e => setFilters({ ...filters, [`${type}Inicio`]: e.target.value })} className="bg-transparent text-[10px] font-black text-slate-700 outline-none flex-1 text-center w-full" />
-                                <span className="text-slate-300">➜</span>
+                                <span className="text-slate-600">➜</span>
                                 <input type="date" value={filters[`${type}Fim`]} onChange={e => setFilters({ ...filters, [`${type}Fim`]: e.target.value })} className="bg-transparent text-[10px] font-black text-slate-700 outline-none flex-1 text-center w-full" />
                             </div>
                         </div>
@@ -1197,17 +1197,17 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                 {!isSimplifiedContract && (
                     <div className="flex flex-wrap gap-2 pt-3 border-t border-blue-100/50">
                         {['aih', 'autorizada', 'apa', 'opme'].map(f => (
-                            <label key={f} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase cursor-pointer transition-all shadow-sm ${filters[f] ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200/60 text-slate-500 hover:bg-blue-50 hover:text-blue-600'}`}><input type="checkbox" className="hidden" checked={filters[f]} onChange={e => setFilters({ ...filters, [f]: e.target.checked })} /> {f}</label>
+                            <label key={f} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase cursor-pointer transition-all shadow-sm ${filters[f] ? 'bg-blue-600 border-blue-600 text-slate-800' : 'bg-white/60 border-white/60 text-slate-500 hover:bg-blue-500/20 hover:text-blue-600'}`}><input type="checkbox" className="hidden" checked={filters[f]} onChange={e => setFilters({ ...filters, [f]: e.target.checked })} /> {f}</label>
                         ))}
                     </div>
                 )}
             </div>
 
-            <div className="bg-white/60 backdrop-blur-lg rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-white/60 backdrop-blur-lg rounded-2xl shadow-sm backdrop-blur-md border border-white/60 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-100">
                         <thead className="bg-slate-50/80">
-                            <tr className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-200">
+                            <tr className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/60">
                                 <th className="py-3 px-4 w-[22%] cursor-pointer hover:text-blue-600 transition-colors" onClick={() => toggleSort('nomePaciente')}>Dados do Paciente {sortConfig.field === 'nomePaciente' && (sortConfig.direction === 'asc' ? <ArrowUp size={11} className="inline ml-1" /> : <ArrowDown size={11} className="inline ml-1" />)}</th>
                                 <th className="py-3 px-4 w-[22%]">Procedimento / Cirurgião</th>
                                 <th className="py-3 px-4 w-[28%] cursor-pointer hover:text-blue-600 transition-colors" onClick={() => toggleSort('dataAutorizacao')}>Datas e Observações {sortConfig.field === 'dataAutorizacao' && (sortConfig.direction === 'asc' ? <ArrowUp size={11} className="inline ml-1" /> : <ArrowDown size={11} className="inline ml-1" />)}</th>
@@ -1226,12 +1226,12 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                     const isUnavailable = isFinalized || (item.dataAgendado && !needsReschedule);
 
                                     return (
-                                    <tr key={item.id} className="hover:bg-blue-50/20 transition-all group border-b last:border-none">
+                                    <tr key={item.id} className="hover:bg-blue-500/20/20 transition-all group border-b last:border-none">
                                         <td className="px-4 py-3 align-top">
-                                            <div className="text-[12px] font-black text-slate-900 uppercase tracking-tighter leading-tight" title={item.nomePaciente || item.paciente}>{item.nomePaciente || item.paciente}</div>
-                                            <div className="text-[10px] font-bold text-slate-400 mt-1.5 space-y-1">
+                                            <div className="text-[12px] font-black text-slate-800 uppercase tracking-widest leading-tight" title={item.nomePaciente || item.paciente}>{item.nomePaciente || item.paciente}</div>
+                                            <div className="text-[10px] font-bold text-slate-500 mt-1.5 space-y-1">
                                                 <div className="flex items-center gap-1.5 font-black text-blue-500"><ClipboardCheck size={11} className="text-blue-400" /> {item.cns?.replace(/[^\d]/g, '') || '--- CNS NÃO INF. ---'}</div>
-                                                <div className="flex items-center gap-1.5 text-slate-700 font-bold"><Calendar size={11} className="text-slate-300" /> {calculateAge(item.dataNascimento || item.nascimento)} (DN: {(item.dataNascimento || item.nascimento)?.split('-').reverse().join('/') || '--'})</div>
+                                                <div className="flex items-center gap-1.5 text-slate-700 font-bold"><Calendar size={11} className="text-slate-600" /> {calculateAge(item.dataNascimento || item.nascimento)} (DN: {(item.dataNascimento || item.nascimento)?.split('-').reverse().join('/') || '--'})</div>
                                                 <div className="flex items-center gap-1.5 font-black uppercase text-[10px] text-slate-500"><Phone size={11} className="text-emerald-400" /> {item.telefone1 || item.telefone}</div>
                                             </div>
                                         </td>
@@ -1239,12 +1239,12 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                             <div className="flex items-start gap-2">
                                                 <Stethoscope size={14} className="text-blue-500 shrink-0 mt-0.5" />
                                                 <div className="space-y-1 w-full">
-                                                    <div className="text-[11px] font-black text-slate-800 uppercase leading-snug line-clamp-2" title={item.procedimento || 'NÃO INFORMADO'}>{item.procedimento || 'NÃO INFORMADO'}</div>
-                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter truncate">DR(A). {item.cirurgiao || '---'} {item.especialidade ? `(${item.especialidade})` : ''}</div>
+                                                    <div className="text-[11px] font-black text-slate-900 drop-shadow-none uppercase leading-snug line-clamp-2" title={item.procedimento || 'NÃO INFORMADO'}>{item.procedimento || 'NÃO INFORMADO'}</div>
+                                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate">DR(A). {item.cirurgiao || '---'} {item.especialidade ? `(${item.especialidade})` : ''}</div>
                                                     <div className="flex flex-wrap gap-1 mt-1">
-                                                        <span className="text-[9px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 uppercase">A: {item.anestesia || 'Não Inf.'}</span>
-                                                        <span className="text-[9px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 uppercase">{item.convenio || 'SUS'}</span>
-                                                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border ${PRIORITY_COLORS[item.prioridade] || 'bg-slate-100 text-slate-400'}`}>{item.prioridade}</span>
+                                                        <span className="text-[9px] font-black text-blue-500 bg-blue-500/20 px-1.5 py-0.5 rounded border border-blue-100 uppercase">A: {item.anestesia || 'Não Inf.'}</span>
+                                                        <span className="text-[9px] font-black text-blue-500 bg-blue-500/20 px-1.5 py-0.5 rounded border border-blue-100 uppercase">{item.convenio || 'SUS'}</span>
+                                                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border ${PRIORITY_COLORS[item.prioridade] || 'bg-white/70 text-slate-500'}`}>{item.prioridade}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1254,12 +1254,12 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                 <div className="flex flex-col gap-2 w-full">
                                                     <div className="flex flex-wrap gap-1">
                                                         {['aih', 'autorizada', 'apa', 'opme'].map(tag => (
-                                                            <button key={tag} disabled={!podeEditar} onClick={podeEditar ? () => handleQuickUpdate(item, tag, !item[tag]) : undefined} className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border transition-all ${podeEditar ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-not-allowed'} ${item[tag] ? 'bg-emerald-100 text-emerald-700 border-emerald-200 shadow-sm' : 'bg-white text-slate-300 border-slate-200 shadow-sm'}`}>{tag}</button>
+                                                            <button key={tag} disabled={!podeEditar} onClick={podeEditar ? () => handleQuickUpdate(item, tag, !item[tag]) : undefined} className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border transition-all ${podeEditar ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-not-allowed'} ${item[tag] ? 'bg-emerald-100 text-emerald-700 border-emerald-200 shadow-sm' : 'bg-white/60 text-slate-600 border-white/60 shadow-sm'}`}>{tag}</button>
                                                         ))}
                                                     </div>
                                                     <div className="flex flex-col md:flex-row gap-2 w-full">
-                                                        <div className="flex justify-between items-center bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-sm flex-1"><span className="text-[9px] font-black text-slate-400 uppercase shrink-0">Atend:</span><span className="text-[11px] font-black text-slate-700">{item.dataAtendimento?.split('-').reverse().join('/') || '---'}</span></div>
-                                                        <div className="flex justify-between items-center bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 shadow-sm flex-1">
+                                                        <div className="flex justify-between items-center bg-white/60 px-2 py-1 rounded-lg border border-white/60 shadow-sm flex-1"><span className="text-[9px] font-black text-slate-500 uppercase shrink-0">Atend:</span><span className="text-[11px] font-black text-slate-700">{item.dataAtendimento?.split('-').reverse().join('/') || '---'}</span></div>
+                                                        <div className="flex justify-between items-center bg-emerald-500/20 px-2 py-1 rounded-lg border border-emerald-100 shadow-sm flex-1">
                                                             <span className="text-[9px] font-black text-emerald-500 uppercase shrink-0 mr-1">Autoriz:</span>
                                                             <input
                                                                 type="date"
@@ -1275,14 +1275,14 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm w-fit mb-2">
-                                                    <span className="text-[9px] font-black text-slate-400 uppercase shrink-0 mr-2">Data Consulta:</span>
+                                                <div className="flex items-center bg-white/60 px-2 py-1.5 rounded-lg border border-white/60 shadow-sm w-fit mb-2">
+                                                    <span className="text-[9px] font-black text-slate-500 uppercase shrink-0 mr-2">Data Consulta:</span>
                                                     <span className="text-[11px] font-black text-slate-700">{item.dataAtendimento?.split('-').reverse().join('/') || '---'}</span>
                                                 </div>
                                             )}
 
                                             {isSimplifiedContract && (
-                                                <div className="bg-amber-50/60 p-2 rounded-xl border border-amber-200/60 hover:bg-amber-50/90 transition-all shadow-sm w-full mt-2">
+                                                <div className="bg-amber-500/20/60 p-2 rounded-xl border border-amber-200/60 hover:bg-amber-500/20/90 transition-all shadow-sm w-full mt-2">
                                                     <div className="flex items-center gap-1 text-[9px] font-black text-amber-600 uppercase mb-1"><MessageSquare size={10} /> Notas SISGESP:</div>
                                                     <textarea
                                                         key={`obs-${item.id}-${item.obs || item.observacoes}`}
@@ -1307,12 +1307,12 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                             </select>
 
                                             {item.status === 'Aguardando Autorização' ? (
-                                                <div className="bg-rose-50 px-2 py-2 rounded-xl border border-dashed border-rose-200 text-center w-full max-w-[150px]">
+                                                <div className="bg-rose-500/20 px-2 py-2 rounded-xl border border-dashed border-rose-200 text-center w-full max-w-[150px]">
                                                     <ShieldCheck size={14} className="text-rose-400 mx-auto opacity-50 mb-1" />
                                                     <div className="text-[9px] font-black text-rose-600 uppercase">Sem Cobertura</div>
                                                 </div>
                                             ) : (
-                                                <div className="space-y-1.5 bg-white p-2 rounded-xl border border-slate-200 shadow-sm w-full max-w-[150px]">
+                                                <div className="space-y-1.5 bg-white/60 p-2 rounded-xl border border-white/60 shadow-sm w-full max-w-[150px]">
                                                     <div className="flex items-center gap-1.5 text-blue-600 font-extrabold">
                                                         <Calendar size={11} className="text-blue-400" />
                                                         <input
@@ -1326,7 +1326,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                             className={`bg-transparent text-[10px] font-black outline-none flex-1 w-full ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
                                                         />
                                                     </div>
-                                                    <div className="flex items-center gap-1.5 text-blue-500 font-extrabold border-t border-slate-100 pt-1.5">
+                                                    <div className="flex items-center gap-1.5 text-blue-500 font-extrabold border-t border-white/40 pt-1.5">
                                                         <Clock size={11} className="text-blue-300" />
                                                         <input
                                                             type="time"
@@ -1339,8 +1339,8 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                             className={`bg-transparent text-[10px] font-black outline-none flex-1 w-full ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
                                                         />
                                                     </div>
-                                                    <div className="flex items-center gap-1.5 text-slate-500 font-bold border-t border-slate-100 pt-1.5">
-                                                        <MapPin size={11} className="text-slate-300" />
+                                                    <div className="flex items-center gap-1.5 text-slate-500 font-bold border-t border-white/40 pt-1.5">
+                                                        <MapPin size={11} className="text-slate-600" />
                                                         <select disabled={!podeEditar} value={String(item.sala || '').toUpperCase()} onChange={(e) => handleQuickUpdate(item, 'sala', e.target.value)} className={`bg-transparent text-[10px] uppercase font-black outline-none flex-1 truncate max-w-[90px] ${podeEditar ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}>
                                                             <option value="">NÃO DEF</option>
                                                             {settings.locais?.map(l => <option key={l} value={String(l).toUpperCase()}>{l.toUpperCase()}</option>)}
@@ -1350,7 +1350,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                             )}
 
                                             {!isSimplifiedContract && (
-                                                <div className="mt-2 bg-amber-50/60 p-2 rounded-xl border border-amber-200/60 hover:bg-amber-50/90 transition-all shadow-sm w-full max-w-[150px]">
+                                                <div className="mt-2 bg-amber-500/20/60 p-2 rounded-xl border border-amber-200/60 hover:bg-amber-500/20/90 transition-all shadow-sm w-full max-w-[150px]">
                                                     <div className="flex items-center gap-1 text-[9px] font-black text-amber-600 uppercase mb-1"><MessageSquare size={10} /> Notas SISGESP:</div>
                                                     <textarea
                                                         key={`obs-${item.id}-${item.obs || item.observacoes}`}
@@ -1373,17 +1373,17 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                         href={item.externalExamUrl || item.arquivoUrl || item.arquivos?.[0]?.url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded text-[9px] font-black uppercase tracking-wide no-underline shadow-sm"
+                                                        className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none hover:bg-blue-100 border border-blue-200 rounded text-[9px] font-black uppercase tracking-wide no-underline shadow-sm"
                                                     >
                                                         <Paperclip size={10} /> DOCs
                                                     </a>
                                                 )}
                                                 <div className="flex gap-2 w-full justify-center">
                                                     {hasPermission('Editar Agendamentos') && (
-                                                        <button onClick={() => setEditingSurgery(item)} className="p-2 bg-white/60 backdrop-blur-md text-slate-700 hover:text-blue-600 rounded-lg shadow-sm border border-slate-200 transition-all hover:scale-110 active:scale-95" title="Editar"><Edit size={16} /></button>
+                                                        <button onClick={() => setEditingSurgery(item)} className="p-2 bg-white/60 backdrop-blur-md text-slate-700 hover:text-blue-600 rounded-lg shadow-sm border border-white/60 transition-all hover:scale-110 active:scale-95" title="Editar"><Edit size={16} /></button>
                                                     )}
                                                     {hasPermission('Excluir Agendamentos') && (
-                                                        <button onClick={() => handleDelete(item)} className="p-2 bg-white/60 backdrop-blur-md text-slate-700 hover:text-rose-600 rounded-lg shadow-sm border border-slate-200 transition-all hover:scale-110 active:scale-95 group/delete" title="Excluir"><Trash2 size={16} /></button>
+                                                        <button onClick={() => handleDelete(item)} className="p-2 bg-white/60 backdrop-blur-md text-slate-700 hover:text-rose-600 rounded-lg shadow-sm border border-white/60 transition-all hover:scale-110 active:scale-95 group/delete" title="Excluir"><Trash2 size={16} /></button>
                                                     )}
                                                 </div>
                                                 {isModal && slotInfo && (
@@ -1392,8 +1392,8 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                                         onClick={() => onSelectForScheduling(item)} 
                                                         className={`mt-1 w-full py-2 px-2 font-black text-[10px] uppercase rounded-lg transition-all shadow-sm flex items-center justify-center gap-1 ${
                                                             isUnavailable 
-                                                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
-                                                            : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                                            ? 'bg-white/80 text-slate-500 cursor-not-allowed' 
+                                                            : 'bg-indigo-600 hover:bg-indigo-700 text-slate-800'
                                                         }`}
                                                     >
                                                         <Calendar size={12} /> {isUnavailable ? 'Já Agendado' : 'Agendar'}
@@ -1405,7 +1405,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                     );
                                 })
                             ) : (
-                                <tr><td colSpan="5" className="py-40 text-center text-slate-300 font-black uppercase text-sm tracking-widest bg-slate-50/10 px-10 leading-relaxed italic">Nenhum registro encontrado no sistema.</td></tr>
+                                <tr><td colSpan="5" className="py-40 text-center text-slate-600 font-black uppercase text-sm tracking-widest bg-slate-50/10 px-10 leading-relaxed italic">Nenhum registro encontrado no sistema.</td></tr>
                             )}
                         </tbody>
                     </table>
@@ -1418,14 +1418,14 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
     if (isModal) {
         return (
             <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in print:hidden" onClick={onCloseModal}>
-                <div className="w-full h-full max-h-[96vh] max-w-[96vw] bg-slate-100 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col border border-white/40" onClick={e => e.stopPropagation()}>
+                <div className="w-full h-full max-h-[96vh] max-w-[96vw] bg-white/70 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col border border-white/40" onClick={e => e.stopPropagation()}>
                     {slotInfo ? (
-                        <div className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between text-white shadow-md relative z-20 shrink-0">
+                        <div className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between text-slate-800 shadow-md relative z-20 shrink-0">
                             <div>
                                 <h2 className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
                                     <Calendar size={20} className="text-blue-400" /> Selecione um Paciente para Agendar
                                 </h2>
-                                <p className="text-slate-400 text-[11px] font-bold uppercase mt-0.5 tracking-wider">
+                                <p className="text-slate-500 text-[11px] font-bold uppercase mt-0.5 tracking-wider">
                                     Destino: <span className="text-blue-400">Sala {slotInfo.sala}</span> • {slotInfo.data?.split('-').reverse().join('/')} às {slotInfo.horario}
                                 </p>
                             </div>
@@ -1438,20 +1438,20 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                         🔒 Bloquear Horário
                                     </button>
                                 )}
-                                <button onClick={onCloseModal} className="p-2 bg-slate-700 hover:bg-rose-500 rounded-xl transition-colors shadow-sm"><X size={20} /></button>
+                                <button onClick={onCloseModal} className="p-2 bg-slate-700 hover:bg-rose-500/200 rounded-xl transition-colors shadow-sm"><X size={20} /></button>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white px-6 py-4 flex items-center justify-between border-b border-slate-200 shadow-sm relative z-20 shrink-0">
+                        <div className="bg-white/60 px-6 py-4 flex items-center justify-between border-b border-white/60 shadow-sm relative z-20 shrink-0">
                             <div>
-                                <h2 className="text-lg font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                <h2 className="text-lg font-black text-slate-900 drop-shadow-none uppercase tracking-widest flex items-center gap-2">
                                     <ClipboardList size={20} className="text-blue-600" /> Fila Cirúrgica Interativa
                                 </h2>
-                                <p className="text-slate-400 text-[11px] font-bold uppercase mt-0.5 tracking-wider">
+                                <p className="text-slate-500 text-[11px] font-bold uppercase mt-0.5 tracking-wider">
                                     Consulta e Gestão Rápida
                                 </p>
                             </div>
-                            <button onClick={onCloseModal} className="p-2 bg-slate-100/80 text-slate-500 hover:text-white hover:bg-rose-500 rounded-xl transition-colors border border-slate-200 shadow-sm"><X size={20} /></button>
+                            <button onClick={onCloseModal} className="p-2 bg-slate-100/80 text-slate-500 hover:text-slate-800 hover:bg-rose-500/200 rounded-xl transition-colors border border-white/60 shadow-sm"><X size={20} /></button>
                         </div>
                     )}
                     

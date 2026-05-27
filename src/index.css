@@ -48,3 +48,12 @@ html.tema-escuro iframe,
 html.tema-escuro .preserve-color {
     filter: invert(1) hue-rotate(180deg);
 }
+
+/* Utilitário para esconder barras de rolagem mantendo a funcionalidade de scroll */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
