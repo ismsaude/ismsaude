@@ -449,16 +449,16 @@ const HomeHub = () => {
                                 upcomingShifts.map((shift, idx) => {
                                     const isNext = idx === 0;
                                     return (
-                                        <div key={idx} className={`rounded-2xl p-4 border flex flex-col gap-1.5 cursor-pointer transition-all hover:-translate-y-1 shrink-0 ${isNext ? 'bg-indigo-500/20 border-indigo-400/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-white/60 border-white/60 hover:border-white/80 hover:bg-white/70'}`}>
-                                            <div className="flex justify-between items-center">
-                                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md ${isNext ? 'text-indigo-700 bg-indigo-500/20' : 'text-slate-600 bg-white/70 border border-white/60'}`}>
+                                        <div key={idx} className={`rounded-2xl p-3 border flex flex-col gap-0.5 cursor-pointer transition-all hover:-translate-y-1 shrink-0 ${isNext ? 'bg-indigo-500/20 border-indigo-400/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-white/60 border-white/60 hover:border-white/80 hover:bg-white/70'}`}>
+                                            <div className="flex justify-between items-center mb-0.5">
+                                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${isNext ? 'text-indigo-700 bg-indigo-500/20' : 'text-slate-600 bg-white/70 border border-white/60'}`}>
                                                     {formatShiftDate(shift.parsedDate)}
                                                 </span>
                                                 <span className={`text-[10px] font-bold ${isNext ? 'text-indigo-600' : 'text-slate-500'}`}>{getDaysUntil(shift.parsedDate)}</span>
                                             </div>
-                                            <span className="text-sm font-black text-slate-800 mt-1">{shift.hospitalName} {shift.sectorName ? `- ${shift.sectorName}` : ''}</span>
-                                            <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                                                <CalendarClock size={14}/> {shift.time} {shift.period ? `(${shift.period})` : ''}
+                                            <span className="text-sm font-black text-slate-800 leading-tight">{shift.hospitalName} {shift.period ? `- ${shift.period}` : ''}</span>
+                                            <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5 mt-0.5">
+                                                <CalendarClock size={13}/> {shift.time}
                                             </span>
                                         </div>
                                     );
