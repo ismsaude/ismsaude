@@ -78,9 +78,6 @@ const PEP = () => {
                 .in('status', ['Aguardando', 'Em Atendimento'])
                 .eq('unidade', unidadeAtual);
 
-            if (!verClinicaInteira) {
-                queryCols = queryCols.ilike('medico', medicoLogado);
-            }
             const { data: consultasData } = await queryCols;
 
             // 3. Busca prontuário eletrônico (novo fluxo de senhas)
@@ -90,8 +87,28 @@ const PEP = () => {
                 .eq('unidade', unidadeAtual)
                 .gte('created_at', inicioDoDiaISO);
 
+            const normalizeName = (name) => {
+                if (!name) return '';
+                let n = name.toUpperCase().replace('DR.', '').replace('DRA.', '').trim();
+                return n.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            };
+            const medLogadoNorm = normalizeName(medicoLogado);
+
+            // Filtro flexível
+            const consultasFiltradas = verClinicaInteira ? (consultasData || []) : (consultasData || []).filter(c => {
+                if (!c.medico) return false;
+                const med = normalizeName(c.medico);
+                return med.includes(medLogadoNorm) || medLogadoNorm.includes(med);
+            });
+
+            const atendimentosFiltrados = verClinicaInteira ? (atendimentosData || []) : (atendimentosData || []).filter(a => {
+                if (!a.medico) return false;
+                const med = normalizeName(a.medico);
+                return med.includes(medLogadoNorm) || medLogadoNorm.includes(med);
+            });
+
             // 4. Normaliza as consultas para terem 'created_at' e campos padrão do atendimento
-            const consultasNormalizadas = (consultasData || []).map(c => {
+            const consultasNormalizadas = consultasFiltradas.map(c => {
                 const dateTimeIso = `${c.data_agendamento}T${c.horario_agendamento || '00:00:00'}`;
                 return {
                     ...c,
@@ -101,7 +118,7 @@ const PEP = () => {
             });
 
             // 5. Junta e Ordena (Tolerando snake_case das consultas e camelCase dos atendimentos)
-            const filaUnificada = [...consultasNormalizadas, ...(atendimentosData || [])].sort((a, b) => {
+            const filaUnificada = [...consultasNormalizadas, ...atendimentosFiltrados].sort((a, b) => {
                 if (a.status === 'Em Atendimento') return -1;
                 if (b.status === 'Em Atendimento') return 1;
                 
@@ -133,16 +150,20 @@ const PEP = () => {
                  if (data) pacId = data.id;
             }
             if (!pacId) {
-                 const novoId = crypto.randomUUID();
-                 const { data, error } = await supabase.from('pacientes').insert([{ 
-                     id: novoId,
+                 const payloadNovoPaciente = { 
                      nome: manualPatient.nome, 
                      cpf: manualPatient.cpf || null, 
                      dataNascimento: manualPatient.dataNascimento, 
                      telefone: manualPatient.telefone || null 
-                 }]).select().single();
+                 };
+                 // Suporte a ambientes sem crypto.randomUUID (como HTTP em produção)
+                 if (window.crypto && window.crypto.randomUUID) {
+                     payloadNovoPaciente.id = window.crypto.randomUUID();
+                 }
+                 const { data, error } = await supabase.from('pacientes').insert([payloadNovoPaciente]).select().single();
                  if (!error && data) pacId = data.id;
-                 else pacId = novoId;
+                 else if (payloadNovoPaciente.id) pacId = payloadNovoPaciente.id;
+                 else throw new Error("Falha ao criar id do paciente");
             }
 
             const payload = {
