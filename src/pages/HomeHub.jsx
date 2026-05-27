@@ -218,7 +218,7 @@ const HomeHub = () => {
             title: 'PEP',
             desc: 'Prontuário e Atendimento',
             icon: Activity,
-            path: '/pep', 
+            path: '/pep-hub', 
             iconColor: 'text-indigo-600',
             iconBg: 'bg-indigo-50'
         },
