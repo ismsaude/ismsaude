@@ -35,8 +35,7 @@ const PEP = () => {
     const navigate = useNavigate();
     const [fila, setFila] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isInsertModalOpen, setIsInsertModalOpen] = useState(false);
-    const [manualPatient, setManualPatient] = useState({ nome: '', dataNascimento: '', cpf: '', telefone: '' });
+
     const [pacienteAtivo, setPacienteAtivo] = useState(null);
     const [activeTab, setActiveTab] = useState('painel'); 
 
@@ -136,60 +135,7 @@ const PEP = () => {
         }
     };
 
-    const handleInsertManual = async () => {
-        if (!manualPatient.nome || !manualPatient.dataNascimento) {
-            return toast.error("Nome e Data de Nascimento são obrigatórios.");
-        }
-        try {
-            let pacId = null;
-            if (manualPatient.cpf) {
-                 const { data } = await supabase.from('pacientes').select('id').eq('cpf', manualPatient.cpf).maybeSingle();
-                 if (data) pacId = data.id;
-            }
-            if (!pacId) {
-                 const payloadNovoPaciente = { 
-                     nome: manualPatient.nome, 
-                     cpf: manualPatient.cpf || null, 
-                     dataNascimento: manualPatient.dataNascimento, 
-                     telefone: manualPatient.telefone || null 
-                 };
-                 // Suporte a ambientes sem crypto.randomUUID (como HTTP em produção)
-                 if (window.crypto && window.crypto.randomUUID) {
-                     payloadNovoPaciente.id = window.crypto.randomUUID();
-                 }
-                 const { data, error } = await supabase.from('pacientes').insert([payloadNovoPaciente]).select().single();
-                 if (!error && data) pacId = data.id;
-                 else if (payloadNovoPaciente.id) pacId = payloadNovoPaciente.id;
-                 else throw new Error("Falha ao criar id do paciente");
-            }
 
-            const payload = {
-                paciente_id: pacId,
-                paciente_nome: manualPatient.nome,
-                paciente_cpf: manualPatient.cpf,
-                paciente_telefone: manualPatient.telefone,
-                paciente_nascimento: manualPatient.dataNascimento,
-                medico: medicoLogado,
-                status: 'Aguardando',
-                data_agendamento: new Date().toISOString().split('T')[0],
-                horario_agendamento: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                convenio: 'PARTICULAR',
-                tipo_atendimento: 'Consulta',
-                unidade: unidadeAtual
-            };
-
-            const { error } = await supabase.from('consultas').insert([payload]);
-            if (error) throw error;
-            
-            toast.success("Paciente inserido na fila!");
-            setIsInsertModalOpen(false);
-            setManualPatient({ nome: '', dataNascimento: '', cpf: '', telefone: '' });
-            fetchFila();
-        } catch (error) {
-            toast.error("Erro ao inserir paciente.");
-            console.error(error);
-        }
-    };
 
     useEffect(() => { fetchFila(); }, []);
 
@@ -287,9 +233,7 @@ const PEP = () => {
                         <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
                             <ClipboardList size={16} /> Fila de Espera
                         </h3>
-                        <button onClick={() => setIsInsertModalOpen(true)} className="p-1.5 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors flex items-center gap-1" title="Inserir Paciente Manualmente">
-                            <Plus size={16} />
-                        </button>
+
                     </div>
                     <div className="p-3 overflow-y-auto custom-scrollbar flex-1 space-y-2">
                         {loading ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-indigo-500" size={24}/></div> 
@@ -473,68 +417,7 @@ const PEP = () => {
                     </div>
                 </div>
             )}
-            {isInsertModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                            <h2 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                                <Plus size={18} className="text-blue-500" /> Inserir Manualmente
-                            </h2>
-                            <button onClick={() => setIsInsertModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <div className="p-5 space-y-4">
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nome Completo *</label>
-                                <input 
-                                    type="text" 
-                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-semibold px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 uppercase"
-                                    value={manualPatient.nome}
-                                    onChange={(e) => setManualPatient({...manualPatient, nome: e.target.value.toUpperCase()})}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Data de Nascimento *</label>
-                                <input 
-                                    type="date" 
-                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-semibold px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                    value={manualPatient.dataNascimento}
-                                    onChange={(e) => setManualPatient({...manualPatient, dataNascimento: e.target.value})}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">CPF</label>
-                                <input 
-                                    type="text" 
-                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-semibold px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                    value={manualPatient.cpf}
-                                    onChange={(e) => setManualPatient({...manualPatient, cpf: maskCPF(e.target.value)})}
-                                    maxLength={14}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Telefone</label>
-                                <input 
-                                    type="text" 
-                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-semibold px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                    value={manualPatient.telefone}
-                                    onChange={(e) => setManualPatient({...manualPatient, telefone: maskTelefone(e.target.value)})}
-                                    maxLength={15}
-                                />
-                            </div>
-                        </div>
-                        <div className="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
-                            <button onClick={() => setIsInsertModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg uppercase transition-colors shadow-sm">
-                                Cancelar
-                            </button>
-                            <button onClick={handleInsertManual} className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg uppercase transition-colors shadow-sm shadow-blue-500/30">
-                                Inserir na Fila
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
         </div>
     );
 };
