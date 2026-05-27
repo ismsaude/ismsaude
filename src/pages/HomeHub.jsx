@@ -377,7 +377,7 @@ const HomeHub = () => {
                         {/* Quadro de Avisos (Somente Texto) */}
                         <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl hover:bg-white/70 transition-all min-h-[100px]">
                             {marqueeText ? (
-                                <p className="text-base font-semibold text-slate-800 leading-snug tracking-wide text-center drop-shadow-sm">
+                                <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
                                     "{marqueeText}"
                                 </p>
                             ) : (
