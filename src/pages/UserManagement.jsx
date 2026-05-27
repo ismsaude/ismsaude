@@ -360,7 +360,8 @@ const UserCreationModal = ({ onClose, onSave }) => {
     const [formData, setFormData] = useState({
         name: '', email: '', password: '', role: 'Visualizador',
         crm: '', rqe: '', sexo: '', cpf: '', categoria_medica: 'Normal',
-        unidades_permitidas: ['*'], modules_access: AVAILABLE_MODULES.map(m => m.id)
+        unidades_permitidas: ['*'], modules_access: AVAILABLE_MODULES.map(m => m.id),
+        exibir_agenda_home: false
     });
     const [loading, setLoading] = useState(false);
 
@@ -413,6 +414,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
             }
             userData.unidades_permitidas = formData.unidades_permitidas;
             userData.modules_access = formData.modules_access;
+            userData.exibir_agenda_home = formData.exibir_agenda_home;
 
             await supabase.from('users').insert([{ id: uid, ...userData }]);
 
@@ -547,6 +549,21 @@ const UserCreationModal = ({ onClose, onSave }) => {
                     <UnidadesSelection selected={formData.unidades_permitidas} onChange={(v) => setFormData({ ...formData, unidades_permitidas: v })} />
                     
                     <ModulesSelection selected={formData.modules_access} onChange={(v) => setFormData({ ...formData, modules_access: v })} />
+
+                    <div className="mt-4 p-4 border border-indigo-100 bg-indigo-50/50 rounded-xl space-y-2">
+                        <h4 className="text-[11px] font-black text-indigo-500 uppercase tracking-wide">Preferências de Tela Inicial</h4>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={formData.exibir_agenda_home}
+                                onChange={(e) => setFormData({ ...formData, exibir_agenda_home: e.target.checked })}
+                                className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                            />
+                            <span className="text-xs font-bold text-slate-800">
+                                Exibir Agenda de Compromissos (Substitui a frase motivacional)
+                            </span>
+                        </label>
+                    </div>
                 </div>
 
                 <div className="flex gap-3 mt-8">
@@ -579,7 +596,8 @@ const UserEditModal = ({ user, onClose, onSave }) => {
         cpf: user.cpf || '',
         categoria_medica: user.categoria_medica || 'Normal',
         unidades_permitidas: user.unidades_permitidas || ['*'],
-        modules_access: user.modules_access || AVAILABLE_MODULES.map(m => m.id)
+        modules_access: user.modules_access || AVAILABLE_MODULES.map(m => m.id),
+        exibir_agenda_home: user.exibir_agenda_home || false
     });
     const [saving, setSaving] = useState(false);
 
@@ -746,6 +764,21 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                     <UnidadesSelection selected={formData.unidades_permitidas} onChange={(v) => setFormData({ ...formData, unidades_permitidas: v })} />
                     
                     <ModulesSelection selected={formData.modules_access} onChange={(v) => setFormData({ ...formData, modules_access: v })} />
+
+                    <div className="mt-4 p-4 border border-indigo-100 bg-indigo-50/50 rounded-xl space-y-2">
+                        <h4 className="text-[11px] font-black text-indigo-500 uppercase tracking-wide">Preferências de Tela Inicial</h4>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={formData.exibir_agenda_home}
+                                onChange={(e) => setFormData({ ...formData, exibir_agenda_home: e.target.checked })}
+                                className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                            />
+                            <span className="text-xs font-bold text-slate-800">
+                                Exibir Agenda de Compromissos (Substitui a frase motivacional)
+                            </span>
+                        </label>
+                    </div>
 
                     {/* Status Toggle */}
                     <div>

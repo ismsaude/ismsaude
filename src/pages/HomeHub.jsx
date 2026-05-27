@@ -2,11 +2,123 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
-import { Building2, CalendarRange, Activity, DollarSign, CalendarClock, LayoutDashboard, Settings as SettingsIcon, LogOut, Instagram, MessageCircle, MapPin } from 'lucide-react';
+import { Building2, CalendarRange, Activity, DollarSign, CalendarClock, LayoutDashboard, Settings as SettingsIcon, LogOut, Instagram, MessageCircle, MapPin, CalendarDays, Check, X } from 'lucide-react';
 import bgImage from '../assets/capa-login.jpg';
 import { useWhiteLabel } from '../contexts/WhiteLabelContext';
 import toast from 'react-hot-toast';
 import { usePerformance } from '../hooks/usePerformance';
+
+const AgendaPessoalWidget = ({ currentUser }) => {
+    const [tasks, setTasks] = useState([]);
+    const [newTask, setNewTask] = useState("");
+    const [loading, setLoading] = useState(true);
+
+    const loadTasks = async () => {
+        if (!currentUser?.id) return;
+        try {
+            const { data, error } = await supabase
+                .from('agenda_pessoal')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setTasks(data || []);
+        } catch (error) {
+            console.error("Erro ao carregar agenda", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadTasks();
+    }, [currentUser?.id]);
+
+    const handleAddTask = async (e) => {
+        if (e.key !== 'Enter' || !newTask.trim()) return;
+        try {
+            const { error } = await supabase
+                .from('agenda_pessoal')
+                .insert([{ user_id: currentUser.id, texto: newTask.trim() }]);
+            if (error) throw error;
+            setNewTask("");
+            loadTasks();
+        } catch (error) {
+            toast.error("Erro ao adicionar tarefa.");
+        }
+    };
+
+    const toggleTask = async (id, currentStatus) => {
+        try {
+            const { error } = await supabase
+                .from('agenda_pessoal')
+                .update({ concluido: !currentStatus })
+                .eq('id', id);
+            if (error) throw error;
+            setTasks(tasks.map(t => t.id === id ? { ...t, concluido: !currentStatus } : t));
+        } catch (error) {
+            toast.error("Erro ao atualizar tarefa.");
+        }
+    };
+
+    const removeTask = async (id) => {
+        try {
+            const { error } = await supabase
+                .from('agenda_pessoal')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+            setTasks(tasks.filter(t => t.id !== id));
+        } catch (error) {
+            toast.error("Erro ao remover tarefa.");
+        }
+    };
+
+    return (
+        <div className="flex-1 rounded-[2rem] p-5 md:p-6 flex flex-col bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl transition-all min-h-[120px]">
+            <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <CalendarDays size={14} /> Minha Agenda Diária
+            </h3>
+            
+            <input 
+                type="text"
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                onKeyDown={handleAddTask}
+                placeholder="Adicionar lembrete... (Enter para salvar)"
+                className="w-full px-3 py-2 bg-white/80 border border-white/60 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-indigo-400 mb-3 shadow-sm placeholder:text-slate-400"
+            />
+            
+            <div className="flex flex-col gap-2 overflow-y-auto max-h-[140px] pr-1 no-scrollbar">
+                {loading ? (
+                    <span className="text-[10px] text-slate-500 font-bold uppercase text-center mt-2">Carregando...</span>
+                ) : tasks.length === 0 ? (
+                    <span className="text-[10px] text-slate-400 font-bold uppercase text-center mt-2">Nenhum compromisso pendente</span>
+                ) : (
+                    tasks.map(task => (
+                        <div key={task.id} className="flex items-center gap-2 group">
+                            <button 
+                                onClick={() => toggleTask(task.id, task.concluido)}
+                                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${task.concluido ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-emerald-400'}`}
+                            >
+                                {task.concluido && <Check size={10} className="text-white" strokeWidth={4} />}
+                            </button>
+                            <span className={`text-xs font-bold flex-1 ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'}`}>
+                                {task.texto}
+                            </span>
+                            <button 
+                                onClick={() => removeTask(task.id)}
+                                className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500 transition-all shrink-0"
+                            >
+                                <X size={12} strokeWidth={3} />
+                            </button>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+};
 
 const HomeHub = () => {
     const { currentUser, logout } = useAuth();
@@ -374,19 +486,23 @@ const HomeHub = () => {
 
                     {/* Footer da Esquerda: Avisos + Suporte */}
                     <div className="flex flex-col lg:flex-row gap-6 mt-auto shrink-0">
-                        {/* Quadro de Avisos (Somente Texto) */}
-                        <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl hover:bg-white/70 transition-all min-h-[100px]">
-                            {marqueeText ? (
-                                <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
-                                    "{marqueeText}"
-                                </p>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center text-center opacity-80">
-                                    <Activity size={24} className="text-slate-500 mb-2"/>
-                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nenhum aviso importante</p>
-                                </div>
-                            )}
-                        </div>
+                        {/* Quadro de Avisos ou Agenda */}
+                        {currentUser?.exibir_agenda_home ? (
+                            <AgendaPessoalWidget currentUser={currentUser} />
+                        ) : (
+                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl hover:bg-white/70 transition-all min-h-[100px]">
+                                {marqueeText ? (
+                                    <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
+                                        "{marqueeText}"
+                                    </p>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center text-center opacity-80">
+                                        <Activity size={24} className="text-slate-500 mb-2"/>
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nenhum aviso importante</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Suporte Rápido */}
                         <div className="shrink-0 lg:w-80 rounded-[2rem] p-6 flex flex-col justify-center bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all">
