@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { usePerformance } from '../hooks/usePerformance';
 import { CompromissosModal } from './CompromissosModal';
 
-const AgendaPessoalWidget = ({ currentUser }) => {
+export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -52,7 +52,7 @@ const AgendaPessoalWidget = ({ currentUser }) => {
 
     useEffect(() => {
         loadTasks();
-    }, [currentUser?.id]);
+    }, [currentUser?.id, refreshTrigger]);
 
     const toggleTask = async (id, currentStatus) => {
         try {
@@ -139,6 +139,7 @@ const HomeHub = () => {
     const [upcomingShifts, setUpcomingShifts] = useState([]);
     const [loadingShifts, setLoadingShifts] = useState(true);
     const [showCompromissosModal, setShowCompromissosModal] = useState(false);
+    const [agendaRefreshTrigger, setAgendaRefreshTrigger] = useState(0);
 
     const formatShiftDate = (parsedDate) => {
         const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -474,7 +475,7 @@ const HomeHub = () => {
                     {/* Quadro de Avisos ou Agenda */}
                     <div className="flex-1 w-full flex min-h-[220px]">
                         {currentUser?.exibir_agenda_home ? (
-                            <AgendaPessoalWidget currentUser={currentUser} />
+                            <AgendaPessoalWidget currentUser={currentUser} refreshTrigger={agendaRefreshTrigger} />
                         ) : (
                             <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 transition-all min-h-[100px]">
                                 {marqueeText ? (
@@ -596,7 +597,13 @@ const HomeHub = () => {
             </div>
             
             {showCompromissosModal && (
-                <CompromissosModal onClose={() => setShowCompromissosModal(false)} currentUser={currentUser} />
+                <CompromissosModal 
+                    onClose={() => {
+                        setShowCompromissosModal(false);
+                        setAgendaRefreshTrigger(prev => prev + 1);
+                    }} 
+                    currentUser={currentUser} 
+                />
             )}
             
             <style jsx="true">{`
