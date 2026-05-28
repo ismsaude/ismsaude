@@ -465,10 +465,15 @@ const HomeHub = () => {
                 {/* Direita: Plantões */}
                 <div className="w-full lg:w-[30%] flex flex-col min-h-0 pb-2">
                     <div className="rounded-[2rem] p-6 flex flex-col h-full bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all overflow-hidden">
-                        <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2 shrink-0">
-                            <CalendarClock size={16}/>
-                            Próximos Plantões
-                        </h3>
+                        <div className="flex justify-between items-center mb-4 shrink-0">
+                            <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
+                                <CalendarClock size={16}/>
+                                Próximos Plantões
+                            </h3>
+                            <button onClick={() => navigate('/escala')} className="text-[9px] font-bold text-indigo-500 hover:text-indigo-700 uppercase tracking-widest bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-md transition-colors border border-indigo-100">
+                                Ver tudo
+                            </button>
+                        </div>
                         <div className="flex flex-col gap-1.5 flex-1 overflow-y-auto no-scrollbar pr-1 pb-2">
                             {loadingShifts ? (
                                 <div className="flex flex-col gap-3 items-center justify-center h-full opacity-80">
@@ -511,11 +516,6 @@ const HomeHub = () => {
                             )}
                         </div>
 
-                        <div className="mt-4 pt-4 border-t border-white/60 shrink-0">
-                            <button onClick={() => navigate('/escala')} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-xs font-black text-white rounded-xl transition-all shadow-[0_4px_15px_rgba(79,70,229,0.4)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.5)] border-none uppercase tracking-widest">
-                                Ver escala completa
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
