@@ -410,8 +410,10 @@ const HomeHub = () => {
 
     return (
         <div className="h-full w-full flex flex-col font-sans p-4 md:p-8 pt-[80px] md:pt-[96px] relative overflow-hidden">
-            <div className="relative z-10 flex-1 flex flex-col lg:flex-row gap-6 mb-4 px-2 lg:px-4 min-h-0 w-full max-w-[1500px] mx-auto">
-                <div className="lg:w-[70%] flex flex-col gap-6 min-h-0 overflow-y-auto no-scrollbar pb-4 pr-2">
+            <div className="relative z-10 flex-1 flex flex-col gap-6 mb-4 px-2 lg:px-4 min-h-0 w-full max-w-[1500px] mx-auto overflow-y-auto lg:overflow-visible custom-scrollbar">
+                {/* Linha Superior: Grid e Plantões */}
+                <div className="flex flex-col lg:flex-row gap-6 min-h-0 flex-1 shrink-0">
+                    <div className="lg:w-[70%] flex flex-col gap-6 min-h-0 pr-2">
                     <div className="flex flex-col text-slate-800 drop-shadow-md shrink-0">
                         <h1 className="text-4xl font-black tracking-normal mb-1">{saudacao}</h1>
                         <p className="text-sm font-bold text-slate-600 uppercase tracking-widest">Seja {bemVindoText} ao sistema da iSM Saúde</p>
@@ -458,73 +460,10 @@ const HomeHub = () => {
                         )
                     })}
                     </div>
-
-                    {/* Footer da Esquerda: Suporte + Avisos/Agenda */}
-                    <div className="flex flex-col lg:flex-row gap-6 mt-auto shrink-0">
-                        {/* Suporte Rápido */}
-                        <div className="shrink-0 lg:w-[280px] xl:w-80 rounded-[2rem] p-6 flex flex-col justify-center bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all">
-                            <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 text-center">
-                                Suporte Rápido
-                            </h3>
-                            <div className="flex flex-row items-center justify-center gap-4">
-                                {/* Assistente 1 */}
-                                <div className="flex flex-col items-center group cursor-pointer flex-1" onClick={() => handleWhatsappClick(theme.hubAssistant1Whatsapp)}>
-                                    <div className="w-14 h-14 rounded-full overflow-hidden mb-1.5 bg-white/70 border-2 border-transparent group-hover:border-white/400 flex items-center justify-center transition-all shadow-lg hover:shadow-xl">
-                                        {theme.hubAssistant1Photo ? (
-                                            <img src={theme.hubAssistant1Photo} className="w-full h-full object-cover" alt="Assistente 1" />
-                                        ) : (
-                                            <span className="text-sm font-black text-slate-600">A1</span>
-                                        )}
-                                    </div>
-                                    <span className="text-[10px] font-bold text-slate-700 text-center uppercase tracking-wider group-hover:text-slate-800 transition-colors">{ast1.name}</span>
-                                    {ast1.desc && <span className="text-[8px] font-semibold text-slate-500 text-center uppercase tracking-widest leading-none mt-0.5">{ast1.desc}</span>}
-                                </div>
-
-                                {/* Assistente 2 */}
-                                <div className="flex flex-col items-center group cursor-pointer flex-1" onClick={() => handleWhatsappClick(theme.hubAssistant2Whatsapp)}>
-                                    <div className="w-14 h-14 rounded-full overflow-hidden mb-1.5 bg-white/70 border-2 border-transparent group-hover:border-white/400 flex items-center justify-center transition-all shadow-lg hover:shadow-xl">
-                                        {theme.hubAssistant2Photo ? (
-                                            <img src={theme.hubAssistant2Photo} className="w-full h-full object-cover" alt="Assistente 2" />
-                                        ) : (
-                                            <span className="text-sm font-black text-slate-600">A2</span>
-                                        )}
-                                    </div>
-                                    <span className="text-[10px] font-bold text-slate-700 text-center uppercase tracking-wider group-hover:text-slate-800 transition-colors">{ast2.name}</span>
-                                    {ast2.desc && <span className="text-[8px] font-semibold text-slate-500 text-center uppercase tracking-widest leading-none mt-0.5">{ast2.desc}</span>}
-                                </div>
-
-                                {/* Instagram */}
-                                <div className="flex flex-col items-center group cursor-pointer flex-1" onClick={() => handleInstagramClick(theme.hubInstagramLink)}>
-                                    <div className="w-14 h-14 bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] rounded-full flex items-center justify-center mb-2 shadow-lg opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all">
-                                        <Instagram size={20} className="text-slate-800" />
-                                    </div>
-                                    <span className="text-[10px] font-bold text-slate-600 text-center uppercase tracking-wider group-hover:text-slate-800 transition-colors">Insta</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Quadro de Avisos ou Agenda */}
-                        {currentUser?.exibir_agenda_home ? (
-                            <AgendaPessoalWidget currentUser={currentUser} />
-                        ) : (
-                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl hover:bg-white/70 transition-all min-h-[100px]">
-                                {marqueeText ? (
-                                    <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
-                                        "{marqueeText}"
-                                    </p>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center text-center opacity-80">
-                                        <Activity size={24} className="text-slate-500 mb-2"/>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nenhum aviso importante</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
                 </div>
 
-                {/* Direita: Plantões (Esticado até o fim) */}
-                <div className="w-full lg:w-[30%] flex flex-col min-h-0 pb-4">
+                {/* Direita: Plantões */}
+                <div className="w-full lg:w-[30%] flex flex-col min-h-0 pb-2">
                     <div className="rounded-[2rem] p-6 flex flex-col h-full bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all overflow-hidden">
                         <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2 shrink-0">
                             <CalendarClock size={16}/>
@@ -579,6 +518,74 @@ const HomeHub = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+                {/* Footer da Página: Suporte + Avisos/Agenda */}
+                <div className="flex flex-col lg:flex-row gap-6 shrink-0 items-start pb-4">
+                    {/* Suporte Rápido */}
+                    <div className="shrink-0 lg:w-[280px] xl:w-[320px] h-[160px] rounded-[2rem] p-5 flex flex-col justify-center bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all">
+                        <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-3 text-center">
+                            Suporte Rápido
+                        </h3>
+                        <div className="flex flex-row items-center justify-center gap-4">
+                            {/* Assistente 1 */}
+                            <div className="flex flex-col items-center group cursor-pointer flex-1" onClick={() => handleWhatsappClick(theme.hubAssistant1Whatsapp)}>
+                                <div className="w-12 h-12 rounded-full overflow-hidden mb-1.5 bg-white/70 border-2 border-transparent group-hover:border-white/400 flex items-center justify-center transition-all shadow-lg hover:shadow-xl">
+                                    {theme.hubAssistant1Photo ? (
+                                        <img src={theme.hubAssistant1Photo} className="w-full h-full object-cover" alt="Assistente 1" />
+                                    ) : (
+                                        <span className="text-sm font-black text-slate-600">A1</span>
+                                    )}
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-700 text-center uppercase tracking-wider group-hover:text-slate-800 transition-colors">{ast1.name}</span>
+                                {ast1.desc && <span className="text-[8px] font-semibold text-slate-500 text-center uppercase tracking-widest leading-none mt-0.5">{ast1.desc}</span>}
+                            </div>
+
+                            {/* Assistente 2 */}
+                            <div className="flex flex-col items-center group cursor-pointer flex-1" onClick={() => handleWhatsappClick(theme.hubAssistant2Whatsapp)}>
+                                <div className="w-12 h-12 rounded-full overflow-hidden mb-1.5 bg-white/70 border-2 border-transparent group-hover:border-white/400 flex items-center justify-center transition-all shadow-lg hover:shadow-xl">
+                                    {theme.hubAssistant2Photo ? (
+                                        <img src={theme.hubAssistant2Photo} className="w-full h-full object-cover" alt="Assistente 2" />
+                                    ) : (
+                                        <span className="text-sm font-black text-slate-600">A2</span>
+                                    )}
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-700 text-center uppercase tracking-wider group-hover:text-slate-800 transition-colors">{ast2.name}</span>
+                                {ast2.desc && <span className="text-[8px] font-semibold text-slate-500 text-center uppercase tracking-widest leading-none mt-0.5">{ast2.desc}</span>}
+                            </div>
+
+                            {/* Instagram */}
+                            <div className="flex flex-col items-center group cursor-pointer flex-1" onClick={() => handleInstagramClick(theme.hubInstagramLink)}>
+                                <div className="w-12 h-12 bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] rounded-full flex items-center justify-center mb-1.5 shadow-lg opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all">
+                                    <Instagram size={18} className="text-slate-800" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-600 text-center uppercase tracking-wider group-hover:text-slate-800 transition-colors">Insta</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Quadro de Avisos ou Agenda */}
+                    <div className="flex-1 w-full h-[220px] flex">
+                        {currentUser?.exibir_agenda_home ? (
+                            <AgendaPessoalWidget currentUser={currentUser} />
+                        ) : (
+                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl hover:bg-white/70 transition-all min-h-[100px]">
+                                {marqueeText ? (
+                                    <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
+                                        "{marqueeText}"
+                                    </p>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center text-center opacity-80">
+                                        <Activity size={24} className="text-slate-500 mb-2"/>
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nenhum aviso importante</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+
 
             </div>
             
