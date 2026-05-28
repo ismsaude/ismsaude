@@ -70,17 +70,13 @@ const AgendaPessoalWidget = ({ currentUser }) => {
 
     return (
         <div className="flex-1 rounded-[2rem] p-4 flex flex-col bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl transition-all min-h-[140px] relative overflow-hidden">
-            <div className="absolute top-4 left-4 opacity-20 pointer-events-none">
-                <CalendarDays size={24} className="text-indigo-600" />
-            </div>
-
             <div className="flex flex-row gap-2 overflow-x-auto custom-scrollbar w-full pt-1 pb-2 px-1 h-full">
                 {weekDays.map((date, idx) => {
                     const dateStr = formatDateString(date);
                     const dayTasks = tasks.filter(t => t.data_agendada === dateStr || (!t.data_agendada && idx === 0));
 
                     return (
-                        <div key={idx} className="flex flex-col min-w-[115px] flex-1 bg-white/60 rounded-[1rem] p-2 border border-white shadow-sm shrink-0">
+                        <div key={idx} className="flex flex-col min-w-[105px] flex-1 bg-white/50 rounded-[1rem] p-2 border border-white/70 shrink-0">
                             <div className="flex items-center justify-between mb-2 border-b border-indigo-100/50 pb-1">
                                 <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest leading-none">{formatDayName(date)}</span>
                                 <span className="text-base font-black text-slate-700 leading-none">{date.getDate()}</span>
