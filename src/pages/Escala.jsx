@@ -1054,6 +1054,7 @@ const Escala = () => {
             id: Date.now(),
             name: '',
             color: 'indigo',
+            logoUrl: '',
             sectors: ['Geral']
         };
         handleEditHospital(newHospital);
@@ -2072,6 +2073,20 @@ const Escala = () => {
                                                 className="w-full h-11 px-4 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm font-bold text-slate-900 drop-shadow-none outline-none focus:bg-white/60 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
                                             />
                                         </div>
+
+                                        {/* Logo URL */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-black text-slate-900 drop-shadow-none uppercase tracking-widest">Link da Logo (Impressão PDF)</label>
+                                            <input 
+                                                type="text" 
+                                                value={tempHospital.logoUrl || ''}
+                                                onChange={e => setTempHospital({...tempHospital, logoUrl: e.target.value})}
+                                                placeholder="Ex: https://meusite.com/logo.png"
+                                                className="w-full h-11 px-4 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm font-bold text-slate-900 drop-shadow-none outline-none focus:bg-white/60 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
+                                            />
+                                            <p className="text-[10px] text-slate-500 mt-1">Cole aqui o endereço da imagem (PNG ou JPG) para aparecer na impressão em PDF.</p>
+                                        </div>
+
 
                                         {/* Cor */}
                                         <div className="space-y-2.5">

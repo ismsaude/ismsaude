@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
-import { maskCPF } from '../utils/masks';
+import { maskCPF, maskTelefone } from '../utils/masks';
 import { logAction } from '../utils/logger';
 
 // --- MODULES SELECTION COMPONENT ---
@@ -359,7 +359,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
     const availableRoles = ROLES.filter(r => r !== 'Desenvolvedor' || currentUser?.role === 'Desenvolvedor');
     const [formData, setFormData] = useState({
         name: '', email: '', password: '', role: 'Visualizador',
-        crm: '', rqe: '', sexo: '', cpf: '', categoria_medica: 'Normal',
+        crm: '', rqe: '', sexo: '', cpf: '', telefone: '', categoria_medica: 'Normal',
         unidades_permitidas: ['*'], modules_access: AVAILABLE_MODULES.map(m => m.id),
         exibir_agenda_home: false
     });
@@ -408,6 +408,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                 userData.crm = formData.crm || '';
                 userData.rqe = formData.rqe || '';
                 userData.cpf = formData.cpf || '';
+                userData.telefone = formData.telefone || '';
                 if (['Médico', 'Médico Autorizador'].includes(formData.role)) {
                     userData.categoria_medica = formData.categoria_medica || 'Normal';
                 }
@@ -543,6 +544,17 @@ const UserCreationModal = ({ onClose, onSave }) => {
                                     maxLength="14"
                                 />
                             </div>
+
+                            <div className="mt-4">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Telefone (Celular)</label>
+                                <input
+                                    value={formData.telefone}
+                                    onChange={e => setFormData({ ...formData, telefone: maskTelefone(e.target.value) })}
+                                    className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500"
+                                    placeholder="Ex: (11) 99999-9999"
+                                    maxLength="15"
+                                />
+                            </div>
                         </div>
                     )}
                     
@@ -594,6 +606,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
         rqe: user.rqe || '',
         sexo: user.sexo || '',
         cpf: user.cpf || '',
+        telefone: user.telefone || '',
         categoria_medica: user.categoria_medica || 'Normal',
         unidades_permitidas: user.unidades_permitidas || ['*'],
         modules_access: user.modules_access || AVAILABLE_MODULES.map(m => m.id),
@@ -613,7 +626,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                 dataToSave.crm = '';
                 dataToSave.rqe = '';
                 dataToSave.cpf = '';
-                dataToSave.categoria_medica = 'Normal';
+                dataToSave.telefone = '';
             }
             if (!['Médico', 'Médico Autorizador'].includes(dataToSave.role)) {
                 dataToSave.categoria_medica = 'Normal';
@@ -756,6 +769,17 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                                     className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
                                     placeholder="Ex: 000.000.000-00"
                                     maxLength="14"
+                                />
+                            </div>
+
+                            <div className="mt-4">
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Telefone (Celular)</label>
+                                <input
+                                    value={formData.telefone}
+                                    onChange={e => setFormData({ ...formData, telefone: maskTelefone(e.target.value) })}
+                                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                                    placeholder="Ex: (11) 99999-9999"
+                                    maxLength="15"
                                 />
                             </div>
                         </div>
