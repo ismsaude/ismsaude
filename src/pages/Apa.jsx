@@ -1156,8 +1156,8 @@ Responda SOMENTE o bloco JSON.`;
                                             checked={mostrarTodasUnidades}
                                             onChange={(e) => setMostrarTodasUnidades(e.target.checked)}
                                         />
-                                        <div className={`block w-10 h-6 rounded-full transition-colors ${mostrarTodasUnidades ? 'bg-blue-500/200' : 'bg-white/80'}`}></div>
-                                        <div className={`dot absolute left-1 top-1 bg-white/60 w-4 h-4 rounded-full transition-transform ${mostrarTodasUnidades ? 'transform translate-x-4' : ''}`}></div>
+                                        <div className={`block w-10 h-6 rounded-full transition-colors border border-slate-200 shadow-inner ${mostrarTodasUnidades ? 'bg-indigo-500 border-indigo-500' : 'bg-slate-200/60'}`}></div>
+                                        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${mostrarTodasUnidades ? 'transform translate-x-4' : ''}`}></div>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 group-hover:text-slate-700 transition-colors">
                                         <Globe size={14} className={mostrarTodasUnidades ? 'text-blue-500' : ''} />
@@ -1176,8 +1176,8 @@ Responda SOMENTE o bloco JSON.`;
                                                 setPaginaAtual(1); // Voltar para a página 1 ao alternar
                                             }}
                                         />
-                                        <div className={`block w-10 h-6 rounded-full transition-colors ${mostrarLixeira ? 'bg-rose-500/200' : 'bg-white/80'}`}></div>
-                                        <div className={`dot absolute left-1 top-1 bg-white/60 w-4 h-4 rounded-full transition-transform ${mostrarLixeira ? 'transform translate-x-4' : ''}`}></div>
+                                        <div className={`block w-10 h-6 rounded-full transition-colors border border-slate-200 shadow-inner ${mostrarLixeira ? 'bg-rose-500 border-rose-500' : 'bg-slate-200/60'}`}></div>
+                                        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${mostrarLixeira ? 'transform translate-x-4' : ''}`}></div>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 group-hover:text-rose-600 transition-colors">
                                         <Trash2 size={14} className={mostrarLixeira ? 'text-rose-500' : ''} />
