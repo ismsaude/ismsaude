@@ -164,8 +164,8 @@ export const CompromissosModal = ({ onClose }) => {
     const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
     return createPortal(
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[10000] overflow-y-auto p-4 md:p-8 flex items-center justify-center">
-            <div className="m-auto bg-white/70 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-indigo-900/20 border-2 border-white max-w-5xl w-full relative flex flex-col md:flex-row overflow-hidden max-h-[90vh]">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[10000] overflow-y-auto p-2 md:p-6 flex items-center justify-center">
+            <div className="m-auto bg-white/70 backdrop-blur-3xl rounded-[2rem] shadow-2xl shadow-indigo-900/20 border-2 border-white max-w-[1400px] w-full relative flex flex-col xl:flex-row overflow-hidden max-h-[95vh] h-full">
                 
                 {/* Fechar Mobile */}
                 <button onClick={onClose} className="md:hidden absolute top-4 right-4 p-2 z-50 text-slate-500 hover:text-slate-800 bg-white/50 rounded-full">
@@ -201,38 +201,39 @@ export const CompromissosModal = ({ onClose }) => {
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-7 gap-2 flex-1 min-h-[300px] auto-rows-fr">
+                    <div className="grid grid-cols-7 gap-1 flex-1 min-h-[500px] auto-rows-fr">
                         {days.map((d, i) => {
-                            if (!d) return <div key={`empty-${i}`} className="p-2"></div>;
+                            if (!d) return <div key={`empty-${i}`} className="p-2 border border-transparent"></div>;
 
                             const isSelected = selectedDate.toDateString() === d.toDateString();
                             const isToday = d.toDateString() === todayStr;
                             const dayTasks = getTasksForDay(d);
-                            const hasTasks = dayTasks.length > 0;
 
                             return (
                                 <div 
                                     key={i} 
                                     onClick={() => setSelectedDate(d)}
-                                    className={`relative rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all min-h-[50px]
-                                        ${isSelected ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 ring-2 ring-indigo-400 ring-offset-2 ring-offset-white/50' : 
-                                          isToday ? 'bg-indigo-100 text-indigo-700 font-bold border border-indigo-200' : 
-                                          'bg-white/60 text-slate-700 hover:bg-white/90 border border-white'}
+                                    className={`relative rounded-xl flex flex-col p-1.5 cursor-pointer transition-all min-h-[80px] overflow-hidden border
+                                        ${isSelected ? 'bg-indigo-50/80 border-indigo-300 shadow-sm ring-1 ring-indigo-300' : 
+                                          isToday ? 'bg-white/90 border-indigo-200 shadow-sm' : 
+                                          'bg-white/40 hover:bg-white/70 border-white/60'}
                                     `}
                                 >
-                                    <span className={`text-base font-semibold ${isSelected ? 'text-white' : ''}`}>
+                                    <span className={`text-[11px] font-bold mb-1 ml-1 ${isSelected ? 'text-indigo-700' : isToday ? 'text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-md self-start leading-none' : 'text-slate-500'}`}>
                                         {d.getDate()}
                                     </span>
                                     
-                                    {/* Indicadores de Evento */}
-                                    {hasTasks && (
-                                        <div className="absolute bottom-1.5 flex gap-0.5">
-                                            {dayTasks.slice(0, 3).map((_, idx) => (
-                                                <div key={idx} className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-400'}`}></div>
-                                            ))}
-                                            {dayTasks.length > 3 && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-400'}`}></div>}
-                                        </div>
-                                    )}
+                                    <div className="flex flex-col gap-[3px] w-full overflow-y-auto custom-scrollbar flex-1">
+                                        {dayTasks.map((task, idx) => {
+                                            const { time, text } = parseTaskText(task.texto);
+                                            return (
+                                                <div key={task.id} className={`w-full rounded px-1.5 py-[3px] text-[9px] xl:text-[10px] leading-none truncate font-semibold flex items-center gap-1 shrink-0 ${task.concluido ? 'bg-slate-100 text-slate-400 line-through' : 'bg-indigo-100/80 text-indigo-700'}`}>
+                                                    {time && <span className="opacity-70 font-black shrink-0">{time}</span>}
+                                                    <span className="truncate">{text}</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
                                 </div>
                             );
                         })}
@@ -240,10 +241,10 @@ export const CompromissosModal = ({ onClose }) => {
                 </div>
 
                 {/* --- LADO DIREITO: DETALHES DO DIA SELECIONADO --- */}
-                <div className="w-full md:w-[380px] bg-white/80 border-l border-white shadow-[-10px_0_30px_rgba(0,0,0,0.03)] flex flex-col shrink-0">
+                <div className="w-full xl:w-[400px] bg-white/80 border-t xl:border-t-0 xl:border-l border-white shadow-[-10px_0_30px_rgba(0,0,0,0.03)] flex flex-col shrink-0 min-h-[300px]">
                     
                     {/* Botao de fechar (Desktop) */}
-                    <button onClick={onClose} className="hidden md:flex absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all z-10">
+                    <button onClick={onClose} className="hidden xl:flex absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all z-10">
                         <X size={20} />
                     </button>
 
