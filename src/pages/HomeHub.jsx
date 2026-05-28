@@ -76,7 +76,7 @@ const AgendaPessoalWidget = ({ currentUser }) => {
                     const dayTasks = tasks.filter(t => t.data_agendada === dateStr || (!t.data_agendada && idx === 0));
 
                     return (
-                        <div key={idx} className="flex flex-col min-w-[105px] flex-1 bg-white/60 rounded-[1rem] p-2 border border-white shrink-0">
+                        <div key={idx} className="flex flex-col min-w-[105px] flex-1 bg-white/30 rounded-[1rem] p-2 border border-white/40 shrink-0">
                             <div className="flex items-center justify-between mb-2 border-b border-indigo-100/50 pb-1">
                                 <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest leading-none">{formatDayName(date)}</span>
                                 <span className="text-base font-black text-slate-700 leading-none">{date.getDate()}</span>
