@@ -453,8 +453,7 @@ const HomeHub = () => {
                                     </div>
                                 )}
 
-                                {mod.title && <h3 className="text-[15px] md:text-base font-black text-slate-800 mb-2 leading-snug tracking-wide z-10 px-2 drop-shadow-sm">{mod.title}</h3>}
-                                {mod.desc && <p className="text-[9px] md:text-[10px] font-bold text-slate-600 px-4 leading-relaxed z-10 uppercase tracking-widest">{mod.desc}</p>}
+                                {mod.title && <h3 className="text-[15px] md:text-base font-black text-slate-800 mb-0 leading-snug tracking-wide z-10 px-2 drop-shadow-sm">{mod.title}</h3>}
                             </div>
                         )
                     })}
