@@ -161,14 +161,6 @@ export const printHospitalEscalaPdf = (hospital, assignments, activeWeeks, activ
         contatosHtml += colHtml;
     });
 
-    const coordinator = (doctors || []).find(d => d.name && d.name.toLowerCase().includes('marcos andr'));
-    const coordName = coordinator ? formatDoctorNameFull(coordinator.name, coordinator.sexo) : 'Dr. Marcos André Mickus';
-    const coordRole = (coordinator && coordinator.sexo === 'Feminino') ? 'Coordenadora Médica' : 'Coordenador Médico';
-    let coordDocs = [];
-    if (coordinator?.crm) coordDocs.push(`CRM: ${coordinator.crm}`);
-    if (coordinator?.rqe) coordDocs.push(`RQE: ${coordinator.rqe}`);
-    const coordDocsStr = coordDocs.length > 0 ? coordDocs.join(' | ') : 'CRM/RQE do Coordenador';
-
     const dataGeracao = new Date().toLocaleDateString('pt-BR');
 
     const html = `
@@ -327,10 +319,7 @@ export const printHospitalEscalaPdf = (hospital, assignments, activeWeeks, activ
                 </div>
                 
                 <div class="signature-area">
-                    <div class="signature-box">
-                        <div class="signature-name" style="font-size: 11px;">${coordName}</div>
-                        <div class="signature-role">${coordRole}<br/>${coordDocsStr}</div>
-                    </div>
+
                     
                     <div class="signature-box">
                         <div class="signature-line"></div>
