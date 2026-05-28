@@ -74,33 +74,33 @@ const AgendaPessoalWidget = ({ currentUser }) => {
                 <CalendarDays size={24} className="text-indigo-600" />
             </div>
 
-            <div className="flex flex-row gap-3 overflow-x-auto custom-scrollbar w-full pt-1 pb-3 px-1 h-full">
+            <div className="flex flex-row gap-2 overflow-x-auto custom-scrollbar w-full pt-1 pb-2 px-1 h-full">
                 {weekDays.map((date, idx) => {
                     const dateStr = formatDateString(date);
                     const dayTasks = tasks.filter(t => t.data_agendada === dateStr || (!t.data_agendada && idx === 0));
 
                     return (
-                        <div key={idx} className="flex flex-col min-w-[130px] w-[130px] bg-white/60 rounded-2xl p-3 border border-white shadow-sm shrink-0">
-                            <div className="text-center mb-3 border-b border-indigo-100/50 pb-2">
-                                <span className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest">{formatDayName(date)}</span>
-                                <span className="block text-xl font-black text-slate-700 leading-none mt-1">{date.getDate()}</span>
+                        <div key={idx} className="flex flex-col min-w-[115px] flex-1 bg-white/60 rounded-[1rem] p-2 border border-white shadow-sm shrink-0">
+                            <div className="flex items-center justify-between mb-2 border-b border-indigo-100/50 pb-1">
+                                <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest leading-none">{formatDayName(date)}</span>
+                                <span className="text-base font-black text-slate-700 leading-none">{date.getDate()}</span>
                             </div>
                             
-                            <div className="flex flex-col gap-2 overflow-y-auto max-h-[100px] custom-scrollbar pr-1 flex-1">
+                            <div className="flex flex-col gap-1.5 overflow-y-auto custom-scrollbar pr-1 flex-1 min-h-0">
                                 {loading ? (
-                                    <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-2 opacity-60">...</span>
+                                    <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-1 opacity-60">...</span>
                                 ) : dayTasks.length === 0 ? (
-                                    <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-2 opacity-60">Livre</span>
+                                    <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-1 opacity-60">Livre</span>
                                 ) : (
                                     dayTasks.map(task => (
                                         <div key={task.id} className="flex items-start gap-1.5 group">
                                             <button 
                                                 onClick={() => toggleTask(task.id, task.concluido)}
-                                                className={`w-4 h-4 mt-0.5 rounded border flex items-center justify-center shrink-0 transition-colors ${task.concluido ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-emerald-400'}`}
+                                                className={`w-3.5 h-3.5 mt-0.5 rounded border flex items-center justify-center shrink-0 transition-colors ${task.concluido ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-emerald-400'}`}
                                             >
-                                                {task.concluido && <Check size={10} className="text-white" strokeWidth={4} />}
+                                                {task.concluido && <Check size={8} className="text-white" strokeWidth={4} />}
                                             </button>
-                                            <span className={`text-[10px] font-bold leading-tight flex-1 ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'}`}>
+                                            <span className={`text-[9px] font-bold leading-tight flex-1 ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'}`}>
                                                 {task.texto}
                                             </span>
                                         </div>
@@ -565,7 +565,7 @@ const HomeHub = () => {
                     </div>
 
                     {/* Quadro de Avisos ou Agenda */}
-                    <div className="flex-1 w-full h-[220px] flex">
+                    <div className="flex-1 w-full h-[280px] flex min-w-0">
                         {currentUser?.exibir_agenda_home ? (
                             <AgendaPessoalWidget currentUser={currentUser} />
                         ) : (
