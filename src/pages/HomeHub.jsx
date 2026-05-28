@@ -410,15 +410,12 @@ const HomeHub = () => {
 
     return (
         <div className="h-full w-full flex flex-col font-sans p-4 md:p-8 pt-[80px] md:pt-[96px] relative overflow-hidden">
-            <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center mb-8 px-2 lg:px-4">
-                <div className="flex flex-col text-slate-800 drop-shadow-md">
-                    <h1 className="text-4xl font-black tracking-normal mb-1">{saudacao}</h1>
-                    <p className="text-sm font-bold text-slate-600 uppercase tracking-widest">Seja {bemVindoText} ao sistema da iSM Saúde</p>
-                </div>
-            </div>
-
             <div className="relative z-10 flex-1 flex flex-col lg:flex-row gap-6 mb-4 px-2 lg:px-4 min-h-0 w-full max-w-[1500px] mx-auto">
                 <div className="lg:w-[70%] flex flex-col gap-6 min-h-0 overflow-y-auto no-scrollbar pb-4 pr-2">
+                    <div className="flex flex-col text-slate-800 drop-shadow-md shrink-0">
+                        <h1 className="text-4xl font-black tracking-normal mb-1">{saudacao}</h1>
+                        <p className="text-sm font-bold text-slate-600 uppercase tracking-widest">Seja {bemVindoText} ao sistema da iSM Saúde</p>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-4 lg:gap-6 flex-1 min-h-[350px]">
                     {modules.map((mod, idx) => {
                         let darkIconColor = 'text-slate-800';
@@ -462,28 +459,10 @@ const HomeHub = () => {
                     })}
                     </div>
 
-                    {/* Footer da Esquerda: Avisos + Suporte */}
+                    {/* Footer da Esquerda: Suporte + Avisos/Agenda */}
                     <div className="flex flex-col lg:flex-row gap-6 mt-auto shrink-0">
-                        {/* Quadro de Avisos ou Agenda */}
-                        {currentUser?.exibir_agenda_home ? (
-                            <AgendaPessoalWidget currentUser={currentUser} />
-                        ) : (
-                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl hover:bg-white/70 transition-all min-h-[100px]">
-                                {marqueeText ? (
-                                    <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
-                                        "{marqueeText}"
-                                    </p>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center text-center opacity-80">
-                                        <Activity size={24} className="text-slate-500 mb-2"/>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nenhum aviso importante</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
                         {/* Suporte Rápido */}
-                        <div className="shrink-0 lg:w-80 rounded-[2rem] p-6 flex flex-col justify-center bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all">
+                        <div className="shrink-0 lg:w-[280px] xl:w-80 rounded-[2rem] p-6 flex flex-col justify-center bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all">
                             <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 text-center">
                                 Suporte Rápido
                             </h3>
@@ -523,6 +502,24 @@ const HomeHub = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Quadro de Avisos ou Agenda */}
+                        {currentUser?.exibir_agenda_home ? (
+                            <AgendaPessoalWidget currentUser={currentUser} />
+                        ) : (
+                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl hover:bg-white/70 transition-all min-h-[100px]">
+                                {marqueeText ? (
+                                    <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
+                                        "{marqueeText}"
+                                    </p>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center text-center opacity-80">
+                                        <Activity size={24} className="text-slate-500 mb-2"/>
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nenhum aviso importante</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -533,7 +530,7 @@ const HomeHub = () => {
                             <CalendarClock size={16}/>
                             Próximos Plantões
                         </h3>
-                        <div className="flex flex-col gap-3 flex-1 overflow-y-auto no-scrollbar pr-1 pb-2">
+                        <div className="flex flex-col gap-1.5 flex-1 overflow-y-auto no-scrollbar pr-1 pb-2">
                             {loadingShifts ? (
                                 <div className="flex flex-col gap-3 items-center justify-center h-full opacity-80">
                                     <div className="w-6 h-6 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
@@ -542,17 +539,24 @@ const HomeHub = () => {
                             ) : upcomingShifts.length > 0 ? (
                                 upcomingShifts.map((shift, idx) => {
                                     const isNext = idx === 0;
+                                    let derivedPeriod = shift.period;
+                                    if (shift.time) {
+                                        if (shift.time.includes('07-19') || shift.time.includes('07:00') || shift.time.includes('07h') || shift.time.includes('08-20')) derivedPeriod = 'Diurno';
+                                        else if (shift.time.includes('19-07') || shift.time.includes('19:00') || shift.time.includes('19h') || shift.time.includes('20-08')) derivedPeriod = 'Noturno';
+                                        else if (shift.time.includes('13-19') || shift.time.includes('13:00')) derivedPeriod = 'Tarde';
+                                        else if (shift.time.includes('07-13') || shift.time.includes('07:00')) derivedPeriod = 'Manhã';
+                                    }
                                     return (
-                                        <div key={idx} className={`rounded-2xl p-3 border flex flex-col gap-0.5 cursor-pointer transition-all hover:-translate-y-1 shrink-0 ${isNext ? 'bg-indigo-500/20 border-indigo-400/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-white/60 border-white/60 hover:border-white/80 hover:bg-white/70'}`}>
+                                        <div key={idx} className={`rounded-[1rem] p-2 border flex flex-col cursor-pointer transition-all hover:-translate-y-0.5 shrink-0 ${isNext ? 'bg-indigo-500/20 border-indigo-400/50 shadow-[0_0_10px_rgba(99,102,241,0.2)]' : 'bg-white/60 border-white/60 hover:border-white/80 hover:bg-white/70'}`}>
                                             <div className="flex justify-between items-center mb-0.5">
-                                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${isNext ? 'text-indigo-700 bg-indigo-500/20' : 'text-slate-600 bg-white/70 border border-white/60'}`}>
+                                                <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${isNext ? 'text-indigo-700 bg-indigo-500/20' : 'text-slate-600 bg-white/70 border border-white/60'}`}>
                                                     {formatShiftDate(shift.parsedDate)}
                                                 </span>
-                                                <span className={`text-[10px] font-bold ${isNext ? 'text-indigo-600' : 'text-slate-500'}`}>{getDaysUntil(shift.parsedDate)}</span>
+                                                <span className={`text-[9px] font-black uppercase ${isNext ? 'text-indigo-600' : 'text-slate-500'}`}>{getDaysUntil(shift.parsedDate)}</span>
                                             </div>
-                                            <span className="text-sm font-black text-slate-800 leading-tight">{shift.hospitalName} {shift.period ? `- ${shift.period}` : ''}</span>
-                                            <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5 mt-0.5">
-                                                <CalendarClock size={13}/> {shift.time}
+                                            <span className="text-xs font-black text-slate-800 leading-none mt-1">{shift.hospitalName} {derivedPeriod ? `- ${derivedPeriod}` : ''}</span>
+                                            <span className="text-[10px] font-bold text-slate-600 flex items-center gap-1 mt-1">
+                                                <CalendarClock size={11}/> {shift.time}
                                             </span>
                                         </div>
                                     );
