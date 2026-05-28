@@ -1,6 +1,7 @@
 const formatDoctorNameShort = (fullName) => {
     if (!fullName) return '';
-    const parts = fullName.trim().toLowerCase().split(' ').filter(Boolean);
+    const prepositions = new Set(['de', 'da', 'do', 'dos', 'das', 'e']);
+    const parts = fullName.trim().toLowerCase().split(' ').filter(p => Boolean(p) && !prepositions.has(p));
     if (parts.length === 0) return '';
     
     const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);

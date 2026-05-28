@@ -585,7 +585,7 @@ const Escala = () => {
             // Buscando médicos (Usuários da base)
             const { data: usersData, error: usersError } = await supabase
                 .from('users')
-                .select('id, name, email, role, status, categoria_medica')
+                .select('id, name, email, role, status, categoria_medica, crm, rqe, cpf, telefone, sexo')
                 .in('role', ['Médico', 'Médico Autorizador'])
                 .eq('status', 'Ativo')
                 .order('name', { ascending: true });
