@@ -526,10 +526,13 @@ const HomeHub = () => {
                                     const isNext = idx === 0;
                                     let derivedPeriod = shift.period;
                                     if (shift.time) {
-                                        if (shift.time.includes('07-19') || shift.time.includes('07:00') || shift.time.includes('07h') || shift.time.includes('08-20')) derivedPeriod = 'Diurno';
-                                        else if (shift.time.includes('19-07') || shift.time.includes('19:00') || shift.time.includes('19h') || shift.time.includes('20-08')) derivedPeriod = 'Noturno';
-                                        else if (shift.time.includes('13-19') || shift.time.includes('13:00')) derivedPeriod = 'Tarde';
-                                        else if (shift.time.includes('07-13') || shift.time.includes('07:00')) derivedPeriod = 'Manhã';
+                                        const t = shift.time;
+                                        if (t.includes('19-07') || t.includes('20-08') || t.includes('19:00-07')) derivedPeriod = 'Noturno';
+                                        else if (t.includes('07-19') || t.includes('08-20') || t.includes('07:00-19')) derivedPeriod = 'Diurno';
+                                        else if (t.includes('13-19') || t.includes('13:00')) derivedPeriod = 'Tarde';
+                                        else if (t.includes('07-13') || t.includes('07:00-13')) derivedPeriod = 'Manhã';
+                                        else if (t.includes('19:00') || t.includes('19h')) derivedPeriod = 'Noturno';
+                                        else if (t.includes('07:00') || t.includes('07h')) derivedPeriod = 'Diurno';
                                     }
                                     return (
                                         <div key={idx} className={`rounded-[1rem] p-2 border flex flex-col cursor-pointer transition-all hover:-translate-y-0.5 shrink-0 ${isNext ? 'bg-indigo-500/20 border-indigo-400/50 shadow-[0_0_10px_rgba(99,102,241,0.2)]' : 'bg-white/60 border-white/60 hover:border-white/80 hover:bg-white/70'}`}>
