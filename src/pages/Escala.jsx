@@ -2107,7 +2107,7 @@ const Escala = () => {
                                                     placeholder="Ex: https://meusite.com/logo.png"
                                                     className="flex-1 h-11 px-4 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm font-bold text-slate-900 drop-shadow-none outline-none focus:bg-white/60 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
                                                 />
-                                                <label className="h-11 px-4 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 font-bold text-xs uppercase rounded-xl flex items-center gap-2 cursor-pointer transition-colors shadow-sm border border-indigo-100 shrink-0">
+                                                <label className="h-11 px-4 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 font-bold text-xs uppercase rounded-xl flex items-center gap-2 cursor-pointer transition-colors shadow-sm border border-blue-100 shrink-0">
                                                     {uploadingLogo ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
                                                     {uploadingLogo ? 'Enviando...' : 'Carregar Imagem'}
                                                     <input type="file" accept="image/*" onChange={handleHospitalLogoUpload} className="hidden" disabled={uploadingLogo} />
@@ -2145,7 +2145,7 @@ const Escala = () => {
                                             </div>
                                             <button 
                                                 onClick={handleAddSectorToTemp}
-                                                className="text-[11px] font-black text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-xl transition-colors flex items-center gap-1 border border-indigo-100/50"
+                                                className="text-[11px] font-black text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-xl transition-colors flex items-center gap-1 border border-blue-100/50"
                                             >
                                                 <Plus size={14} strokeWidth={3} /> Adicionar
                                             </button>
@@ -2205,7 +2205,7 @@ const Escala = () => {
                                         <button 
                                             onClick={handleSaveTempHospital}
                                             disabled={!tempHospital.name.trim()}
-                                            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-slate-800 font-black rounded-xl transition-all shadow-[0_4px_12px_rgba(79,70,229,0.25)] flex items-center gap-2 text-sm disabled:opacity-50"
+                                            className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl transition-all shadow-[0_4px_12px_rgba(37,99,235,0.25)] flex items-center gap-2 text-sm disabled:opacity-50"
                                         >
                                             <Check size={18} strokeWidth={3} />
                                             Salvar Alterações
