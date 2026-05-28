@@ -9,7 +9,7 @@ import {
     DollarSign, Heart, ClipboardList, FileText, CalendarDays,
     Search, UserPlus, FileSpreadsheet, LayoutGrid, Users, 
     ShieldCheck, Bell, Clock, Moon, CircleDollarSign, Building,
-    Check, Palette, User, Trash2, ChevronUp, ChevronDown, Edit2, Download, Eye, Activity, DatabaseBackup
+    Check, Palette, User, Trash2, ChevronUp, ChevronDown, Edit2, Download, Eye, Activity, DatabaseBackup, UploadCloud, Loader2
 } from 'lucide-react';
 import { printHospitalEscalaPdf } from '../utils/pdfHospitalGenerator';
 
@@ -103,6 +103,7 @@ const Escala = () => {
     const [isHospitalsModalOpen, setIsHospitalsModalOpen] = useState(false);
     const [editingHospitalId, setEditingHospitalId] = useState(null);
     const [tempHospital, setTempHospital] = useState(null);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
 
     const getNormalizedPeriod = (p) => {
         const s = (p || '').toLowerCase();
@@ -1047,6 +1048,27 @@ const Escala = () => {
         await saveHospitaisToDB(updated);
         setEditingHospitalId(null);
         setTempHospital(null);
+    };
+
+    const handleHospitalLogoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploadingLogo(true);
+        try {
+            const fileExt = file.name.split('.').pop() || 'png';
+            const fileName = `hospital-${Date.now()}.${fileExt}`;
+            const { error: uploadError } = await supabase.storage.from('logos').upload(fileName, file);
+            if (uploadError) throw uploadError;
+
+            const { data: publicUrlData } = supabase.storage.from('logos').getPublicUrl(fileName);
+            setTempHospital({ ...tempHospital, logoUrl: publicUrlData.publicUrl });
+            toast.success("Logo enviada com sucesso!");
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro no upload da logo.");
+        } finally {
+            setUploadingLogo(false);
+        }
     };
 
     const handleAddHospital = () => {
@@ -2077,14 +2099,21 @@ const Escala = () => {
                                         {/* Logo URL */}
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-black text-slate-900 drop-shadow-none uppercase tracking-widest">Link da Logo (Impressão PDF)</label>
-                                            <input 
-                                                type="text" 
-                                                value={tempHospital.logoUrl || ''}
-                                                onChange={e => setTempHospital({...tempHospital, logoUrl: e.target.value})}
-                                                placeholder="Ex: https://meusite.com/logo.png"
-                                                className="w-full h-11 px-4 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm font-bold text-slate-900 drop-shadow-none outline-none focus:bg-white/60 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
-                                            />
-                                            <p className="text-[10px] text-slate-500 mt-1">Cole aqui o endereço da imagem (PNG ou JPG) para aparecer na impressão em PDF.</p>
+                                            <div className="flex gap-2">
+                                                <input 
+                                                    type="text" 
+                                                    value={tempHospital.logoUrl || ''}
+                                                    onChange={e => setTempHospital({...tempHospital, logoUrl: e.target.value})}
+                                                    placeholder="Ex: https://meusite.com/logo.png"
+                                                    className="flex-1 h-11 px-4 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm font-bold text-slate-900 drop-shadow-none outline-none focus:bg-white/60 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
+                                                />
+                                                <label className="h-11 px-4 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 font-bold text-xs uppercase rounded-xl flex items-center gap-2 cursor-pointer transition-colors shadow-sm border border-indigo-100 shrink-0">
+                                                    {uploadingLogo ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
+                                                    {uploadingLogo ? 'Enviando...' : 'Carregar Imagem'}
+                                                    <input type="file" accept="image/*" onChange={handleHospitalLogoUpload} className="hidden" disabled={uploadingLogo} />
+                                                </label>
+                                            </div>
+                                            <p className="text-[10px] text-slate-500 mt-1">Cole o link da imagem (PNG ou JPG) ou carregue um arquivo do seu computador.</p>
                                         </div>
 
 
