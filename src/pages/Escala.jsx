@@ -11,6 +11,7 @@ import {
     ShieldCheck, Bell, Clock, Moon, CircleDollarSign, Building,
     Check, Palette, User, Trash2, ChevronUp, ChevronDown, Edit2, Download, Eye, Activity, DatabaseBackup
 } from 'lucide-react';
+import { printHospitalEscalaPdf } from '../utils/pdfHospitalGenerator';
 
 // MOCK FALLBACK ONLY (Caso o DB esteja vazio)
 const MOCK_HOSPITALS = [
@@ -1331,6 +1332,17 @@ const Escala = () => {
                     <div className="flex flex-wrap items-center gap-1 pt-2 lg:pt-0 border-t border-white/40 lg:border-t-0 lg:border-l lg:border-white/60 lg:pl-2">
                         <button onClick={() => setIsFinanceiroModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 text-xs font-bold rounded-lg transition-colors"><CircleDollarSign size={14} className="text-emerald-500"/> Financeiro</button>
                         <button onClick={() => setIsFolhaPontoModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-slate-600 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold rounded-lg transition-colors"><FileText size={14} className="text-blue-500"/> Ponto</button>
+                        
+                        <div className="h-4 w-px bg-white/80 hidden lg:block"></div>
+                        <button onClick={() => {
+                            if (!selectedHospital) {
+                                toast.error("Selecione um hospital no filtro ao lado para exportar o PDF.");
+                                return;
+                            }
+                            const hospitalObj = hospitais.find(h => h.id === selectedHospital);
+                            const activeMonthLabel = existingMonths.find(m => m.id === activeMonth)?.label || activeMonth;
+                            printHospitalEscalaPdf(hospitalObj, assignments, activeWeeks, activeMonthLabel, activeMonth, doctors, currentUser);
+                        }} className="flex items-center gap-1.5 px-2.5 py-1.5 text-indigo-600 hover:bg-indigo-50 text-xs font-bold rounded-lg transition-colors border border-indigo-100" title="Exportar PDF do Hospital Selecionado"><Download size={14} className="text-indigo-500"/><span className="hidden xl:inline">PDF Hospital</span></button>
 
                         {(!currentUser || currentUser?.role === 'Desenvolvedor' || currentUser?.modules_access?.includes('adm_escala')) && (
                             <>
