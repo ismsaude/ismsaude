@@ -2,16 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
-import { Building2, CalendarRange, Activity, DollarSign, CalendarClock, LayoutDashboard, Settings as SettingsIcon, LogOut, Instagram, MessageCircle, MapPin, CalendarDays, Check, X } from 'lucide-react';
+import { Building2, CalendarRange, Activity, DollarSign, CalendarClock, LayoutDashboard, Settings as SettingsIcon, LogOut, Instagram, MessageCircle, MapPin, CalendarDays, Check, X, ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
 import bgImage from '../assets/capa-login.jpg';
 import { useWhiteLabel } from '../contexts/WhiteLabelContext';
 import toast from 'react-hot-toast';
 import { usePerformance } from '../hooks/usePerformance';
+import { CompromissosModal } from './CompromissosModal';
 
 const AgendaPessoalWidget = ({ currentUser }) => {
     const [tasks, setTasks] = useState([]);
-    const [newTask, setNewTask] = useState("");
     const [loading, setLoading] = useState(true);
+
+    const generateDays = () => {
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() + i);
+            days.push(date);
+        }
+        return days;
+    };
+    
+    const weekDays = generateDays();
 
     const loadTasks = async () => {
         if (!currentUser?.id) return;
@@ -34,20 +46,6 @@ const AgendaPessoalWidget = ({ currentUser }) => {
         loadTasks();
     }, [currentUser?.id]);
 
-    const handleAddTask = async (e) => {
-        if (e.key !== 'Enter' || !newTask.trim()) return;
-        try {
-            const { error } = await supabase
-                .from('agenda_pessoal')
-                .insert([{ user_id: currentUser.id, texto: newTask.trim() }]);
-            if (error) throw error;
-            setNewTask("");
-            loadTasks();
-        } catch (error) {
-            toast.error("Erro ao adicionar tarefa.");
-        }
-    };
-
     const toggleTask = async (id, currentStatus) => {
         try {
             const { error } = await supabase
@@ -61,60 +59,57 @@ const AgendaPessoalWidget = ({ currentUser }) => {
         }
     };
 
-    const removeTask = async (id) => {
-        try {
-            const { error } = await supabase
-                .from('agenda_pessoal')
-                .delete()
-                .eq('id', id);
-            if (error) throw error;
-            setTasks(tasks.filter(t => t.id !== id));
-        } catch (error) {
-            toast.error("Erro ao remover tarefa.");
-        }
+    const formatDayName = (date) => {
+        const nomes = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+        return nomes[date.getDay()];
+    };
+
+    const formatDateString = (date) => {
+        return date.toISOString().split('T')[0];
     };
 
     return (
-        <div className="flex-1 rounded-[2rem] p-5 md:p-6 flex flex-col bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl transition-all min-h-[120px]">
-            <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <CalendarDays size={14} /> Minha Agenda Diária
-            </h3>
-            
-            <input 
-                type="text"
-                value={newTask}
-                onChange={(e) => setNewTask(e.target.value)}
-                onKeyDown={handleAddTask}
-                placeholder="Adicionar lembrete... (Enter para salvar)"
-                className="w-full px-3 py-2 bg-white/80 border border-white/60 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-indigo-400 mb-3 shadow-sm placeholder:text-slate-400"
-            />
-            
-            <div className="flex flex-col gap-2 overflow-y-auto max-h-[140px] pr-1 no-scrollbar">
-                {loading ? (
-                    <span className="text-[10px] text-slate-500 font-bold uppercase text-center mt-2">Carregando...</span>
-                ) : tasks.length === 0 ? (
-                    <span className="text-[10px] text-slate-400 font-bold uppercase text-center mt-2">Nenhum compromisso pendente</span>
-                ) : (
-                    tasks.map(task => (
-                        <div key={task.id} className="flex items-center gap-2 group">
-                            <button 
-                                onClick={() => toggleTask(task.id, task.concluido)}
-                                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${task.concluido ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-emerald-400'}`}
-                            >
-                                {task.concluido && <Check size={10} className="text-white" strokeWidth={4} />}
-                            </button>
-                            <span className={`text-xs font-bold flex-1 ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'}`}>
-                                {task.texto}
-                            </span>
-                            <button 
-                                onClick={() => removeTask(task.id)}
-                                className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500 transition-all shrink-0"
-                            >
-                                <X size={12} strokeWidth={3} />
-                            </button>
+        <div className="flex-1 rounded-[2rem] p-4 flex flex-col bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl transition-all min-h-[140px] relative overflow-hidden">
+            <div className="absolute top-4 left-4 opacity-20 pointer-events-none">
+                <CalendarDays size={24} className="text-indigo-600" />
+            </div>
+
+            <div className="flex flex-row gap-3 overflow-x-auto custom-scrollbar w-full pt-1 pb-3 px-1 h-full">
+                {weekDays.map((date, idx) => {
+                    const dateStr = formatDateString(date);
+                    const dayTasks = tasks.filter(t => t.data_agendada === dateStr || (!t.data_agendada && idx === 0));
+
+                    return (
+                        <div key={idx} className="flex flex-col min-w-[130px] w-[130px] bg-white/60 rounded-2xl p-3 border border-white shadow-sm shrink-0">
+                            <div className="text-center mb-3 border-b border-indigo-100/50 pb-2">
+                                <span className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest">{formatDayName(date)}</span>
+                                <span className="block text-xl font-black text-slate-700 leading-none mt-1">{date.getDate()}</span>
+                            </div>
+                            
+                            <div className="flex flex-col gap-2 overflow-y-auto max-h-[100px] custom-scrollbar pr-1 flex-1">
+                                {loading ? (
+                                    <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-2 opacity-60">...</span>
+                                ) : dayTasks.length === 0 ? (
+                                    <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-2 opacity-60">Livre</span>
+                                ) : (
+                                    dayTasks.map(task => (
+                                        <div key={task.id} className="flex items-start gap-1.5 group">
+                                            <button 
+                                                onClick={() => toggleTask(task.id, task.concluido)}
+                                                className={`w-4 h-4 mt-0.5 rounded border flex items-center justify-center shrink-0 transition-colors ${task.concluido ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-emerald-400'}`}
+                                            >
+                                                {task.concluido && <Check size={10} className="text-white" strokeWidth={4} />}
+                                            </button>
+                                            <span className={`text-[10px] font-bold leading-tight flex-1 ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'}`}>
+                                                {task.texto}
+                                            </span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
-                    ))
-                )}
+                    );
+                })}
             </div>
         </div>
     );
@@ -131,6 +126,7 @@ const HomeHub = () => {
     const [currentCarouselIdx, setCurrentCarouselIdx] = useState(0);
     const [upcomingShifts, setUpcomingShifts] = useState([]);
     const [loadingShifts, setLoadingShifts] = useState(true);
+    const [showCompromissosModal, setShowCompromissosModal] = useState(false);
 
     const formatShiftDate = (parsedDate) => {
         const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -202,14 +198,12 @@ const HomeHub = () => {
                             const year = today.getFullYear();
                             shiftDate = new Date(year, parseInt(monthStr, 10) - 1, parseInt(dayStr, 10));
                             
-                            // Ajuste para transição de ano (ex: agendando em Dez para Jan)
                             if (shiftDate.getMonth() < today.getMonth() - 2) {
                                 shiftDate.setFullYear(year + 1);
                             } else if (shiftDate.getMonth() > today.getMonth() + 2 && today.getMonth() < 2) {
                                 shiftDate.setFullYear(year - 1);
                             }
                         } else if (a._key && a._key.match(/^\d{4}-\d{2}-w\d/)) {
-                            // Caso 'Padrão' gerado da escala fixa, calcula a data real pela chave
                             const parts = a._key.split('-');
                             if (parts.length >= 6) {
                                 const year = parseInt(parts[0], 10);
@@ -234,7 +228,7 @@ const HomeHub = () => {
                         return a.parsedDate && a.parsedDate >= today;
                     })
                     .sort((a, b) => a.parsedDate - b.parsedDate)
-                    .slice(0, 6); // Até 6 plantões
+                    .slice(0, 6);
 
                 setUpcomingShifts(myShifts);
             } catch (error) {
@@ -263,7 +257,6 @@ const HomeHub = () => {
 
     const handleWhatsappClick = (link) => {
         if (!link) return toast.error("WhatsApp não configurado!");
-        // Garante que o link comece com http se o usuário esquecer
         const finalLink = link.startsWith('http') ? link : `https://${link}`;
         window.open(finalLink, '_blank');
     };
@@ -280,7 +273,6 @@ const HomeHub = () => {
     let titulo = '';
     const name = currentUser?.name || currentUser?.nome || currentUser?.displayName || 'Usuário';
     
-    // Deixa a primeira letra maiúscula e o resto minúscula
     const formatName = (str) => {
         if (!str) return '';
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -300,12 +292,10 @@ const HomeHub = () => {
     if (currentUser?.role === 'Médico') {
         if (sexo === 'M' || sexo === 'MASCULINO') titulo = 'Dr. ';
         else if (sexo === 'F' || sexo === 'FEMININO') titulo = 'Dra. ';
-        // Se não tiver sexo definido, não coloca título para não errar.
     }
 
     const saudacao = `Olá, ${titulo}${primeiroNome}`;
 
-    // Definição dos Módulos Premium com cores sutis e elegantes
     const modules = [
         {
             id: 'atendimento',
@@ -371,16 +361,16 @@ const HomeHub = () => {
             iconBg: 'bg-slate-100'
         },
         {
-            id: 'espaco',
-            title: 'Em Breve',
-            desc: 'Novos recursos',
-            icon: null,
+            id: 'compromissos',
+            title: 'Compromissos',
+            desc: 'Agendar tarefas',
+            icon: ClipboardList,
             path: null,
-            iconColor: '',
-            iconBg: ''
+            iconColor: 'text-fuchsia-600',
+            iconBg: 'bg-fuchsia-50'
         }
     ].filter(mod => {
-        if (mod.id === 'espaco') return true;
+        if (mod.id === 'compromissos') return true;
         if (currentUser?.modules_access) {
             const idMap = {
                 'atendimento': 'atendimento',
@@ -393,7 +383,7 @@ const HomeHub = () => {
             };
             return currentUser.modules_access.includes(idMap[mod.id]);
         }
-        return true; // Fallback se o usuário ainda não tiver a coluna/propriedade
+        return true;
     });
 
     const handleLogout = async () => {
@@ -418,16 +408,8 @@ const HomeHub = () => {
     const ast1 = formatContactName(theme.hubAssistant1Name);
     const ast2 = formatContactName(theme.hubAssistant2Name);
 
-    // --- OPÇÃO 2: GLASSMORPHISM PREMIUM (DARK FROSTED GLASS) - REARRANJADO ---
     return (
-        <div 
-            className="h-full w-full flex flex-col font-sans p-4 md:p-8 pt-[80px] md:pt-[96px] relative overflow-hidden"
-            
-        >
-            {/* Overlay Escuro e Elegante */}
-            
-
-            {/* Top Bar Area */}
+        <div className="h-full w-full flex flex-col font-sans p-4 md:p-8 pt-[80px] md:pt-[96px] relative overflow-hidden">
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center mb-8 px-2 lg:px-4">
                 <div className="flex flex-col text-slate-800 drop-shadow-md">
                     <h1 className="text-4xl font-black tracking-normal mb-1">{saudacao}</h1>
@@ -435,16 +417,10 @@ const HomeHub = () => {
                 </div>
             </div>
 
-            {/* Main Content Area */}
             <div className="relative z-10 flex-1 flex flex-col lg:flex-row gap-6 mb-4 px-2 lg:px-4 min-h-0 w-full max-w-[1500px] mx-auto">
-                
-                {/* Esquerda: Grid + Avisos/Suporte */}
                 <div className="lg:w-[70%] flex flex-col gap-6 min-h-0 overflow-y-auto no-scrollbar pb-4 pr-2">
-                    
-                    {/* Modules Grid (Glass Body) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-4 lg:gap-6 flex-1 min-h-[350px]">
                     {modules.map((mod, idx) => {
-                        // Ajustando cores para o dark mode
                         let darkIconColor = 'text-slate-800';
                         let darkIconBg = 'bg-white/70';
                         if (mod.id === 'atendimento') { darkIconColor = 'text-white'; darkIconBg = 'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-md shadow-emerald-500/30'; }
@@ -454,19 +430,21 @@ const HomeHub = () => {
                         if (mod.id === 'escala') { darkIconColor = 'text-white'; darkIconBg = 'bg-gradient-to-br from-amber-400 to-orange-500 shadow-md shadow-amber-500/30'; }
                         if (mod.id === 'relatorios') { darkIconColor = 'text-white'; darkIconBg = 'bg-gradient-to-br from-rose-400 to-pink-500 shadow-md shadow-rose-500/30'; }
                         if (mod.id === 'configuracoes') { darkIconColor = 'text-white'; darkIconBg = 'bg-gradient-to-br from-slate-400 to-slate-500 shadow-md shadow-slate-500/30'; }
+                        if (mod.id === 'compromissos') { darkIconColor = 'text-white'; darkIconBg = 'bg-gradient-to-br from-fuchsia-400 to-pink-500 shadow-md shadow-fuchsia-500/30'; }
 
                         return (
                             <div 
-                                key={idx}
-                                onClick={() => mod.path && navigate(mod.path)}
+                                key={mod.id}
+                                onClick={() => {
+                                    if (mod.id === 'compromissos') setShowCompromissosModal(true);
+                                    else if (mod.path) navigate(mod.path);
+                                }}
                                 className={`group relative overflow-hidden rounded-[2rem] flex flex-col items-center justify-center text-center transition-all duration-500 cursor-pointer h-full w-full py-4 lg:py-0
-                                    ${!mod.path 
+                                    ${!mod.path && mod.id !== 'compromissos'
                                         ? 'bg-transparent border-2 border-dashed border-white/80 opacity-50 cursor-default hover:opacity-70' 
                                         : 'bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl hover:bg-white/90 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.1)]'
                                     }`}
                             >
-                                {mod.path && <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>}
-
                                 {mod.icon ? (
                                     <div className={`w-16 h-16 mb-4 rounded-[1.25rem] flex items-center justify-center ${darkIconBg} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-[0_0_15px_rgba(0,0,0,0.2)]`}>
                                         <mod.icon size={28} className={darkIconColor} strokeWidth={2} />

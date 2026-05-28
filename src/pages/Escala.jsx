@@ -2329,8 +2329,6 @@ const Escala = () => {
                 </div>
             )}
 
-            )}
-
             {/* Modal de Histórico */}
             {isHistoryModalOpen && (
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6">
