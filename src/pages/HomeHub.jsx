@@ -463,7 +463,7 @@ const HomeHub = () => {
                 </div>
 
                 {/* Direita: Plantões */}
-                <div className="w-full lg:w-[30%] flex flex-col min-h-0 pb-2">
+                <div className="w-full lg:w-[30%] flex flex-col min-h-0">
                     <div className="rounded-[2rem] p-6 flex flex-col h-full bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all overflow-hidden">
                         <div className="flex justify-between items-center mb-4 shrink-0">
                             <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
@@ -520,10 +520,30 @@ const HomeHub = () => {
                 </div>
             </div>
 
-                {/* Footer da Página: Suporte + Avisos/Agenda */}
-                <div className="flex flex-col lg:flex-row gap-6 shrink-0 items-start pb-4">
+                {/* Footer da Página: Avisos/Agenda + Suporte */}
+                <div className="flex flex-col lg:flex-row gap-6 shrink-0 lg:items-stretch pb-4 lg:h-[280px]">
+                    {/* Quadro de Avisos ou Agenda */}
+                    <div className="flex-1 w-full h-[280px] lg:h-full flex min-w-0">
+                        {currentUser?.exibir_agenda_home ? (
+                            <AgendaPessoalWidget currentUser={currentUser} />
+                        ) : (
+                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl hover:bg-white/70 transition-all min-h-[100px]">
+                                {marqueeText ? (
+                                    <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
+                                        "{marqueeText}"
+                                    </p>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center text-center opacity-80">
+                                        <Activity size={24} className="text-slate-500 mb-2"/>
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nenhum aviso importante</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
                     {/* Suporte Rápido */}
-                    <div className="shrink-0 lg:w-[280px] xl:w-[320px] h-[160px] rounded-[2rem] p-5 flex flex-col justify-center bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all">
+                    <div className="shrink-0 lg:w-[280px] xl:w-[320px] h-[160px] lg:h-full rounded-[2rem] p-5 flex flex-col justify-center bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all">
                         <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-3 text-center">
                             Suporte Rápido
                         </h3>
@@ -562,26 +582,6 @@ const HomeHub = () => {
                                 <span className="text-[10px] font-bold text-slate-600 text-center uppercase tracking-wider group-hover:text-slate-800 transition-colors">Insta</span>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Quadro de Avisos ou Agenda */}
-                    <div className="flex-1 w-full h-[280px] flex min-w-0">
-                        {currentUser?.exibir_agenda_home ? (
-                            <AgendaPessoalWidget currentUser={currentUser} />
-                        ) : (
-                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl hover:bg-white/70 transition-all min-h-[100px]">
-                                {marqueeText ? (
-                                    <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
-                                        "{marqueeText}"
-                                    </p>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center text-center opacity-80">
-                                        <Activity size={24} className="text-slate-500 mb-2"/>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nenhum aviso importante</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
                 </div>
 
