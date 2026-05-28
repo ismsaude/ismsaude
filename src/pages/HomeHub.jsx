@@ -84,6 +84,12 @@ export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
                     const todayStr = formatDateString(new Date());
                     const isToday = dateStr === todayStr;
                     const dayTasks = tasks.filter(t => t.data_agendada === dateStr || (!t.data_agendada && idx === 0));
+                    const parsedTasks = dayTasks.map(t => ({ ...t, parsed: parseTaskText(t.texto) }));
+                    const sortedTasks = parsedTasks.sort((a, b) => {
+                        const timeA = a.parsed.time || "24:00";
+                        const timeB = b.parsed.time || "24:00";
+                        return timeA.localeCompare(timeB);
+                    });
 
                     return (
                         <div key={idx} className={`flex flex-col min-w-[105px] flex-1 rounded-[1rem] p-2 border shrink-0 ${isToday ? 'bg-indigo-50/70 border-indigo-200/60 shadow-sm' : 'bg-white/30 border-white/40'}`}>
@@ -94,26 +100,28 @@ export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
                                 <span className="text-base font-black text-slate-700 leading-none">{date.getDate()}</span>
                             </div>
                             
-                            <div className="flex flex-col gap-1.5 overflow-y-auto custom-scrollbar pr-1 flex-1 min-h-0">
+                            <div className="flex flex-col gap-2 overflow-y-auto custom-scrollbar pr-1 flex-1 min-h-0">
                                 {loading ? (
                                     <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-1 opacity-60">...</span>
-                                ) : dayTasks.length === 0 ? (
+                                ) : sortedTasks.length === 0 ? (
                                     <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-1 opacity-60">Livre</span>
                                 ) : (
-                                    dayTasks.map(task => {
-                                        const { time, text } = parseTaskText(task.texto);
+                                    sortedTasks.map(task => {
+                                        const { time, text } = task.parsed;
                                         return (
                                             <div key={task.id} className="flex items-start gap-1.5 group">
                                                 <button 
                                                     onClick={() => toggleTask(task.id, task.concluido)}
-                                                    className={`w-3.5 h-3.5 mt-0.5 rounded border flex items-center justify-center shrink-0 transition-colors ${task.concluido ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-emerald-400'}`}
+                                                    className={`w-3.5 h-3.5 mt-0.5 rounded-[4px] border flex items-center justify-center shrink-0 transition-colors ${task.concluido ? 'bg-indigo-500 border-indigo-500' : 'border-indigo-300 hover:border-indigo-400 bg-white'}`}
                                                 >
                                                     {task.concluido && <Check size={8} className="text-white" strokeWidth={4} />}
                                                 </button>
-                                                <span className={`text-[9px] font-bold leading-tight flex-1 flex gap-1 ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'}`}>
-                                                    {time && <span className="text-indigo-500 shrink-0">{time}</span>}
-                                                    <span>{text}</span>
-                                                </span>
+                                                <div className="flex flex-col flex-1 leading-[1.15]">
+                                                    {time && <span className="text-[10px] font-black text-indigo-600 mb-[1px]">{time}</span>}
+                                                    <span className={`text-[9.5px] font-bold ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'}`}>
+                                                        {text}
+                                                    </span>
+                                                </div>
                                             </div>
                                         );
                                     })
