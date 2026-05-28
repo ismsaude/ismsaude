@@ -69,14 +69,14 @@ const AgendaPessoalWidget = ({ currentUser }) => {
     };
 
     return (
-        <div className="flex-1 rounded-[2rem] p-4 flex flex-col bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl transition-all min-h-[140px] relative overflow-hidden">
+        <div className="flex-1 rounded-[2rem] p-4 flex flex-col bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl transition-all min-h-[140px] relative overflow-hidden">
             <div className="flex flex-row gap-2 overflow-x-auto custom-scrollbar w-full pt-1 pb-2 px-1 h-full">
                 {weekDays.map((date, idx) => {
                     const dateStr = formatDateString(date);
                     const dayTasks = tasks.filter(t => t.data_agendada === dateStr || (!t.data_agendada && idx === 0));
 
                     return (
-                        <div key={idx} className="flex flex-col min-w-[105px] flex-1 bg-white/50 rounded-[1rem] p-2 border border-white/70 shrink-0">
+                        <div key={idx} className="flex flex-col min-w-[105px] flex-1 bg-white/60 rounded-[1rem] p-2 border border-white shrink-0">
                             <div className="flex items-center justify-between mb-2 border-b border-indigo-100/50 pb-1">
                                 <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest leading-none">{formatDayName(date)}</span>
                                 <span className="text-base font-black text-slate-700 leading-none">{date.getDate()}</span>
@@ -461,7 +461,7 @@ const HomeHub = () => {
                         {currentUser?.exibir_agenda_home ? (
                             <AgendaPessoalWidget currentUser={currentUser} />
                         ) : (
-                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl hover:bg-white/70 transition-all min-h-[100px]">
+                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl hover:bg-white/90 transition-all min-h-[100px]">
                                 {marqueeText ? (
                                     <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
                                         "{marqueeText}"
@@ -479,7 +479,7 @@ const HomeHub = () => {
 
                 {/* Direita: Plantões e Suporte */}
                 <div className="w-full lg:w-[30%] flex flex-col gap-6 min-h-0">
-                    <div className="rounded-[2rem] p-6 flex flex-col h-full bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all overflow-hidden">
+                    <div className="rounded-[2rem] p-6 flex flex-col h-full bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl hover:bg-white/90 transition-all overflow-hidden">
                         <div className="flex justify-between items-center mb-4 shrink-0">
                             <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
                                 <CalendarClock size={16}/>
@@ -534,7 +534,7 @@ const HomeHub = () => {
                     </div>
 
                     {/* Suporte Rápido */}
-                    <div className="shrink-0 h-[140px] rounded-[2rem] p-4 flex flex-col justify-center bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl hover:bg-white/15 transition-all">
+                    <div className="shrink-0 h-[140px] rounded-[2rem] p-4 flex flex-col justify-center bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl hover:bg-white/90 transition-all">
                         <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2 text-center">
                             Suporte Rápido
                         </h3>
