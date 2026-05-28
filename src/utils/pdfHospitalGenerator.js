@@ -295,7 +295,7 @@ export const printHospitalEscalaPdf = (hospital, assignments, activeWeeks, activ
             <div class="container">
                 <!-- PÁGINA 1: ESCALA -->
                 <div class="header">
-                    <img src="/assets/logo-anestesp.png" class="logo-left" alt="Anestesp" onerror="this.style.display='none'" />
+                    <img src="${window.location.origin}/assets/logo-anestesp.png" class="logo-left" alt="Anestesp" onerror="this.style.display='none'" />
                     
                     <div class="title">
                         <h1>ESCALA MENSAL - ANESTESISTAS</h1>
@@ -329,7 +329,7 @@ export const printHospitalEscalaPdf = (hospital, assignments, activeWeeks, activ
                 </div>
 
                 <div class="company-footer">
-                    <img src="/assets/logo-ism.png" class="logo-ism" alt="ISM Health Solutions" onerror="this.style.display='none'" />
+                    <img src="${window.location.origin}/assets/logo-ism.png" class="logo-ism" alt="ISM Health Solutions" onerror="this.style.display='none'" />
                     <div>ISM Health Solutions - CNPJ 29.732.524/0001-59</div>
                     <div>Escala gerada em: ${dataGeracao}</div>
                 </div>
