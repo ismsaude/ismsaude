@@ -68,7 +68,7 @@ const AppLayout = ({ children }) => {
           backgroundAttachment: 'fixed'
       }}
     >
-      <div className="absolute inset-0 pointer-events-none bg-white/70 backdrop-blur-md"></div>
+      <div className="absolute inset-0 pointer-events-none bg-white/50 backdrop-blur-[3px]"></div>
       
       {currentUser && (
         <div className="fixed top-0 left-0 w-full z-[999]">

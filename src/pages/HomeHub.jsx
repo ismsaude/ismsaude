@@ -69,16 +69,20 @@ const AgendaPessoalWidget = ({ currentUser }) => {
     };
 
     return (
-        <div className="flex-1 rounded-[2rem] p-4 flex flex-col bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl transition-all min-h-[140px] relative overflow-hidden">
+        <div className="flex-1 rounded-[2rem] p-4 flex flex-col bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all min-h-[140px] relative overflow-hidden">
             <div className="flex flex-row gap-2 overflow-x-auto custom-scrollbar w-full pt-1 pb-2 px-1 h-full">
                 {weekDays.map((date, idx) => {
                     const dateStr = formatDateString(date);
+                    const todayStr = formatDateString(new Date());
+                    const isToday = dateStr === todayStr;
                     const dayTasks = tasks.filter(t => t.data_agendada === dateStr || (!t.data_agendada && idx === 0));
 
                     return (
-                        <div key={idx} className="flex flex-col min-w-[105px] flex-1 bg-white/30 rounded-[1rem] p-2 border border-white/40 shrink-0">
+                        <div key={idx} className={`flex flex-col min-w-[105px] flex-1 rounded-[1rem] p-2 border shrink-0 ${isToday ? 'bg-indigo-50/70 border-indigo-200/60 shadow-sm' : 'bg-white/30 border-white/40'}`}>
                             <div className="flex items-center justify-between mb-2 border-b border-indigo-100/50 pb-1">
-                                <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest leading-none">{formatDayName(date)}</span>
+                                <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest leading-none">
+                                    {isToday ? 'HOJE' : formatDayName(date)}
+                                </span>
                                 <span className="text-base font-black text-slate-700 leading-none">{date.getDate()}</span>
                             </div>
                             
@@ -413,7 +417,7 @@ const HomeHub = () => {
                         <h1 className="text-4xl font-black tracking-normal mb-1">{saudacao}</h1>
                         <p className="text-sm font-bold text-slate-600 uppercase tracking-widest">Seja {bemVindoText} ao sistema da iSM Saúde</p>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-4 lg:gap-6 flex-1 min-h-[350px]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-4 lg:gap-6 flex-1">
                     {modules.map((mod, idx) => {
                         let darkIconColor = 'text-slate-800';
                         let darkIconBg = 'bg-white/70';
@@ -433,15 +437,15 @@ const HomeHub = () => {
                                     if (mod.id === 'compromissos') setShowCompromissosModal(true);
                                     else if (mod.path) navigate(mod.path);
                                 }}
-                                className={`group relative overflow-hidden rounded-[2rem] flex flex-col items-center justify-center text-center transition-all duration-500 cursor-pointer h-full w-full py-4 lg:py-0
+                                className={`group relative overflow-hidden rounded-[2rem] flex flex-col items-center justify-center text-center transition-all duration-500 cursor-pointer h-full w-full py-4 lg:py-6
                                     ${!mod.path && mod.id !== 'compromissos'
                                         ? 'bg-transparent border-2 border-dashed border-white/80 opacity-50 cursor-default hover:opacity-70' 
-                                        : 'bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl hover:bg-white/90 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.1)]'
+                                        : 'bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)]'
                                     }`}
                             >
                                 {mod.icon ? (
-                                    <div className={`w-16 h-16 mb-4 rounded-[1.25rem] flex items-center justify-center ${darkIconBg} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-[0_0_15px_rgba(0,0,0,0.2)]`}>
-                                        <mod.icon size={28} className={darkIconColor} strokeWidth={2} />
+                                    <div className={`w-14 h-14 mb-3 rounded-[1rem] flex items-center justify-center ${darkIconBg} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-[0_0_15px_rgba(0,0,0,0.2)]`}>
+                                        <mod.icon size={24} className={darkIconColor} strokeWidth={2} />
                                     </div>
                                 ) : (
                                     <div className="w-16 h-16 mb-4 rounded-[1.25rem] border-2 border-dashed border-white/30 flex items-center justify-center">
@@ -461,7 +465,7 @@ const HomeHub = () => {
                         {currentUser?.exibir_agenda_home ? (
                             <AgendaPessoalWidget currentUser={currentUser} />
                         ) : (
-                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl hover:bg-white/90 transition-all min-h-[100px]">
+                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 transition-all min-h-[100px]">
                                 {marqueeText ? (
                                     <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
                                         "{marqueeText}"
@@ -479,7 +483,7 @@ const HomeHub = () => {
 
                 {/* Direita: Plantões e Suporte */}
                 <div className="w-full lg:w-[30%] flex flex-col gap-6 min-h-0">
-                    <div className="rounded-[2rem] p-6 flex flex-col h-full bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl hover:bg-white/90 transition-all overflow-hidden">
+                    <div className="rounded-[2rem] p-6 flex flex-col h-full bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 transition-all overflow-hidden">
                         <div className="flex justify-between items-center mb-4 shrink-0">
                             <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
                                 <CalendarClock size={16}/>
@@ -534,7 +538,7 @@ const HomeHub = () => {
                     </div>
 
                     {/* Suporte Rápido */}
-                    <div className="shrink-0 h-[140px] rounded-[2rem] p-4 flex flex-col justify-center bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl hover:bg-white/90 transition-all">
+                    <div className="shrink-0 h-[140px] rounded-[2rem] p-4 flex flex-col justify-center bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 transition-all">
                         <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2 text-center">
                             Suporte Rápido
                         </h3>
