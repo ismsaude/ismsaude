@@ -300,52 +300,37 @@ export const CompromissosModal = ({ onClose }) => {
                     </div>
 
                     {/* Formulario de Novo Compromisso */}
-                    <div className="p-6 bg-white/90 border-t border-indigo-50 mt-auto">
+                    <div className="p-5 md:p-6 bg-white/90 border-t border-indigo-50 mt-auto">
                         <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                            <Plus size={12}/> Adicionar Evento
+                            <Plus size={12}/> Novo Evento
                         </h4>
                         
-                        <div className="space-y-3">
-                            <div className="flex gap-2">
-                                <div className="w-[90px]">
-                                    <input 
-                                        type="time" 
-                                        value={formData.hora}
-                                        onChange={e => setFormData({...formData, hora: e.target.value})}
-                                        className="w-full bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-2 py-2.5 outline-none focus:border-indigo-400 transition-all text-center"
-                                    />
-                                </div>
-                                <div className="flex-1">
-                                    <select 
-                                        value={formData.user_id}
-                                        onChange={e => setFormData({...formData, user_id: e.target.value})}
-                                        className="w-full bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2.5 outline-none focus:border-indigo-400 transition-all appearance-none"
-                                    >
-                                        <option value="">Destinatário...</option>
-                                        {users.map(u => (
-                                            <option key={u.id} value={u.id}>{u.name?.split(' ')[0] || u.email}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div className="flex gap-2">
+                        <div className="flex bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all shadow-sm">
+                            <div className="border-r border-slate-200 bg-slate-50 flex items-center shrink-0">
                                 <input 
-                                    type="text"
-                                    value={formData.texto}
-                                    onChange={e => setFormData({...formData, texto: e.target.value})}
-                                    placeholder="Nome do evento..."
-                                    className="flex-1 min-w-0 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl px-3 py-2.5 outline-none focus:border-indigo-400 transition-all"
-                                    onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
+                                    type="time" 
+                                    value={formData.hora}
+                                    onChange={e => setFormData({...formData, hora: e.target.value})}
+                                    className="w-[85px] bg-transparent text-slate-700 text-xs font-bold px-3 py-3 outline-none text-center cursor-pointer"
+                                    title="Horário do compromisso"
                                 />
-                                <button 
-                                    onClick={handleSave}
-                                    disabled={saving}
-                                    className="w-10 h-[42px] bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center transition-all shrink-0 shadow-md shadow-indigo-600/30"
-                                >
-                                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Plus size={18} strokeWidth={3} />}
-                                </button>
                             </div>
+                            <input 
+                                type="text"
+                                value={formData.texto}
+                                onChange={e => setFormData({...formData, texto: e.target.value})}
+                                placeholder="Título do compromisso..."
+                                className="flex-1 min-w-0 bg-transparent text-slate-700 text-sm font-semibold px-4 py-3 outline-none placeholder:text-slate-400 placeholder:font-medium"
+                                onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
+                            />
+                            <button 
+                                onClick={handleSave}
+                                disabled={saving || !formData.texto.trim()}
+                                className="w-14 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all shrink-0"
+                                title="Salvar Evento"
+                            >
+                                {saving ? <Loader2 size={16} className="animate-spin" /> : <Plus size={20} strokeWidth={3} />}
+                            </button>
                         </div>
                     </div>
                 </div>
