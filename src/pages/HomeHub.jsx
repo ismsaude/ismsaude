@@ -583,6 +583,10 @@ const HomeHub = () => {
 
             </div>
             
+            {showCompromissosModal && (
+                <CompromissosModal onClose={() => setShowCompromissosModal(false)} currentUser={currentUser} />
+            )}
+            
             <style jsx="true">{`
                 @keyframes marquee {
                     0% { transform: translateX(100%); }
