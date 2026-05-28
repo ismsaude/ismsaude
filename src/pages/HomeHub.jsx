@@ -42,6 +42,14 @@ const AgendaPessoalWidget = ({ currentUser }) => {
         }
     };
 
+    const parseTaskText = (texto) => {
+        const match = texto.match(/^\[(\d{2}:\d{2})\]\s(.*)/);
+        if (match) {
+            return { time: match[1], text: match[2] };
+        }
+        return { time: null, text: texto };
+    };
+
     useEffect(() => {
         loadTasks();
     }, [currentUser?.id]);
@@ -92,19 +100,23 @@ const AgendaPessoalWidget = ({ currentUser }) => {
                                 ) : dayTasks.length === 0 ? (
                                     <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-1 opacity-60">Livre</span>
                                 ) : (
-                                    dayTasks.map(task => (
-                                        <div key={task.id} className="flex items-start gap-1.5 group">
-                                            <button 
-                                                onClick={() => toggleTask(task.id, task.concluido)}
-                                                className={`w-3.5 h-3.5 mt-0.5 rounded border flex items-center justify-center shrink-0 transition-colors ${task.concluido ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-emerald-400'}`}
-                                            >
-                                                {task.concluido && <Check size={8} className="text-white" strokeWidth={4} />}
-                                            </button>
-                                            <span className={`text-[9px] font-bold leading-tight flex-1 ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'}`}>
-                                                {task.texto}
-                                            </span>
-                                        </div>
-                                    ))
+                                    dayTasks.map(task => {
+                                        const { time, text } = parseTaskText(task.texto);
+                                        return (
+                                            <div key={task.id} className="flex items-start gap-1.5 group">
+                                                <button 
+                                                    onClick={() => toggleTask(task.id, task.concluido)}
+                                                    className={`w-3.5 h-3.5 mt-0.5 rounded border flex items-center justify-center shrink-0 transition-colors ${task.concluido ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-emerald-400'}`}
+                                                >
+                                                    {task.concluido && <Check size={8} className="text-white" strokeWidth={4} />}
+                                                </button>
+                                                <span className={`text-[9px] font-bold leading-tight flex-1 flex gap-1 ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'}`}>
+                                                    {time && <span className="text-indigo-500 shrink-0">{time}</span>}
+                                                    <span>{text}</span>
+                                                </span>
+                                            </div>
+                                        );
+                                    })
                                 )}
                             </div>
                         </div>
