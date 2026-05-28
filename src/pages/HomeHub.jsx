@@ -481,13 +481,15 @@ const HomeHub = () => {
                     </div>
 
                     {/* Quadro de Avisos ou Agenda */}
-                    <div className="flex-1 w-full flex min-h-[220px]">
-                        {currentUser?.exibir_agenda_home ? (
+                    {currentUser?.exibir_agenda_home ? (
+                        <div className="flex-1 w-full flex min-h-[220px]">
                             <AgendaPessoalWidget currentUser={currentUser} refreshTrigger={agendaRefreshTrigger} />
-                        ) : (
-                            <div className="flex-1 rounded-[2rem] p-6 md:p-8 flex items-center justify-center bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 transition-all min-h-[100px]">
+                        </div>
+                    ) : (
+                        <div className="shrink-0 h-[140px] w-full flex">
+                            <div className="flex-1 rounded-[2rem] p-6 flex items-center justify-center bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 transition-all">
                                 {marqueeText ? (
-                                    <p className="text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
+                                    <p className="text-[13px] md:text-[14px] lg:text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
                                         "{marqueeText}"
                                     </p>
                                 ) : (
@@ -497,8 +499,8 @@ const HomeHub = () => {
                                     </div>
                                 )}
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Direita: Plantões e Suporte */}
