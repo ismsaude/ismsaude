@@ -149,14 +149,20 @@ export const CompromissosModal = ({ onClose }) => {
     // Identificar a data de hoje (sem tempo) para estilo especial
     const todayStr = (new Date()).toDateString();
     
-    // Função utilitária para pegar tarefas de um dia específico
     const getTasksForDay = (dateObj) => {
         if (!dateObj) return [];
-        // Local iso string
         const offset = dateObj.getTimezoneOffset();
         const localDate = new Date(dateObj.getTime() - (offset*60*1000));
         const dateStr = localDate.toISOString().split('T')[0];
         return tasks.filter(t => t.data_agendada === dateStr);
+    };
+
+    const getUpcomingTasks = (dateObj) => {
+        if (!dateObj) return [];
+        const offset = dateObj.getTimezoneOffset();
+        const localDate = new Date(dateObj.getTime() - (offset*60*1000));
+        const dateStr = localDate.toISOString().split('T')[0];
+        return tasks.filter(t => t.data_agendada > dateStr);
     };
 
     const parseTaskText = (texto) => {
@@ -168,6 +174,7 @@ export const CompromissosModal = ({ onClose }) => {
     };
 
     const selectedTasks = getTasksForDay(selectedDate);
+    const upcomingTasks = getUpcomingTasks(selectedDate);
     const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
@@ -271,10 +278,49 @@ export const CompromissosModal = ({ onClose }) => {
                         {loading && tasks.length === 0 ? (
                             <div className="flex justify-center py-4"><Loader2 className="animate-spin text-indigo-400" /></div>
                         ) : selectedTasks.length === 0 ? (
-                            <div className="text-center py-8 opacity-50">
-                                <CalendarDays size={32} className="mx-auto mb-2 text-slate-400" />
-                                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Nenhum evento</p>
-                            </div>
+                            upcomingTasks.length > 0 ? (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 mb-4 px-2">
+                                        <CalendarDays size={16} className="text-slate-400" />
+                                        <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">Próximos Eventos</h4>
+                                    </div>
+                                    {upcomingTasks.map(task => {
+                                        const { time, text } = parseTaskText(task.texto);
+                                        const [y, m, d] = task.data_agendada.split('-');
+                                        return (
+                                            <div key={task.id} className="group relative bg-white/60 border border-white p-3 rounded-2xl shadow-sm hover:shadow-md transition-all">
+                                                <button 
+                                                    onClick={() => handleDelete(task.id)}
+                                                    className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm scale-90 hover:scale-100"
+                                                >
+                                                    <X size={12} strokeWidth={3}/>
+                                                </button>
+                                                
+                                                <div className="flex items-start gap-3">
+                                                    <div className="flex flex-col items-center shrink-0 w-10">
+                                                        <span className="text-[11px] font-black text-indigo-500">{d}/{m}</span>
+                                                        <span className="text-[9px] font-bold text-slate-400 mt-0.5">{time || '--:--'}</span>
+                                                    </div>
+                                                    <div className="w-px min-h-[30px] bg-indigo-100 self-stretch"></div>
+                                                    <div className="flex-1 min-w-0 py-0.5">
+                                                        <p className={`text-sm font-bold leading-tight ${task.concluido ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
+                                                            {text}
+                                                        </p>
+                                                        <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-1">
+                                                            Para: {task.users?.name?.split(' ')[0] || 'Desconhecido'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 opacity-50">
+                                    <CalendarDays size={32} className="mx-auto mb-2 text-slate-400" />
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Nenhum evento</p>
+                                </div>
+                            )
                         ) : (
                             selectedTasks.map(task => {
                                 const { time, text } = parseTaskText(task.texto);
@@ -331,7 +377,7 @@ export const CompromissosModal = ({ onClose }) => {
                                         type="time" 
                                         value={formData.hora}
                                         onChange={e => setFormData({...formData, hora: e.target.value})}
-                                        className="w-[85px] bg-transparent text-slate-700 text-xs font-bold px-3 py-3 outline-none text-center cursor-pointer"
+                                        className="w-[105px] bg-transparent text-slate-700 text-xs font-bold px-3 py-3 outline-none text-center cursor-pointer"
                                         title="Horário do compromisso"
                                     />
                                 </div>
