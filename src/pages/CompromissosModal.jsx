@@ -33,7 +33,15 @@ export const CompromissosModal = ({ onClose }) => {
     const fetchUsers = async () => {
         try {
             const { data, error } = await supabase.from('users').select('id, name, email, role').order('name');
-            if (!error && data) setUsers(data);
+            if (!error && data) {
+                setUsers(data);
+                const iuri = data.find(u => u.name && u.name.toLowerCase().includes('iuri'));
+                if (iuri) {
+                    setFormData(prev => ({ ...prev, user_id: iuri.id }));
+                } else if (data.length > 0) {
+                    setFormData(prev => ({ ...prev, user_id: data[0].id }));
+                }
+            }
         } catch (err) {
             console.error(err);
         }
@@ -305,32 +313,45 @@ export const CompromissosModal = ({ onClose }) => {
                             <Plus size={12}/> Novo Evento
                         </h4>
                         
-                        <div className="flex bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all shadow-sm">
-                            <div className="border-r border-slate-200 bg-slate-50 flex items-center shrink-0">
-                                <input 
-                                    type="time" 
-                                    value={formData.hora}
-                                    onChange={e => setFormData({...formData, hora: e.target.value})}
-                                    className="w-[85px] bg-transparent text-slate-700 text-xs font-bold px-3 py-3 outline-none text-center cursor-pointer"
-                                    title="Horário do compromisso"
-                                />
-                            </div>
-                            <input 
-                                type="text"
-                                value={formData.texto}
-                                onChange={e => setFormData({...formData, texto: e.target.value})}
-                                placeholder="Título do compromisso..."
-                                className="flex-1 min-w-0 bg-transparent text-slate-700 text-sm font-semibold px-4 py-3 outline-none placeholder:text-slate-400 placeholder:font-medium"
-                                onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
-                            />
-                            <button 
-                                onClick={handleSave}
-                                disabled={saving || !formData.texto.trim()}
-                                className="w-14 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all shrink-0"
-                                title="Salvar Evento"
+                        <div className="flex flex-col gap-2">
+                            <select 
+                                value={formData.user_id}
+                                onChange={e => setFormData({...formData, user_id: e.target.value})}
+                                className="w-full bg-white border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-xl outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all shadow-sm"
                             >
-                                {saving ? <Loader2 size={16} className="animate-spin" /> : <Plus size={20} strokeWidth={3} />}
-                            </button>
+                                <option value="" disabled>Destinatário...</option>
+                                {users.map(u => (
+                                    <option key={u.id} value={u.id}>{u.name}</option>
+                                ))}
+                            </select>
+
+                            <div className="flex bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all shadow-sm">
+                                <div className="border-r border-slate-200 bg-slate-50 flex items-center shrink-0">
+                                    <input 
+                                        type="time" 
+                                        value={formData.hora}
+                                        onChange={e => setFormData({...formData, hora: e.target.value})}
+                                        className="w-[85px] bg-transparent text-slate-700 text-xs font-bold px-3 py-3 outline-none text-center cursor-pointer"
+                                        title="Horário do compromisso"
+                                    />
+                                </div>
+                                <input 
+                                    type="text"
+                                    value={formData.texto}
+                                    onChange={e => setFormData({...formData, texto: e.target.value})}
+                                    placeholder="Título do compromisso..."
+                                    className="flex-1 min-w-0 bg-transparent text-slate-700 text-sm font-semibold px-4 py-3 outline-none placeholder:text-slate-400 placeholder:font-medium"
+                                    onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
+                                />
+                                <button 
+                                    onClick={handleSave}
+                                    disabled={saving || !formData.texto.trim() || !formData.user_id}
+                                    className="w-14 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all shrink-0"
+                                    title="Salvar Evento"
+                                >
+                                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Plus size={20} strokeWidth={3} />}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
