@@ -641,6 +641,15 @@ export default function Apa({ paciente }) {
         if (!apaCompleta.dataProcedimento || String(apaCompleta.dataProcedimento).trim() === '') {
             apaCompleta.dataProcedimento = null;
         }
+        if (!apaCompleta.ex_data_lab || String(apaCompleta.ex_data_lab).trim() === '') {
+            apaCompleta.ex_data_lab = null;
+        }
+        if (!apaCompleta.ex_data_cardio || String(apaCompleta.ex_data_cardio).trim() === '') {
+            apaCompleta.ex_data_cardio = null;
+        }
+        if (!apaCompleta.ex_data_imagem || String(apaCompleta.ex_data_imagem).trim() === '') {
+            apaCompleta.ex_data_imagem = null;
+        }
 
         // Prevenção de erro de Sintaxe no Postgres (UUID column com string vazia)
         if (apaCompleta.pacienteId === '') {
@@ -648,6 +657,14 @@ export default function Apa({ paciente }) {
         }
         if (apaCompleta.anestesistaId === '') {
             apaCompleta.anestesistaId = null;
+        }
+
+        // Prevenção de erro de Sintaxe no Postgres (Boolean column com string vazia)
+        if (apaCompleta.pacienteInapto === '') {
+            apaCompleta.pacienteInapto = false;
+        }
+        if (apaCompleta.asa_e === '') {
+            apaCompleta.asa_e = false;
         }
 
         // Removendo campos "fantasmas" que não têm input na interface atual
@@ -663,6 +680,7 @@ export default function Apa({ paciente }) {
         delete apaCompleta.dataAtualizacao;
         delete apaCompleta.dataAvaliacao;
         delete apaCompleta.createdAt;
+        delete apaCompleta.deleted_at;
         delete apaCompleta.idadeInfo;
         delete apaCompleta.imc;
 
