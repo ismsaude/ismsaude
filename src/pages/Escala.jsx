@@ -1090,6 +1090,23 @@ const Escala = () => {
         }
     };
 
+    const handleMoveHospital = (index, direction, e) => {
+        e.stopPropagation();
+        const newHospitais = [...hospitais];
+        if (direction === 'up' && index > 0) {
+            const temp = newHospitais[index];
+            newHospitais[index] = newHospitais[index - 1];
+            newHospitais[index - 1] = temp;
+        } else if (direction === 'down' && index < newHospitais.length - 1) {
+            const temp = newHospitais[index];
+            newHospitais[index] = newHospitais[index + 1];
+            newHospitais[index + 1] = temp;
+        } else {
+            return;
+        }
+        saveHospitaisToDB(newHospitais);
+    };
+
     const handleAddSectorToTemp = () => {
         setTempHospital({ ...tempHospital, sectors: [...tempHospital.sectors, 'Novo Setor'] });
     };
@@ -2040,7 +2057,7 @@ const Escala = () => {
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        {hospitais.map(hospital => (
+                                        {hospitais.map((hospital, idx) => (
                                             <div 
                                                 key={hospital.id} 
                                                 onClick={() => handleEditHospital(hospital)}
@@ -2060,8 +2077,24 @@ const Escala = () => {
                                                     </div>
                                                 </div>
                                                 
-                                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <span className="text-[11px] font-bold text-indigo-500 mr-2 uppercase tracking-widest hidden sm:block">Configurar</span>
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="flex flex-col mr-2">
+                                                        <button 
+                                                            onClick={(e) => handleMoveHospital(idx, 'up', e)}
+                                                            disabled={idx === 0}
+                                                            className="p-0.5 text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors"
+                                                        >
+                                                            <ChevronUp size={16} strokeWidth={3} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={(e) => handleMoveHospital(idx, 'down', e)}
+                                                            disabled={idx === hospitais.length - 1}
+                                                            className="p-0.5 text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors"
+                                                        >
+                                                            <ChevronDown size={16} strokeWidth={3} />
+                                                        </button>
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-blue-500 mr-2 uppercase tracking-widest hidden sm:block">Configurar</span>
                                                     <button 
                                                         onClick={(e) => handleDeleteHospital(hospital.id, e)}
                                                         className="p-1.5 text-slate-600 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
