@@ -49,7 +49,7 @@ const PermissionRoute = ({ children, requiredPermission, requiredModule }) => {
 // Componente auxiliar para disparar o toast apenas uma vez e redirecionar
 const PermissionDeniedRedirect = () => {
     React.useEffect(() => {
-        toast.error("Acesso Negado: Área restrita.", { id: 'acesso-negado' }); // ID evita duplicidade
+        toast.error("Em breve estará disponível", { id: 'acesso-negado' }); // ID evita duplicidade
     }, []);
     return <Navigate to="/home" />;
 }

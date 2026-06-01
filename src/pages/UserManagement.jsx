@@ -151,6 +151,7 @@ const PERMISSIONS_MODULES = [
         label: 'Módulo: Escala Médica',
         permissions: [
             { id: 'Acessar Escala', label: 'Escala: Acessar Plantões Mensais' },
+            { id: 'Visualizar Toda Escala', label: 'Escala: Visualizar Toda a Escala' },
             { id: 'Operacional Escala', label: 'Escala: Acessar Financeiro/Ponto' },
             { id: 'Admin Escala', label: 'Escala: Adm da Escala (Gerenciar Meses/Regras)' }
         ]

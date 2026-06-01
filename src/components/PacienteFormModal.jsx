@@ -55,7 +55,10 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
         bairro: '',
         municipio: 'Porto Feliz',
         uf: 'SP',
-        cep: ''
+        cep: '',
+        peso: '',
+        altura: '',
+        email: ''
     });
 
     useEffect(() => {
@@ -73,7 +76,10 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                 bairro: paciente.bairro || '',
                 municipio: paciente.municipio || 'Porto Feliz',
                 uf: paciente.uf || 'SP',
-                cep: paciente.cep || ''
+                cep: paciente.cep || '',
+                peso: paciente.peso || '',
+                altura: paciente.altura || '',
+                email: paciente.email || ''
             });
             setEditingId(paciente.id);
 
@@ -94,7 +100,10 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                 bairro: '',
                 municipio: 'Porto Feliz',
                 uf: 'SP',
-                cep: ''
+                cep: '',
+                peso: '',
+                altura: '',
+                email: ''
             });
             setEditingId(null);
             setHistoricoCirurgias([]);
@@ -374,6 +383,14 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                                     <label className={labelStyle}>Nome da Mãe</label>
                                     <input type="text" name="nomeMae" value={formData.nomeMae} onChange={handleChange} className={inputStyle} placeholder="Nome completo da mãe" disabled={!podeEditar} />
                                 </div>
+                                <div>
+                                    <label className={labelStyle}>Peso (kg)</label>
+                                    <input type="text" name="peso" value={formData.peso} onChange={handleChange} className={inputStyle} placeholder="Ex: 75.5" disabled={!podeEditar} />
+                                </div>
+                                <div>
+                                    <label className={labelStyle}>Altura (m)</label>
+                                    <input type="text" name="altura" value={formData.altura} onChange={handleChange} className={inputStyle} placeholder="Ex: 1,78" disabled={!podeEditar} />
+                                </div>
                             </div>
                         </div>
 
@@ -386,6 +403,10 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                                 <div>
                                     <label className={labelStyle}>Telefone</label>
                                     <input type="text" name="telefone" value={formData.telefone} onChange={handleChange} className={inputStyle} placeholder="(00) 00000-0000" maxLength="15" disabled={!podeEditar} />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className={labelStyle}>E-mail</label>
+                                    <input type="email" name="email" value={formData.email} onChange={handleChange} className={inputStyle} placeholder="paciente@email.com" disabled={!podeEditar} />
                                 </div>
                                 <div>
                                     <label className={labelStyle}>CEP</label>

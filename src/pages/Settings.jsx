@@ -1459,6 +1459,311 @@ const OrientacoesManager = () => {
     );
 };
 
+const medicamentosComuns = [
+    // ANALGÉSICOS, ANTITÉRMICOS E ANTI-INFLAMATÓRIOS
+    { nome: 'DIPIRONA 500mg', posologia: 'Tomar 1 comp. via oral de 6/6h se dor ou febre', tipo: 'simples' },
+    { nome: 'DIPIRONA 1g', posologia: 'Tomar 1 comp. via oral de 6/6h se dor ou febre forte', tipo: 'simples' },
+    { nome: 'DIPIRONA GOTAS 500mg/mL', posologia: 'Tomar 1 gota por kg de peso via oral de 6/6h se febre', tipo: 'simples' },
+    { nome: 'NOVALGINA 1g', posologia: 'Tomar 1 comp. via oral de 6/6h se dor ou febre', tipo: 'simples' },
+    { nome: 'PARACETAMOL 750mg', posologia: 'Tomar 1 comp. via oral de 6/6h se dor ou febre', tipo: 'simples' },
+    { nome: 'PARACETAMOL GOTAS 200mg/mL', posologia: 'Tomar 1 gota por kg de peso via oral de 6/6h se febre', tipo: 'simples' },
+    { nome: 'IBUPROFENO 600mg', posologia: 'Tomar 1 comp. via oral de 8/8h após as refeições', tipo: 'simples' },
+    { nome: 'IBUPROFENO GOTAS 50mg/mL', posologia: 'Tomar 1 gota por kg via oral de 8/8h se febre', tipo: 'simples' },
+    { nome: 'NIMESULIDA 100mg', posologia: 'Tomar 1 comp. via oral de 12/12h por 5 dias', tipo: 'simples' },
+    { nome: 'DICLOFENACO DE SÓDIO 50mg', posologia: 'Tomar 1 comp. via oral de 8/8h por 5 dias', tipo: 'simples' },
+    { nome: 'CETOPROFENO 100mg', posologia: 'Tomar 1 comp. via oral de 12/12h por 5 dias', tipo: 'simples' },
+    { nome: 'NAPROXENO 500mg', posologia: 'Tomar 1 comp. via oral de 12/12h por 5 dias', tipo: 'simples' },
+    { nome: 'CELECOXIBE 200mg', posologia: 'Tomar 1 caps. via oral 1x ao dia por 7 dias', tipo: 'simples' },
+    { nome: 'TROMETAMOL CETOROLACO 10mg', posologia: 'Tomar 1 comp. sublingual de 8/8h se dor forte (máx 5 dias)', tipo: 'simples' },
+
+    // CORTICÓIDES
+    { nome: 'PREDNISONA 20mg', posologia: 'Tomar 1 comp. via oral 1x ao dia pela manhã por 5 dias', tipo: 'simples' },
+    { nome: 'PREDNISONA 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia pela manhã', tipo: 'simples' },
+    { nome: 'PREDNISOLONA XAROPE 3mg/mL', posologia: 'Tomar conforme peso via oral de manhã por 5 dias', tipo: 'simples' },
+    { nome: 'DEXAMETASONA 4mg', posologia: 'Tomar 1 comp. via oral de 8/8h por 5 dias', tipo: 'simples' },
+    { nome: 'DEFLAZACORTE 30mg', posologia: 'Tomar 1 comp. via oral 1x ao dia por 5 dias', tipo: 'simples' },
+
+    // ANTIBIÓTICOS (Devem reter receita, mas geralmente colocamos no comum e a farmácia retém a 2a via se for gerada manualmente, mas podemos classificar como controle para forçar 2 vias)
+    { nome: 'AMOXICILINA 500mg', posologia: 'Tomar 1 caps. via oral de 8/8h por 7 dias', tipo: 'controle' },
+    { nome: 'AMOXICILINA 875mg + CLAVULANATO', posologia: 'Tomar 1 comp. via oral de 12/12h por 7 dias', tipo: 'controle' },
+    { nome: 'AZITROMICINA 500mg', posologia: 'Tomar 1 comp. via oral 1x ao dia por 5 dias', tipo: 'controle' },
+    { nome: 'CEFALEXINA 500mg', posologia: 'Tomar 1 caps. via oral de 6/6h por 7 dias', tipo: 'controle' },
+    { nome: 'CIPROFLOXACINO 500mg', posologia: 'Tomar 1 comp. via oral de 12/12h por 7 dias', tipo: 'controle' },
+    { nome: 'LEVOFLOXACINO 500mg', posologia: 'Tomar 1 comp. via oral 1x ao dia por 7 dias', tipo: 'controle' },
+    { nome: 'SULFAMETOXAZOL + TRIMETOPRIMA 800/160mg', posologia: 'Tomar 1 comp. via oral de 12/12h por 7 dias', tipo: 'controle' },
+    { nome: 'NITROFURANTOÍNA 100mg', posologia: 'Tomar 1 caps. via oral de 6/6h por 7 dias', tipo: 'controle' },
+    { nome: 'CEFTRIAXONA 1g (IM)', posologia: 'Aplicar 1 ampola intramuscular 1x ao dia por 3 dias', tipo: 'controle' },
+    { nome: 'METRONIDAZOL 400mg', posologia: 'Tomar 1 comp. via oral de 8/8h por 7 dias', tipo: 'controle' },
+
+    // GASTROINTESTINAL E ANTIEMÉTICOS
+    { nome: 'OMEPRAZOL 20mg', posologia: 'Tomar 1 caps. via oral em jejum', tipo: 'simples' },
+    { nome: 'PANTOPRAZOL 40mg', posologia: 'Tomar 1 comp. via oral em jejum', tipo: 'simples' },
+    { nome: 'ESOMEPRAZOL 40mg', posologia: 'Tomar 1 comp. via oral em jejum', tipo: 'simples' },
+    { nome: 'DOMPERIDONA 10mg', posologia: 'Tomar 1 comp. via oral 30 min antes das refeições', tipo: 'simples' },
+    { nome: 'METOCLOPRAMIDA 10mg (PLASIL)', posologia: 'Tomar 1 comp. via oral de 8/8h se enjoo', tipo: 'simples' },
+    { nome: 'ONDANSETRONA 4mg', posologia: 'Tomar 1 comp. sublingual de 8/8h se enjoo/vômito', tipo: 'simples' },
+    { nome: 'BROMETO DE PINAVÉRIO 100mg', posologia: 'Tomar 1 comp. via oral de 12/12h', tipo: 'simples' },
+    { nome: 'BESCOPAN COMPOSTO', posologia: 'Tomar 1 comp. via oral de 8/8h se cólica', tipo: 'simples' },
+    { nome: 'DIMETICONA (SIMETICONA) 40mg', posologia: 'Tomar 1 comp. via oral de 8/8h se gases', tipo: 'simples' },
+    { nome: 'BISACODIL 5mg', posologia: 'Tomar 1 drágea via oral à noite', tipo: 'simples' },
+
+    // ANTI-HIPERTENSIVOS E CARDIOLOGIA
+    { nome: 'LOSARTANA POTÁSSICA 50mg', posologia: 'Tomar 1 comp. via oral 1x ao dia de manhã', tipo: 'simples' },
+    { nome: 'ENALAPRIL 20mg', posologia: 'Tomar 1 comp. via oral de 12/12h', tipo: 'simples' },
+    { nome: 'CAPTOPRIL 25mg', posologia: 'Tomar 1 comp. sublingual em caso de pico hipertensivo', tipo: 'simples' },
+    { nome: 'HIDROCLOROTIAZIDA 25mg', posologia: 'Tomar 1 comp. via oral pela manhã', tipo: 'simples' },
+    { nome: 'ANLODIPINO 5mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'simples' },
+    { nome: 'ATENOLOL 50mg', posologia: 'Tomar 1 comp. via oral 1x ao dia de manhã', tipo: 'simples' },
+    { nome: 'CARVEDILOL 12,5mg', posologia: 'Tomar 1 comp. via oral de 12/12h', tipo: 'simples' },
+    { nome: 'BISOPROLOL 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia de manhã', tipo: 'simples' },
+    { nome: 'ESPIRONOLACTONA 25mg', posologia: 'Tomar 1 comp. via oral 1x ao dia de manhã', tipo: 'simples' },
+    { nome: 'FUROSEMIDA 40mg', posologia: 'Tomar 1 comp. via oral 1x ao dia pela manhã', tipo: 'simples' },
+    { nome: 'AAS 100mg', posologia: 'Tomar 1 comp. via oral após o almoço', tipo: 'simples' },
+    { nome: 'CLOPIDOGREL 75mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
+    { nome: 'RIVAROXABANA 20mg', posologia: 'Tomar 1 comp. via oral com a refeição principal', tipo: 'simples' },
+    { nome: 'SINVASTATINA 20mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'simples' },
+    { nome: 'ROSUVASTATINA 10mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'simples' },
+    { nome: 'ATORVASTATINA 20mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'simples' },
+
+    // DIABETES
+    { nome: 'METFORMINA 850mg', posologia: 'Tomar 1 comp. via oral após as refeições (almoço e jantar)', tipo: 'simples' },
+    { nome: 'METFORMINA XR 500mg', posologia: 'Tomar 1 comp. via oral à noite, após o jantar', tipo: 'simples' },
+    { nome: 'GLIBENCLAMIDA 5mg', posologia: 'Tomar 1 comp. via oral 30 min antes do almoço', tipo: 'simples' },
+    { nome: 'GLICLAZIDA MR 30mg', posologia: 'Tomar 1 comp. via oral no café da manhã', tipo: 'simples' },
+    { nome: 'DAPAGLIFLOZINA 10mg', posologia: 'Tomar 1 comp. via oral 1x ao dia pela manhã', tipo: 'simples' },
+    { nome: 'EMPAGLIFLOZINA 25mg', posologia: 'Tomar 1 comp. via oral 1x ao dia pela manhã', tipo: 'simples' },
+
+    // ANTIALÉRGICOS E RESPIRATÓRIOS
+    { nome: 'LORATADINA 10mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
+    { nome: 'DESLORATADINA 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
+    { nome: 'FEXOFENADINA 120mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
+    { nome: 'DEXCLORFENIRAMINA 2mg', posologia: 'Tomar 1 comp. via oral de 8/8h', tipo: 'simples' },
+    { nome: 'DEXCLORFENIRAMINA XAROPE', posologia: 'Tomar 1 medida via oral de 8/8h', tipo: 'simples' },
+    { nome: 'ACETILCISTEÍNA 600mg ENV', posologia: 'Dissolver 1 envelope em água e tomar à noite por 5 dias', tipo: 'simples' },
+    { nome: 'AMBROXOL XAROPE ADULTO', posologia: 'Tomar 5mL via oral de 8/8h por 5 dias', tipo: 'simples' },
+    { nome: 'SALBUTAMOL SPRAY (AEROLIN)', posologia: 'Fazer 2 jatos via inalatória de 6/6h se falta de ar', tipo: 'simples' },
+    { nome: 'FORMOTEROL + BUDESONIDA 12/400mcg', posologia: 'Inalar 1 cápsula de 12/12h após bochecho com água', tipo: 'simples' },
+    { nome: 'SPLAY NASAL (SORO FISIOLÓGICO)', posologia: 'Aplicar 2 jatos em cada narina de 8/8h', tipo: 'simples' },
+    { nome: 'BUDESONIDA SPRAY NASAL 50mcg', posologia: 'Aplicar 1 jato em cada narina 2x ao dia', tipo: 'simples' },
+
+    // PSIQUIATRIA E NEUROLOGIA (CONTROLE ESPECIAL)
+    { nome: 'CLONAZEPAM 2mg (RIVOTRIL)', posologia: 'Tomar 1 comp. via oral à noite ao deitar', tipo: 'controle' },
+    { nome: 'CLONAZEPAM GOTAS 2,5mg/mL', posologia: 'Tomar 5 gotas via oral à noite ao deitar', tipo: 'controle' },
+    { nome: 'ALPRAZOLAM 1mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'controle' },
+    { nome: 'DIAZEPAM 10mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'controle' },
+    { nome: 'BROMAZEPAM 3mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'controle' },
+    { nome: 'ZOLPIDEM 10mg', posologia: 'Tomar 1 comp. via oral imediatamente ao deitar', tipo: 'controle' },
+    { nome: 'ZOLPIDEM CR 12,5mg', posologia: 'Tomar 1 comp. via oral imediatamente ao deitar', tipo: 'controle' },
+    { nome: 'FLUOXETINA 20mg', posologia: 'Tomar 1 caps. via oral de manhã', tipo: 'controle' },
+    { nome: 'SERTRALINA 50mg', posologia: 'Tomar 1 comp. via oral de manhã', tipo: 'controle' },
+    { nome: 'ESCITALOPRAM 10mg', posologia: 'Tomar 1 comp. via oral de manhã', tipo: 'controle' },
+    { nome: 'CITALOPRAM 20mg', posologia: 'Tomar 1 comp. via oral de manhã', tipo: 'controle' },
+    { nome: 'DESVENLAFAXINA 50mg', posologia: 'Tomar 1 comp. via oral de manhã', tipo: 'controle' },
+    { nome: 'VENLAFAXINA 75mg', posologia: 'Tomar 1 caps. via oral de manhã', tipo: 'controle' },
+    { nome: 'AMITRIPTILINA 25mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'controle' },
+    { nome: 'NORTRIPTILINA 25mg', posologia: 'Tomar 1 caps. via oral à noite', tipo: 'controle' },
+    { nome: 'DULOXETINA 30mg', posologia: 'Tomar 1 caps. via oral de manhã', tipo: 'controle' },
+    { nome: 'PREGABALINA 75mg', posologia: 'Tomar 1 caps. via oral à noite', tipo: 'controle' },
+    { nome: 'GABAPENTINA 300mg', posologia: 'Tomar 1 caps. via oral à noite', tipo: 'controle' },
+    { nome: 'CARBAMAZEPINA 200mg', posologia: 'Tomar 1 comp. via oral de 12/12h', tipo: 'controle' },
+    { nome: 'QUETIAPINA 25mg', posologia: 'Tomar 1 comp. via oral à noite ao deitar', tipo: 'controle' },
+    { nome: 'RISPERIDONA 1mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'controle' },
+    { nome: 'TRAMADOL 50mg', posologia: 'Tomar 1 caps. via oral de 8/8h se dor forte', tipo: 'controle' },
+    { nome: 'CODEÍNA 30mg + PARACETAMOL 500mg', posologia: 'Tomar 1 comp. via oral de 8/8h se dor', tipo: 'controle' },
+    { nome: 'PACO (PARACETAMOL + CODEÍNA)', posologia: 'Tomar 1 comp. via oral de 8/8h se dor', tipo: 'controle' },
+
+    // VITAMINAS E SUPLEMENTOS
+    { nome: 'COLECALCIFEROL (VIT D) 50.000 UI', posologia: 'Tomar 1 caps. via oral por semana durante 8 semanas', tipo: 'simples' },
+    { nome: 'COLECALCIFEROL (VIT D) 7.000 UI', posologia: 'Tomar 1 caps. via oral 1x ao dia', tipo: 'simples' },
+    { nome: 'SULFATO FERROSO 40mg', posologia: 'Tomar 1 comp. via oral 1 hora antes do almoço com suco cítrico', tipo: 'simples' },
+    { nome: 'ÁCIDO FÓLICO 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
+    { nome: 'CITRATO DE CÁLCIO + VIT D', posologia: 'Tomar 1 comp. via oral de 12/12h junto às refeições', tipo: 'simples' },
+    { nome: 'COMPLEXO B', posologia: 'Tomar 1 drágea via oral 1x ao dia', tipo: 'simples' },
+    { nome: 'VITAMINA C 1g', posologia: 'Dissolver 1 comp. efervescente em água e tomar 1x ao dia', tipo: 'simples' },
+
+    // OUTROS (HORMONIOS, ANTIPARASITÁRIOS, GINECO, URO)
+    { nome: 'LEVOTIROXINA 50mcg', posologia: 'Tomar 1 comp. via oral em jejum (aguardar 30 min para comer)', tipo: 'simples' },
+    { nome: 'ALBENDAZOL 400mg', posologia: 'Tomar 1 comp. via oral em dose única mastigado', tipo: 'simples' },
+    { nome: 'IVERMECTINA 6mg', posologia: 'Tomar os comprimidos (conforme peso) via oral em dose única', tipo: 'simples' },
+    { nome: 'SECNIDAZOL 1000mg', posologia: 'Tomar 2 comp. via oral em dose única junto com a refeição', tipo: 'simples' },
+    { nome: 'FLUCONAZOL 150mg', posologia: 'Tomar 1 caps. via oral em dose única', tipo: 'simples' },
+    { nome: 'MICONAZOL CREME VAGINAL', posologia: 'Aplicar 1 aplicador cheio via vaginal à noite por 14 dias', tipo: 'simples' },
+    { nome: 'TANSULOSINA 0,4mg', posologia: 'Tomar 1 caps. via oral 1x ao dia após o jantar', tipo: 'simples' },
+    { nome: 'FINASTERIDA 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
+    { nome: 'SILDENAFILA 50mg', posologia: 'Tomar 1 comp. via oral 1 hora antes da relação', tipo: 'simples' },
+    { nome: 'TADALAFILA 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia (uso contínuo)', tipo: 'simples' },
+    { nome: 'ESPIRONOLACTONA 50mg', posologia: 'Tomar 1 comp. via oral 1x ao dia de manhã', tipo: 'simples' },
+
+    // USO TÓPICO / DERMATOLÓGICO / OFTÁLMICO
+    { nome: 'CETOCONAZOL CREME', posologia: 'Aplicar na área afetada 2x ao dia', tipo: 'simples' },
+    { nome: 'DEXAMETASONA CREME', posologia: 'Aplicar fina camada na lesão 2x ao dia', tipo: 'simples' },
+    { nome: 'NEOMICINA + BACITRACINA POMADA', posologia: 'Aplicar na lesão após limpeza 3x ao dia', tipo: 'simples' },
+    { nome: 'MUPIROCINA POMADA 2%', posologia: 'Aplicar na lesão 3x ao dia por 7 dias', tipo: 'simples' },
+    { nome: 'PERMETRINA LOÇÃO 5%', posologia: 'Aplicar no corpo todo à noite, deixar por 12h e lavar. Repetir em 7 dias.', tipo: 'simples' },
+    { nome: 'TOBRAMICINA COLÍRIO', posologia: 'Pingar 1 gota no olho afetado de 6/6h por 7 dias', tipo: 'simples' },
+    { nome: 'CARMELOSE SÓDICA COLÍRIO', posologia: 'Pingar 1 gota em cada olho de 6/6h ou se ressecamento', tipo: 'simples' }
+];
+
+// --- CONFIGURAÇÕES MÉDICAS COMPONENT ---
+const ConfiguracoesMedicasTab = () => {
+    const [config, setConfig] = useState({
+        cabecalho: 'HOSPITAL MUNICIPAL / SANTA CASA',
+        rodape: 'Av. Brasil, 100 - Centro\nTel: (00) 0000-0000',
+        medicamentos_padrao: []
+    });
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    
+    // Form para novo medicamento
+    const [novoMed, setNovoMed] = useState('');
+    const [novaPosologia, setNovaPosologia] = useState('');
+    const [tipo, setTipo] = useState('simples');
+
+    useEffect(() => {
+        const loadMedicas = async () => {
+            const { data, error } = await supabase.from('settings').select('data').eq('id', 'medicas').maybeSingle();
+            if (!error && data && data.data) {
+                setConfig(prev => ({ ...prev, ...data.data }));
+            }
+            setLoading(false);
+        };
+        loadMedicas();
+    }, []);
+
+    const handleSave = async (updatedConfig) => {
+        setSaving(true);
+        try {
+            const { error } = await supabase.from('settings').upsert({ id: 'medicas', data: updatedConfig || config });
+            if (error) throw error;
+            toast.success('Configurações salvas com sucesso!');
+        } catch (err) {
+            toast.error('Erro ao salvar as configurações.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const addMedicamento = () => {
+        if (!novoMed.trim()) return toast.error('Digite o nome do medicamento.');
+        const novo = { id: Date.now().toString(), nome: novoMed, posologia: novaPosologia, tipo };
+        const updated = { ...config, medicamentos_padrao: [...(config.medicamentos_padrao || []), novo] };
+        setConfig(updated);
+        handleSave(updated);
+        setNovoMed('');
+        setNovaPosologia('');
+    };
+
+    const removeMedicamento = (id) => {
+        if (!window.confirm("Remover este medicamento padrão?")) return;
+        const updated = { ...config, medicamentos_padrao: config.medicamentos_padrao.filter(m => m.id !== id) };
+        setConfig(updated);
+        handleSave(updated);
+    };
+
+    const preCarregarMedicamentos = () => {
+        if (!window.confirm("Isso vai adicionar dezenas de medicamentos do protocolo geral à sua lista. Deseja continuar?")) return;
+        
+        const novos = medicamentosComuns.map(m => ({
+            id: Math.random().toString(36).substring(7) + Date.now().toString(36),
+            nome: m.nome,
+            posologia: m.posologia,
+            tipo: m.tipo
+        }));
+
+        const listaAtual = config.medicamentos_padrao || [];
+        const aAdicionar = novos.filter(n => !listaAtual.some(a => a.nome === n.nome));
+
+        const updated = { ...config, medicamentos_padrao: [...listaAtual, ...aAdicionar] };
+        setConfig(updated);
+        handleSave(updated);
+        toast.success(`${aAdicionar.length} medicamentos pré-carregados!`);
+    };
+
+    if (loading) return <div className="p-8 text-center"><Loader2 className="animate-spin text-blue-600 mx-auto" size={32} /></div>;
+
+    return (
+        <div className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/60 shadow-sm p-8 animate-in fade-in max-w-4xl mx-auto space-y-8">
+            <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-indigo-500"></div> Configurações do Receituário
+            </h2>
+
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Título do Cabeçalho</label>
+                        <input value={config.cabecalho || ''} onChange={e => setConfig({ ...config, cabecalho: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-indigo-500 text-sm font-bold text-slate-700 bg-white/50" placeholder="Ex: CLÍNICA MÉDICA SÃO PAULO" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Rodapé (Endereço / Telefone)</label>
+                        <textarea value={config.rodape || ''} onChange={e => setConfig({ ...config, rodape: e.target.value })} className="w-full h-20 p-3 rounded-xl border border-white/60 outline-none focus:border-indigo-500 text-sm font-bold text-slate-700 bg-white/50 resize-none" placeholder="Endereço que vai no rodapé..." />
+                    </div>
+                </div>
+                <div className="flex justify-end">
+                    <button onClick={() => handleSave(config)} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase px-6 py-2.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2">
+                        {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} Salvar Textos
+                    </button>
+                </div>
+            </div>
+
+            <hr className="border-white/60 my-8" />
+
+            <div className="flex justify-between items-center mt-8 mb-4">
+                <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div> Banco de Medicamentos
+                </h2>
+                <button onClick={preCarregarMedicamentos} className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 border border-emerald-200">
+                    <Activity size={14}/> Auto-Preencher Cód. Completo (+90)
+                </button>
+            </div>
+
+            <div className="bg-white/40 p-4 rounded-xl border border-white/50 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                    <div className="md:col-span-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tipo</label>
+                        <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-emerald-500 text-xs font-bold text-slate-700 bg-white/70 uppercase">
+                            <option value="simples">Receita Simples</option>
+                            <option value="controle">Controle Especial</option>
+                        </select>
+                    </div>
+                    <div className="md:col-span-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nome</label>
+                        <input value={novoMed} onChange={e => setNovoMed(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-emerald-500 text-sm font-bold text-slate-700 uppercase" placeholder="Dipirona 500mg..." />
+                    </div>
+                    <div className="md:col-span-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Posologia Padrão</label>
+                        <input value={novaPosologia} onChange={e => setNovaPosologia(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-emerald-500 text-sm font-bold text-slate-700" placeholder="Tomar 1 comp. de 8/8h" />
+                    </div>
+                    <div className="md:col-span-1">
+                        <button onClick={addMedicamento} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase h-10 rounded-xl shadow-md transition-all active:scale-95 flex justify-center items-center gap-2">
+                            <Plus size={16} /> Adicionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="space-y-2 mt-4 max-h-[400px] overflow-y-auto custom-scrollbar">
+                {(!config.medicamentos_padrao || config.medicamentos_padrao.length === 0) && (
+                    <p className="text-center text-xs font-bold text-slate-400 uppercase py-6">Nenhum medicamento cadastrado.</p>
+                )}
+                {config.medicamentos_padrao?.map(med => (
+                    <div key={med.id} className="flex justify-between items-center bg-white/70 backdrop-blur-xl border border-white shadow-sm p-3 rounded-xl group">
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-slate-700 uppercase leading-tight">{med.nome}</span>
+                                {med.tipo === 'controle' && <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-rose-100 text-rose-600">Controle</span>}
+                            </div>
+                            <span className="text-xs font-bold text-slate-500 mt-0.5">{med.posologia || 'Sem posologia padrão'}</span>
+                        </div>
+                        <button onClick={() => removeMedicamento(med.id)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 const Settings = () => {
     const { hasPermission } = usePermission();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -1601,6 +1906,9 @@ const Settings = () => {
             { id: 'prioridades', label: 'Prioridades', show: hasPermission('Acessar Configurações') },
             { id: 'clinicas', label: 'Clínicas AIH', show: hasPermission('Acessar Configurações') },
             { id: 'caraterInternacao', label: 'Caráter AIH', show: hasPermission('Acessar Configurações') }
+        ],
+        'cadastros_medicos': [
+            { id: 'medicas', label: 'Configurações Médicas', show: hasPermission('Acessar Configurações') }
         ]
     };
 
@@ -1675,6 +1983,7 @@ const Settings = () => {
                         {activeSection === 'motivos_suspensao' && <MotivosSuspensaoManager />}
                         
                         {activeSection === 'escala_permissoes' && <PermissoesEscalaTab />}
+                        {activeSection === 'medicas' && hasPermission('Acessar Configurações') && <ConfiguracoesMedicasTab />}
                         
                         {activeSection === 'logs' && hasPermission('Acesso Total (Admin)') && (
                             <div className="bg-white/60 rounded-2xl border border-white/40 shadow-sm overflow-hidden flex flex-col h-full max-h-[750px]">

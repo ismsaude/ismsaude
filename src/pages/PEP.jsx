@@ -6,12 +6,13 @@ import toast from 'react-hot-toast';
 import { 
     FileSignature, User, Clock, Stethoscope, 
     CheckCircle2, Pill, Activity, FileText, ClipboardList, 
-    ChevronRight, Loader2, Play, ArrowLeft, Save, Printer, FilePlus2, Syringe, X, Plus
+    ChevronRight, Loader2, Play, ArrowLeft, Save, Printer, FilePlus2, Syringe, X, Plus, Paperclip, Trash2
 } from 'lucide-react';
 import Aih from './Aih';
 import Apa from './Apa';
 import { imprimirReceitaPdf, imprimirExamePdf } from '../utils/geradorPdfConsultorio';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermission } from '../contexts/PermissionContext';
 import { maskCPF, maskTelefone } from '../utils/masks';
 
 const getDoctorPrefix = (nome) => {
@@ -38,6 +39,7 @@ const PEP = () => {
 
     const [pacienteAtivo, setPacienteAtivo] = useState(null);
     const [activeTab, setActiveTab] = useState('painel'); 
+    const [anexosHistorico, setAnexosHistorico] = useState([]);
 
     // Estados
     const [textoEvolucao, setTextoEvolucao] = useState('');
@@ -47,7 +49,14 @@ const PEP = () => {
     const [textoReceita, setTextoReceita] = useState('');
     const [historicoRec, setHistoricoRec] = useState([]);
     const [salvandoReceita, setSalvandoReceita] = useState(false);
-
+    
+    // Estados do Receituário Avançado
+    const [medicamentosPrescritos, setMedicamentosPrescritos] = useState([]);
+    const [buscaMed, setBuscaMed] = useState('');
+    const [showSugestoes, setShowSugestoes] = useState(false);
+    const [posologiaManual, setPosologiaManual] = useState('');
+    const [medicasSettings, setMedicasSettings] = useState(null);
+    
     const [textoExame, setTextoExame] = useState('');
     const [historicoExa, setHistoricoExa] = useState([]);
     const [salvandoExame, setSalvandoExame] = useState(false);
@@ -57,6 +66,7 @@ const PEP = () => {
 
     const [loadingHistorico, setLoadingHistorico] = useState(false);
     const { currentUser } = useAuth();
+    const { hasPermission } = usePermission();
     const medicoLogado = currentUser?.name || 'MÉDICO NÃO IDENTIFICADO'; 
 
     const fetchFila = async () => {
@@ -65,10 +75,8 @@ const PEP = () => {
             const todayRef = new Date();
             const hojeFormatado = `${todayRef.getFullYear()}-${String(todayRef.getMonth() + 1).padStart(2, '0')}-${String(todayRef.getDate()).padStart(2, '0')}`;
 
-            // 1. Pega do config do médico se ele deve ver a clínica inteira
-            let queryConfig = supabase.from('users').select('ver_clinica_inteira').ilike('name', medicoLogado).maybeSingle();
-            const { data: configMedico } = await queryConfig;
-            const verClinicaInteira = configMedico?.ver_clinica_inteira || false;
+            // 1. Pega do config de permissões se o médico pode ver a clínica inteira
+            const verClinicaInteira = hasPermission('Ver Escala de Todos') || hasPermission('Alternar Visualização (Todas/Minha)');
 
             // 2. Busca consultas de hoje (Sem filtro estrito de unidade, pois os nomes podem divergir ligeiramente)
             let queryCols = supabase.from('consultas')
@@ -142,10 +150,43 @@ const PEP = () => {
     // Buscar Históricos
     useEffect(() => {
         if (!pacienteAtivo) return;
+        buscarAnexos();
+        buscarConfigMedicas();
         if (activeTab === 'evo') buscarHistorico('prontuario_evolucao', setHistoricoEvo);
         if (activeTab === 'rec') buscarHistorico('prontuario_receitas', setHistoricoRec);
         if (activeTab === 'exa') buscarHistorico('prontuario_exames', setHistoricoExa);
     }, [activeTab, pacienteAtivo]);
+
+    const buscarConfigMedicas = async () => {
+        try {
+            const { data } = await supabase.from('settings').select('data').eq('id', 'medicas').maybeSingle();
+            if (data && data.data) setMedicasSettings(data.data);
+        } catch (error) { console.error(error); }
+    };
+
+    const buscarAnexos = async () => {
+        try {
+            let query = supabase.from('consultas').select('link_anexo, data_agendamento').not('link_anexo', 'is', null).neq('link_anexo', '');
+            if (pacienteAtivo.paciente_id) query = query.eq('paciente_id', pacienteAtivo.paciente_id);
+            else query = query.eq('paciente_nome', pacienteAtivo.paciente_nome);
+            
+            const { data, error } = await query;
+            if (error) throw error;
+            
+            const todosAnexos = [];
+            data?.forEach(consulta => {
+                if (consulta.link_anexo) {
+                    const links = consulta.link_anexo.split(',');
+                    links.forEach(link => {
+                        if (link.trim()) todosAnexos.push({ link: link.trim(), data: consulta.data_agendamento });
+                    });
+                }
+            });
+            setAnexosHistorico(todosAnexos);
+        } catch (error) {
+            console.error("Erro ao buscar anexos:", error);
+        }
+    };
 
     const buscarHistorico = async (tabela, setEstado) => {
         setLoadingHistorico(true);
@@ -228,8 +269,8 @@ const PEP = () => {
 
             <div className="flex gap-6 flex-1 min-h-0">
                 {/* FILA DE ESPERA */}
-                <div className="w-80 bg-white/60 backdrop-blur-lg rounded-2xl shadow-sm backdrop-blur-md border border-white/400 flex flex-col overflow-hidden shrink-0">
-                    <div className="p-4 border-b border-white/60 bg-white/60 flex items-center justify-between">
+                <div className="w-80 bg-white/40 backdrop-blur-2xl rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.1)] border border-white/50 flex flex-col overflow-hidden shrink-0">
+                    <div className="p-4 border-b border-white/40 bg-white/30 flex items-center justify-between">
                         <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
                             <ClipboardList size={16} /> Fila de Espera
                         </h3>
@@ -239,7 +280,7 @@ const PEP = () => {
                         {loading ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-indigo-500" size={24}/></div> 
                         : fila.length === 0 ? <div className="text-center py-10 text-slate-500"><User size={32} className="mx-auto mb-2 opacity-30"/><p className="text-[11px] font-bold uppercase tracking-widest">Nenhum paciente aguardando</p></div> 
                         : fila.map(consulta => (
-                            <div key={consulta.id} className={`p-3 rounded-xl border-2 transition-all cursor-pointer group ${pacienteAtivo?.id === consulta.id ? 'bg-indigo-500/20 border-indigo-200 shadow-sm' : 'bg-white/60 border-transparent hover:border-white/60 shadow-sm'}`} onClick={() => setPacienteAtivo(consulta)}>
+                            <div key={consulta.id} className={`p-3 rounded-2xl border transition-all cursor-pointer group ${pacienteAtivo?.id === consulta.id ? 'bg-white/80 border-indigo-200 shadow-[0_4px_12px_rgba(99,102,241,0.1)]' : 'bg-white/40 border-transparent hover:border-white/60 hover:bg-white/60 shadow-sm'}`} onClick={() => setPacienteAtivo(consulta)}>
                                 <div className="flex justify-between items-start mb-1 gap-2">
                                     <div className="text-xs font-black text-slate-900 drop-shadow-none uppercase line-clamp-1" title={consulta.paciente_nome}>
                                         {consulta.paciente_nome}
@@ -272,13 +313,13 @@ const PEP = () => {
                 </div>
 
                 {/* ÁREA CENTRAL */}
-                <div className="flex-1 bg-white/60 backdrop-blur-lg rounded-2xl shadow-sm backdrop-blur-md border border-white/400 overflow-hidden flex flex-col">
+                <div className="flex-1 bg-white/40 backdrop-blur-2xl rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden flex flex-col">
                     {!pacienteAtivo ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-slate-500"><Stethoscope size={64} className="mb-4 opacity-20" /><h2 className="text-lg font-black uppercase tracking-wider text-slate-600 mb-1">Consultório Livre</h2><p className="text-xs font-bold uppercase tracking-widest">Selecione um paciente da fila.</p></div>
                     ) : (
                         <div className="flex flex-col h-full relative">
                             {/* Header Paciente */}
-                            <div className="p-6 bg-gradient-to-r from-indigo-50 to-white border-b border-indigo-100 flex items-center justify-between shrink-0">
+                            <div className="p-6 bg-gradient-to-r from-indigo-50/80 via-white/60 to-white/40 border-b border-white/50 flex items-center justify-between shrink-0">
                                 <div>
                                     <h2 className="text-2xl font-black text-indigo-900 uppercase tracking-wider flex items-center gap-2">{pacienteAtivo.paciente_nome}</h2>
                                     <div className="flex items-center gap-4 text-xs font-bold text-slate-500 uppercase mt-2">
@@ -288,6 +329,10 @@ const PEP = () => {
                                             <span className="px-2 py-1 bg-rose-100 text-rose-700 border border-rose-200 text-[11px] rounded-md font-black uppercase tracking-widest flex items-center gap-1">
                                                 🚨 Pronto Atendimento
                                             </span>
+                                        ) : pacienteAtivo.status === 'Em Atendimento' ? (
+                                            <span className="px-2 py-1 bg-purple-100 text-purple-700 border border-purple-200 text-[11px] rounded-md font-black uppercase tracking-widest flex items-center gap-1">
+                                                👨‍⚕️ Em Atendimento
+                                            </span>
                                         ) : (
                                             <span className="px-2 py-1 bg-indigo-100 text-indigo-700 border border-indigo-200 text-[11px] rounded-md font-black uppercase tracking-widest flex items-center gap-1">
                                                 🗓️ Agendado
@@ -295,10 +340,10 @@ const PEP = () => {
                                         )}
                                     </div>
                                 </div>
-                                <div className="text-right"><button onClick={handleFinalizar} className="px-6 py-2 bg-emerald-500/200 hover:bg-emerald-600 text-slate-800 rounded-xl text-xs font-black uppercase tracking-wide shadow-lg shadow-emerald-500/30 transition-all flex items-center gap-2"><CheckCircle2 size={16} /> Finalizar</button></div>
+                                <div className="text-right"><button onClick={handleFinalizar} className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-600 hover:to-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-[0_4px_16px_rgba(16,185,129,0.3)] hover:shadow-[0_8px_24px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 transition-all flex items-center gap-2"><CheckCircle2 size={16} /> Finalizar</button></div>
                             </div>
 
-                            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30">
+                            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar bg-transparent">
                                 
                                 {/* PAINEL PRINCIPAL */}
                                 {activeTab === 'painel' && (
@@ -311,11 +356,43 @@ const PEP = () => {
                                                 { id: 'exa', icon: Activity, label: 'Exames', desc: 'Solicitar Exames', color: 'text-violet-500', bg: 'bg-violet-50', border: 'hover:border-violet-300' },
                                                 { id: 'gui', icon: FileSignature, label: 'Documentos', desc: 'AIH, APA, Atestados', color: 'text-rose-500', bg: 'bg-rose-500/20', border: 'hover:border-rose-300' },
                                             ].map(btn => (
-                                                <button key={btn.id} onClick={() => setActiveTab(btn.id)} className={`p-5 rounded-2xl border-2 border-transparent bg-white/60 shadow-sm transition-all group text-left ${btn.border}`}>
-                                                    <div className={`w-10 h-10 rounded-xl ${btn.bg} ${btn.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}><btn.icon size={20} /></div>
-                                                    <h4 className="text-sm font-black uppercase text-slate-900 drop-shadow-none">{btn.label}</h4><p className="text-[11px] font-bold text-slate-500 uppercase mt-1">{btn.desc}</p>
+                                                <button key={btn.id} onClick={() => setActiveTab(btn.id)} className={`p-5 rounded-[1.5rem] border border-white/60 bg-white/50 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group text-left ${btn.border}`}>
+                                                    <div className={`w-12 h-12 rounded-2xl ${btn.bg} ${btn.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner`}><btn.icon size={24} /></div>
+                                                    <h4 className="text-sm font-black uppercase text-slate-800 tracking-wide drop-shadow-none">{btn.label}</h4><p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1.5">{btn.desc}</p>
                                                 </button>
                                             ))}
+                                        </div>
+
+                                        {/* SEÇÃO DE ANEXOS */}
+                                        <div className="mt-8 border-t border-slate-200/60 pt-8">
+                                            <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                                <Paperclip size={16} /> Arquivos e Anexos da Consulta
+                                            </h3>
+                                            
+                                            {anexosHistorico.length > 0 ? (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                                    {anexosHistorico.map((anexo, idx) => (
+                                                        <div key={idx} className="bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-white/60 shadow-[0_4px_12px_rgba(0,0,0,0.03)] flex items-center gap-4 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 group">
+                                                            <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-indigo-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-inner border border-white">
+                                                                <FileText size={24} />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className="text-[13px] font-black text-slate-700 truncate tracking-wide">Documento Anexado {idx + 1}</h4>
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Data: {new Date(anexo.data + 'T12:00:00').toLocaleDateString()}</p>
+                                                            </div>
+                                                            <button onClick={() => window.open(anexo.link, '_blank')} className="px-4 py-2 bg-white hover:bg-blue-600 hover:text-white border border-slate-200 text-slate-600 text-[10px] tracking-widest font-black uppercase rounded-lg transition-colors shrink-0">
+                                                                Abrir
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center py-10 bg-white/40 rounded-2xl border border-dashed border-slate-300">
+                                                    <Paperclip size={32} className="text-slate-300 mb-3" />
+                                                    <p className="text-sm font-black text-slate-500">Nenhum anexo encontrado</p>
+                                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Os documentos adicionados na recepção aparecerão aqui.</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -340,9 +417,93 @@ const PEP = () => {
                                 {activeTab === 'rec' && (
                                     <div className="animate-in fade-in slide-in-from-right-4 h-full flex flex-col">
                                         <div className="flex items-center gap-3 mb-4"><button onClick={() => setActiveTab('painel')} className="p-2 hover:bg-slate-200/50 rounded-lg text-slate-500"><ArrowLeft size={18} /></button><h3 className="text-sm font-black text-emerald-700 uppercase flex items-center gap-2"><Pill className="text-emerald-500" size={18}/> Prescrição Médica</h3></div>
-                                        <div className="bg-white/60 p-4 rounded-2xl shadow-sm backdrop-blur-md border border-emerald-100 mb-6 shrink-0">
-                                            <textarea value={textoReceita} onChange={e => setTextoReceita(e.target.value)} className="w-full h-32 bg-emerald-500/20/30 border border-emerald-200 rounded-xl p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none placeholder:text-slate-500" placeholder="Insira os medicamentos, posologia..." />
-                                            <div className="flex justify-end mt-3"><button onClick={() => { salvarRegistro('prontuario_receitas', textoReceita, setTextoReceita, setSalvandoReceita, () => buscarHistorico('prontuario_receitas', setHistoricoRec)); imprimirReceitaPdf(pacienteAtivo, textoReceita, medicoLogado); }} disabled={salvandoReceita} className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black uppercase tracking-wide shadow-md transition-all flex items-center gap-2"><Printer size={16} /> Salvar e Imprimir</button></div>
+                                        <div className="bg-white/40 p-5 rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.05)] backdrop-blur-2xl border border-white/60 mb-6 shrink-0 space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-start relative z-20">
+                                                <div className="md:col-span-3 relative">
+                                                    <input 
+                                                        value={buscaMed} 
+                                                        onChange={e => { setBuscaMed(e.target.value); setShowSugestoes(true); }} 
+                                                        onFocus={() => setShowSugestoes(true)}
+                                                        className="w-full h-10 px-4 bg-white/70 backdrop-blur-md border border-white/80 shadow-sm rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 uppercase placeholder:text-slate-400" 
+                                                        placeholder="Buscar Medicamento ou Digitar..." 
+                                                    />
+                                                    {showSugestoes && buscaMed && medicasSettings?.medicamentos_padrao && (
+                                                        <div className="absolute top-12 left-0 w-full bg-white/95 backdrop-blur-xl border border-emerald-100 shadow-xl rounded-xl max-h-48 overflow-y-auto z-50 p-2 space-y-1">
+                                                            {medicasSettings.medicamentos_padrao
+                                                                .filter(m => m.nome.toLowerCase().includes(buscaMed.toLowerCase()))
+                                                                .map(m => (
+                                                                    <button key={m.id} onClick={() => { setBuscaMed(m.nome); setPosologiaManual(m.posologia || ''); setShowSugestoes(false); }} className="w-full text-left p-2 rounded-lg hover:bg-emerald-50 transition-colors text-xs font-black uppercase text-slate-700">
+                                                                        {m.nome} <span className="text-[10px] font-bold text-slate-400 block mt-0.5">{m.posologia}</span>
+                                                                    </button>
+                                                                ))}
+                                                            {medicasSettings.medicamentos_padrao.filter(m => m.nome.toLowerCase().includes(buscaMed.toLowerCase())).length === 0 && (
+                                                                <div className="p-2 text-xs font-bold text-slate-400 uppercase text-center">Nenhum sugerido. Digite para adicionar manualmente.</div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <input 
+                                                        value={posologiaManual} 
+                                                        onChange={e => setPosologiaManual(e.target.value)} 
+                                                        className="w-full h-10 px-4 bg-white/70 backdrop-blur-md border border-white/80 shadow-sm rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 placeholder:text-slate-400" 
+                                                        placeholder="Posologia (Como usar)" 
+                                                    />
+                                                </div>
+                                                <div className="md:col-span-1">
+                                                    <button 
+                                                        onClick={() => {
+                                                            if (!buscaMed.trim()) return toast.error('Preencha o medicamento.');
+                                                            let tipoEncontrado = 'simples';
+                                                            if (medicasSettings?.medicamentos_padrao) {
+                                                                const medRef = medicasSettings.medicamentos_padrao.find(m => m.nome.toLowerCase() === buscaMed.toLowerCase());
+                                                                if (medRef) tipoEncontrado = medRef.tipo;
+                                                            }
+                                                            setMedicamentosPrescritos([...medicamentosPrescritos, { nome: buscaMed, posologia: posologiaManual, tipo: tipoEncontrado }]);
+                                                            setBuscaMed('');
+                                                            setPosologiaManual('');
+                                                            setShowSugestoes(false);
+                                                        }}
+                                                        className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase h-10 rounded-xl shadow-[0_4px_12px_rgba(16,185,129,0.3)] transition-all active:scale-95 flex justify-center items-center gap-1"
+                                                    >
+                                                        <Plus size={16} /> ADICIONAR
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white/30 rounded-xl p-4 min-h-[120px] max-h-[250px] overflow-y-auto space-y-2 border border-white/40">
+                                                {medicamentosPrescritos.length === 0 ? (
+                                                    <p className="text-center text-xs font-bold text-slate-400 uppercase py-6">Nenhum medicamento adicionado à receita.</p>
+                                                ) : medicamentosPrescritos.map((med, idx) => (
+                                                    <div key={idx} className="flex justify-between items-center bg-white/70 backdrop-blur-xl border border-white shadow-sm p-3 rounded-xl">
+                                                        <div>
+                                                            <div className="text-sm font-black text-slate-700 uppercase flex items-center gap-2">
+                                                                {med.nome} 
+                                                                {med.tipo === 'controle' && <span className="text-[9px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded border border-rose-200">CONTROLE</span>}
+                                                            </div>
+                                                            <div className="text-[11px] font-bold text-slate-500">{med.posologia || 'Uso conforme orientação'}</div>
+                                                        </div>
+                                                        <button onClick={() => setMedicamentosPrescritos(medicamentosPrescritos.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition-colors"><Trash2 size={16}/></button>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="flex justify-end mt-3">
+                                                <button 
+                                                    onClick={() => { 
+                                                        if (medicamentosPrescritos.length === 0) return toast.error('Adicione medicamentos para salvar.');
+                                                        // Convertemos para texto plano para salvar no histórico e manter compatibilidade com outras telas se houver
+                                                        const txt = medicamentosPrescritos.map(m => `${m.nome}\n${m.posologia || 'Uso conforme orientação'}`).join('\n\n');
+                                                        setTextoReceita(txt);
+                                                        salvarRegistro('prontuario_receitas', txt, setTextoReceita, setSalvandoReceita, () => buscarHistorico('prontuario_receitas', setHistoricoRec)); 
+                                                        imprimirReceitaPdf(pacienteAtivo, medicamentosPrescritos, medicoLogado, null, medicasSettings); 
+                                                    }} 
+                                                    disabled={salvandoReceita} 
+                                                    className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-600 hover:to-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-[0_4px_16px_rgba(16,185,129,0.3)] hover:shadow-[0_8px_24px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                                                >
+                                                    <Printer size={16} /> Imprimir Receita
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
                                             {historicoRec.map((rec) => (<div key={rec.id} className="bg-white/60 p-4 rounded-xl shadow-sm border border-white/40"><div className="flex justify-between mb-2"><span className="text-[11px] font-bold text-slate-500">{new Date(rec.created_at).toLocaleDateString()}</span><button onClick={() => imprimirReceitaPdf(pacienteAtivo, rec.texto, rec.medico)} className="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-500/20 rounded-lg transition-colors" title="Reimprimir Receita"><Printer size={14}/></button></div><p className="text-xs text-slate-600">{rec.texto}</p></div>))}

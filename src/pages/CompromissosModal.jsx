@@ -94,9 +94,10 @@ export const CompromissosModal = ({ onClose }) => {
             }
 
             // Converter a selectedDate (local time) para a string YYYY-MM-DD
-            const offset = selectedDate.getTimezoneOffset();
-            const localDate = new Date(selectedDate.getTime() - (offset*60*1000));
-            const dateStr = localDate.toISOString().split('T')[0];
+            const yyyy = selectedDate.getFullYear();
+            const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(selectedDate.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}-${mm}-${dd}`;
 
             const { error } = await supabase
                 .from('agenda_pessoal')
@@ -151,17 +152,19 @@ export const CompromissosModal = ({ onClose }) => {
     
     const getTasksForDay = (dateObj) => {
         if (!dateObj) return [];
-        const offset = dateObj.getTimezoneOffset();
-        const localDate = new Date(dateObj.getTime() - (offset*60*1000));
-        const dateStr = localDate.toISOString().split('T')[0];
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
         return tasks.filter(t => t.data_agendada === dateStr);
     };
 
     const getUpcomingTasks = (dateObj) => {
         if (!dateObj) return [];
-        const offset = dateObj.getTimezoneOffset();
-        const localDate = new Date(dateObj.getTime() - (offset*60*1000));
-        const dateStr = localDate.toISOString().split('T')[0];
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
         return tasks.filter(t => t.data_agendada > dateStr);
     };
 

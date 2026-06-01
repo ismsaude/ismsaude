@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/supabase';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermission } from '../contexts/PermissionContext';
 import { logAction } from '../utils/logger';
 import { 
     ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, 
@@ -70,6 +71,9 @@ const formatDoctorName = (fullName) => {
 
 const Escala = () => {
     const { currentUser } = useAuth();
+    const { hasPermission } = usePermission();
+    const isEscalaAdmin = hasPermission('Admin Escala');
+    const canViewAll = isEscalaAdmin || hasPermission('Visualizar Toda Escala');
 
     const [doctors, setDoctors] = useState([]);
     const [hospitais, setHospitais] = useState([]);
@@ -81,6 +85,15 @@ const Escala = () => {
     const [viewMode, setViewMode] = useState('all'); // 'all' ou 'my_scale'
     const [visualizationMode, setVisualizationMode] = useState('mensal'); // 'mensal' ou 'fixa'
     const [selectedDoctor, setSelectedDoctor] = useState('');
+
+    useEffect(() => {
+        if (currentUser && !canViewAll) {
+            setViewMode('my_scale');
+            setSelectedDoctor(currentUser.name || '');
+        } else if (currentUser && canViewAll && !selectedDoctor) {
+            setViewMode('all');
+        }
+    }, [currentUser, canViewAll]);
     const [selectedHospital, setSelectedHospital] = useState(null);
     const [isHospitalExpanded, setIsHospitalExpanded] = useState(false);
     const [hideDropdown, setHideDropdown] = useState(null);
@@ -571,10 +584,7 @@ const Escala = () => {
         }
     };
     
-    const mockUser = {
-        name: 'Paulo Nogueira',
-        role: 'Administrador'
-    };
+
 
     useEffect(() => {
         fetchConfig();
@@ -899,7 +909,7 @@ const Escala = () => {
             logAction('escala_regras_financeiras_atualizadas', `Regras financeiras da escala foram atualizadas.`);
         } catch (error) {
             console.error("Erro ao salvar regras financeiras:", error);
-            alert("Erro ao salvar as regras financeiras.");
+            toast.error("Falha ao salvar as regras financeiras! Verifique sua conexão e permissões.");
         }
     };
 
@@ -955,7 +965,7 @@ const Escala = () => {
             logAction('escala_hospitais_atualizados', `Configuração de hospitais da escala foi atualizada.`);
         } catch (error) {
             console.error("Erro ao salvar hospitais:", error);
-            alert("Erro ao salvar os hospitais.");
+            toast.error("Falha ao salvar os hospitais! Verifique sua conexão e permissões.");
         }
     };
 
@@ -1009,6 +1019,7 @@ const Escala = () => {
 
         } catch (error) {
             console.error("Erro ao salvar plantões:", error);
+            toast.error("Falha ao salvar o plantão! Verifique sua conexão e se possui permissão (adm_escala).");
         }
     };
 
@@ -1027,6 +1038,7 @@ const Escala = () => {
             if (error) throw error;
         } catch (error) {
             console.error("Erro ao salvar atualizações da escala:", error);
+            toast.error("Falha ao atualizar a escala! Verifique permissões.");
         }
     };
 
@@ -1341,8 +1353,10 @@ const Escala = () => {
                     {/* Left Side: View Filters */}
                     <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
                         <div className="flex items-center bg-white/70 rounded-lg p-0.5 shrink-0">
-                            <button onClick={() => setViewMode('all')} className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${viewMode === 'all' ? 'bg-white/60 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-900 drop-shadow-none'}`}>Todas</button>
-                            <button onClick={() => { if(mockUser.role === 'Médico') { setViewMode('my_scale'); setSelectedDoctor(mockUser.name); } }} className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${mockUser.role !== 'Médico' ? 'opacity-50 cursor-not-allowed' : viewMode === 'my_scale' ? 'bg-white/60 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-900 drop-shadow-none'}`}>Minhas</button>
+                            {canViewAll && (
+                                <button onClick={() => setViewMode('all')} className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${viewMode === 'all' ? 'bg-white/60 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-900 drop-shadow-none'}`}>Todas</button>
+                            )}
+                            <button onClick={() => { if(currentUser) { setViewMode('my_scale'); setSelectedDoctor(currentUser.name); } }} className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${!currentUser ? 'opacity-50 cursor-not-allowed' : viewMode === 'my_scale' ? 'bg-white/60 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-900 drop-shadow-none'}`}>Minhas</button>
                         </div>
                         
                         <div className="h-4 w-px bg-white/80 shrink-0"></div>
@@ -1370,8 +1384,12 @@ const Escala = () => {
 
                     {/* Right Side: Tools & Settings */}
                     <div className="flex flex-wrap items-center gap-1 pt-2 lg:pt-0 border-t border-white/40 lg:border-t-0 lg:border-l lg:border-white/60 lg:pl-2">
-                        <button onClick={() => setIsFinanceiroModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 text-xs font-bold rounded-lg transition-colors"><CircleDollarSign size={14} className="text-emerald-500"/> Financeiro</button>
-                        <button onClick={() => setIsFolhaPontoModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-slate-600 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold rounded-lg transition-colors"><FileText size={14} className="text-blue-500"/> Ponto</button>
+                        {(hasPermission('Operacional Escala') || isEscalaAdmin) && (
+                            <>
+                                <button onClick={() => setIsFinanceiroModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 text-xs font-bold rounded-lg transition-colors"><CircleDollarSign size={14} className="text-emerald-500"/> Financeiro</button>
+                                <button onClick={() => setIsFolhaPontoModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-slate-600 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold rounded-lg transition-colors"><FileText size={14} className="text-blue-500"/> Ponto</button>
+                            </>
+                        )}
                         
                         <div className="h-4 w-px bg-white/80 hidden lg:block"></div>
                         <button onClick={() => {
@@ -1384,7 +1402,7 @@ const Escala = () => {
                             printHospitalEscalaPdf(hospitalObj, assignments, activeWeeks, activeMonthLabel, activeMonth, doctors, currentUser);
                         }} className="flex items-center gap-1.5 px-2.5 py-1.5 text-indigo-600 hover:bg-indigo-50 text-xs font-bold rounded-lg transition-colors border border-indigo-100" title="Exportar PDF do Hospital Selecionado"><Download size={14} className="text-indigo-500"/><span className="hidden xl:inline">PDF Hospital</span></button>
 
-                        {(!currentUser || currentUser?.role === 'Desenvolvedor' || currentUser?.modules_access?.includes('adm_escala')) && (
+                        {isEscalaAdmin && (
                             <>
                                 <div className="h-4 w-px bg-white/80 hidden lg:block"></div>
                                 <button onClick={() => setIsMonthModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-slate-600 hover:bg-white/70 text-xs font-bold rounded-lg transition-colors" title="Gerenciar Meses"><CalendarDays size={14}/><span className="hidden xl:inline">Meses</span></button>
@@ -1560,6 +1578,7 @@ const Escala = () => {
                                                                                 // Design Premium: Pill branca neutra minimalista
                                                                                 <div 
                                                                                     onClick={() => {
+                                                                                        if (!isEscalaAdmin) return;
                                                                                         setSearchDoc('');
                                                                                         setActiveSlot({ id: slotId, hospitalName: hospital.name, sectorName: sector, date: day.date });
                                                                                         setDraftAssignment({
@@ -1571,7 +1590,7 @@ const Escala = () => {
                                                                                             financial: assignedData?.financial || { baseValue: '', extraValue: '0', observations: '' }
                                                                                         });
                                                                                     }}
-                                                                                    className={`group/assigned w-full h-auto min-h-[38px] py-1.5 rounded-lg border shadow-sm flex flex-col items-center justify-center px-1 cursor-pointer hover:shadow-md transition-all relative overflow-hidden text-center ${appearance.color === 'red' ? 'bg-rose-50 border-rose-200' : 'bg-white/60 ' + theme.pillBorder}`}
+                                                                                    className={`group/assigned w-full h-auto min-h-[38px] py-1.5 rounded-lg border shadow-sm flex flex-col items-center justify-center px-1 ${isEscalaAdmin ? 'cursor-pointer hover:shadow-md' : 'cursor-default'} transition-all relative overflow-hidden text-center ${appearance.color === 'red' ? 'bg-rose-50 border-rose-200' : 'bg-white/60 ' + theme.pillBorder}`}
                                                                                 >
                                                                                     
                                                                                     <div className="flex items-center justify-center gap-1 w-full relative z-10 pr-6 pl-1">
@@ -1589,21 +1608,23 @@ const Escala = () => {
                                                                                         <span className={`text-[10px] font-bold ${appearance.color === 'red' ? 'text-rose-500' : theme.iconText} mt-0.5 relative z-10 w-full text-center`}>{assignedData.time}</span>
                                                                                     )}
                                                                                     
-                                                                                    <div className={`absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l ${appearance.color === 'red' ? 'from-rose-50 via-rose-50/80' : 'from-white via-white/80'} to-transparent opacity-0 group-hover/assigned:opacity-100 transition-opacity flex items-center justify-end pr-1 z-20`}>
-                                                                                        <button 
-                                                                                            onClick={(e) => handleRemoveAssignment(slotId, hospital, sector, day, e)}
-                                                                                            className="p-1 rounded-md bg-white/60 text-rose-500 hover:bg-rose-50 shadow-sm border border-white/40 transition-colors"
-                                                                                            title="Remover Plantonista"
-                                                                                        >
-                                                                                            <X size={12} strokeWidth={3} />
-                                                                                        </button>
-                                                                                    </div>
+                                                                                    {isEscalaAdmin && (
+                                                                                        <div className={`absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l ${appearance.color === 'red' ? 'from-rose-50 via-rose-50/80' : 'from-white via-white/80'} to-transparent opacity-0 group-hover/assigned:opacity-100 transition-opacity flex items-center justify-end pr-1 z-20`}>
+                                                                                            <button 
+                                                                                                onClick={(e) => handleRemoveAssignment(slotId, hospital, sector, day, e)}
+                                                                                                className="p-1 rounded-md bg-white/60 text-rose-500 hover:bg-rose-50 shadow-sm border border-white/40 transition-colors"
+                                                                                                title="Remover Plantonista"
+                                                                                            >
+                                                                                                <X size={12} strokeWidth={3} />
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    )}
                                                                                 </div>
                                                                             ) : (
                                                                                 // Se estiver em Minha Escala e não for o médico selecionado, deixa um espaço vazio
                                                                                 <div className="w-full h-[38px]"></div>
                                                                             )
-                                                                        ) : (
+                                                                        ) : isEscalaAdmin ? (
                                                                             // Design Premium: Buraco super sutil, só aparece no hover ou se a escala estiver vazia
                                                                             <button 
                                                                                 onClick={() => {
@@ -1622,6 +1643,8 @@ const Escala = () => {
                                                                             >
                                                                                 <Plus size={14} className="text-slate-600 group-hover/btn:text-indigo-500 transition-colors opacity-0 group-hover/btn:opacity-100" />
                                                                             </button>
+                                                                        ) : (
+                                                                            <div className="w-full h-[38px]"></div>
                                                                         )}
                                                                     </td>
                                                                 );

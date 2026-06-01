@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useWhiteLabel } from '../contexts/WhiteLabelContext';
 import { usePermission } from '../contexts/PermissionContext';
-import { Settings, User, Users, FileText, Palette, LayoutDashboard, UploadCloud, FileSpreadsheet, Activity, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Settings, User, Users, FileText, Palette, LayoutDashboard, UploadCloud, FileSpreadsheet, Activity, ChevronRight, ArrowLeft, Stethoscope } from 'lucide-react';
 
 const ConfiguracoesHub = () => {
     const { theme } = useWhiteLabel();
@@ -49,6 +49,13 @@ const ConfiguracoesHub = () => {
             icon: UploadCloud,
             title: 'Importação CSV',
             description: 'Importar dados em massa para o sistema',
+            show: hasPermission('Acessar Configurações')
+        },
+        {
+            path: '/configuracoes-painel?tab=medicas',
+            icon: Stethoscope,
+            title: 'Configurações Médicas',
+            description: 'Receituário, atestados e medicamentos padrão',
             show: hasPermission('Acessar Configurações')
         },
         {
