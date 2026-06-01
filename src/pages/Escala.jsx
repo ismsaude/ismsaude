@@ -110,6 +110,7 @@ const Escala = () => {
 
     // Estados para o Modal de Gerenciamento de Meses
     const [isMonthModalOpen, setIsMonthModalOpen] = useState(false);
+    const [keepWeekdays, setKeepWeekdays] = useState(true);
     const [newMonthVal, setNewMonthVal] = useState('');
 
     // Estados para o Modal de Hospitais
@@ -493,21 +494,67 @@ const Escala = () => {
 
     const createOrGoToMonth = (monthVal) => {
         if (!monthVal) return;
-        const [year, month] = monthVal.split('-');
+        const [yearStr, monthStr] = monthVal.split('-');
+        const year = parseInt(yearStr, 10);
+        const month = parseInt(monthStr, 10);
         const monthNames = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-        const label = `${monthNames[parseInt(month, 10) - 1]} de ${year}`;
+        const label = `${monthNames[month - 1]} de ${yearStr}`;
         
         if (!existingMonths.find(m => m.id === monthVal)) {
             const updatedMonths = [...existingMonths, { id: monthVal, label }];
             setExistingMonths(updatedMonths);
             logAction('escala_mes_criado', `Novo mês gerado na escala: ${label}`);
             
+            let validOccurrences = null;
+            if (keepWeekdays) {
+                validOccurrences = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+                let currentDate = new Date(year, month - 1, 1);
+                const firstDayOfWeek = currentDate.getDay() === 0 ? 6 : currentDate.getDay() - 1;
+                currentDate.setDate(currentDate.getDate() - firstDayOfWeek);
+                
+                for (let i = 0; i < 6; i++) {
+                    let hasValidDays = false;
+                    const weekDays = [];
+                    for (let j = 0; j < 7; j++) {
+                        const isValid = currentDate.getMonth() === month - 1;
+                        if (isValid) hasValidDays = true;
+                        weekDays.push({ isValid, originalIndex: j });
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    if (hasValidDays) {
+                        const weekId = `w${i + 1}`;
+                        for (let j = 0; j < 7; j++) {
+                            if (weekDays[j].isValid) {
+                                validOccurrences[j].push(weekId);
+                            }
+                        }
+                    }
+                }
+            }
+
             // Replicar Escala Fixa para o Novo Mês
             const newAssignments = { ...assignments };
             Object.entries(assignments).forEach(([key, value]) => {
                 if (key.startsWith('FIXED-')) {
-                    const newKey = key.replace('FIXED-', `${monthVal}-`).replace('-fw', '-w');
-                    newAssignments[newKey] = { ...value };
+                    if (keepWeekdays && validOccurrences) {
+                        const parts = key.split('-'); // FIXED-fw1-hId-sIdx-dayIndex
+                        if (parts.length === 5) {
+                            const fwWeek = parseInt(parts[1].replace('fw', ''), 10);
+                            const hospitalId = parts[2];
+                            const sectorIdx = parts[3];
+                            const dayIndex = parseInt(parts[4], 10);
+                            
+                            const targetWeekIds = validOccurrences[dayIndex];
+                            if (targetWeekIds && targetWeekIds[fwWeek - 1]) {
+                                const targetWeekId = targetWeekIds[fwWeek - 1];
+                                const newKey = `${monthVal}-${targetWeekId}-${hospitalId}-${sectorIdx}-${dayIndex}`;
+                                newAssignments[newKey] = { ...value };
+                            }
+                        }
+                    } else {
+                        const newKey = key.replace('FIXED-', `${monthVal}-`).replace('-fw', '-w');
+                        newAssignments[newKey] = { ...value };
+                    }
                 }
             });
             setAssignments(newAssignments);
@@ -1983,6 +2030,25 @@ const Escala = () => {
                                         Confirmar Seleção
                                     </button>
                                 </div>
+                                
+                                <div className="mt-4 p-3 bg-white/70 border border-indigo-100 rounded-xl flex items-start gap-3">
+                                    <input 
+                                        type="checkbox" 
+                                        id="keepWeekdays"
+                                        checked={keepWeekdays}
+                                        onChange={(e) => setKeepWeekdays(e.target.checked)}
+                                        className="mt-0.5 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                    />
+                                    <div>
+                                        <label htmlFor="keepWeekdays" className="text-xs font-black text-slate-800 cursor-pointer block mb-0.5">
+                                            Manter dias da semana
+                                        </label>
+                                        <p className="text-[10px] font-bold text-slate-500 leading-tight">
+                                            Ao selecionar esta opção, os plantões da 1ª Segunda-feira da escala modelo serão alocados na 1ª Segunda-feira do novo mês, mesmo se esta cair na 2ª semana.
+                                        </p>
+                                    </div>
+                                </div>
+
                                 <p className="text-[11px] font-bold text-slate-500 mt-4 leading-relaxed bg-white/60 p-2.5 rounded-lg border border-white/40">
                                     💡 Se o mês não existir, ele será criado automaticamente copiando o padrão da <span className="text-blue-600 font-black">Escala Fixa</span>.
                                 </p>
