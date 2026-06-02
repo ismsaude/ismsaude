@@ -161,7 +161,7 @@ const Pacientes = () => {
                 {/* Tabela de Pacientes */}
                 <div className="bg-white/60 backdrop-blur-lg rounded-xl shadow-sm border border-white/400 overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-slate-200">
+                        <table className="w-full min-w-[800px] divide-y divide-slate-200">
                             <thead className="bg-white/60">
                                 <tr className="text-left text-[11px] font-black text-slate-500 uppercase tracking-widest">
                                     <th className="py-1.5 px-3">Paciente</th>

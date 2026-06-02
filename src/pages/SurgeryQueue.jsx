@@ -1205,7 +1205,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
 
             <div className="bg-white/60 backdrop-blur-lg rounded-2xl shadow-sm backdrop-blur-md border border-white/60 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-100">
+                    <table className="w-full min-w-[1000px] divide-y divide-slate-100">
                         <thead className="bg-slate-50/80">
                             <tr className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/60">
                                 <th className="py-3 px-4 w-[22%] cursor-pointer hover:text-blue-600 transition-colors" onClick={() => toggleSort('nomePaciente')}>Dados do Paciente {sortConfig.field === 'nomePaciente' && (sortConfig.direction === 'asc' ? <ArrowUp size={11} className="inline ml-1" /> : <ArrowDown size={11} className="inline ml-1" />)}</th>

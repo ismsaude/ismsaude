@@ -80,8 +80,8 @@ export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
     };
 
     return (
-        <div className="flex-1 rounded-[2rem] p-4 flex flex-col bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all min-h-[140px] relative overflow-hidden">
-            <div className="flex flex-row gap-2 overflow-x-auto custom-scrollbar w-full pt-1 pb-2 px-1 h-full">
+        <div className="flex-1 rounded-[2.5rem] p-5 flex flex-col bg-white/40 backdrop-blur-3xl border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] transition-all min-h-[160px] relative overflow-hidden">
+            <div className="flex flex-row gap-3 overflow-x-auto custom-scrollbar w-full pt-1 pb-2 px-1 h-full">
                 {weekDays.map((date, idx) => {
                     const dateStr = formatDateString(date);
                     const todayStr = formatDateString(new Date());
@@ -95,33 +95,36 @@ export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
                     });
 
                     return (
-                        <div key={idx} className={`flex flex-col min-w-[105px] flex-1 rounded-[1rem] p-2 border shrink-0 ${isToday ? 'bg-indigo-50/70 border-indigo-200/60 shadow-sm' : 'bg-white/30 border-white/40'}`}>
-                            <div className="flex items-center justify-between mb-2 border-b border-indigo-100/50 pb-1">
-                                <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest leading-none">
+                        <div key={idx} className={`group/day flex flex-col min-w-[130px] flex-1 rounded-[1.5rem] p-3 border shrink-0 transition-all duration-300 ${isToday ? 'bg-indigo-50/80 border-indigo-200/80 shadow-sm' : 'bg-white/40 border-white/50 hover:bg-white/70 hover:shadow-sm'}`}>
+                            <div className={`flex items-center justify-between mb-3 border-b pb-2 ${isToday ? 'border-indigo-200/60' : 'border-white/50'}`}>
+                                <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${isToday ? 'text-indigo-600' : 'text-slate-500'}`}>
                                     {isToday ? 'HOJE' : formatDayName(date)}
                                 </span>
-                                <span className="text-base font-black text-slate-700 leading-none">{date.getDate()}</span>
+                                <span className={`text-xl font-black leading-none drop-shadow-none ${isToday ? 'text-indigo-800' : 'text-slate-700'}`}>{date.getDate()}</span>
                             </div>
                             
-                            <div className="flex flex-col gap-2 overflow-y-auto custom-scrollbar pr-1 flex-1 min-h-0">
+                            <div className="flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 flex-1 min-h-[80px]">
                                 {loading ? (
-                                    <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-1 opacity-60">...</span>
+                                    <div className="flex-1 flex items-center justify-center">
+                                        <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin opacity-50"></div>
+                                    </div>
                                 ) : sortedTasks.length === 0 ? (
-                                    <span className="text-[9px] text-slate-400 font-bold uppercase text-center mt-1 opacity-60">Livre</span>
+                                    <div className="flex-1 flex flex-col items-center justify-center opacity-40 group-hover/day:opacity-70 transition-opacity pb-2">
+                                        <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Livre</span>
+                                    </div>
                                 ) : (
                                     sortedTasks.map(task => {
                                         const { time, text } = task.parsed;
                                         return (
-                                            <div key={task.id} className="flex items-start gap-1.5 group">
+                                            <div key={task.id} className="flex items-start gap-2.5 group cursor-pointer p-1.5 -mx-1.5 rounded-xl hover:bg-white/60 transition-colors" onClick={() => toggleTask(task.id, task.concluido)}>
                                                 <button 
-                                                    onClick={() => toggleTask(task.id, task.concluido)}
-                                                    className={`w-3.5 h-3.5 mt-0.5 rounded-[4px] border flex items-center justify-center shrink-0 transition-colors ${task.concluido ? 'bg-indigo-500 border-indigo-500' : 'border-indigo-300 hover:border-indigo-400 bg-white'}`}
+                                                    className={`w-4 h-4 mt-[2px] rounded-md border-2 flex items-center justify-center shrink-0 transition-colors shadow-sm ${task.concluido ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300 group-hover:border-indigo-400 bg-white/80'}`}
                                                 >
-                                                    {task.concluido && <Check size={8} className="text-white" strokeWidth={4} />}
+                                                    {task.concluido && <Check size={10} className="text-white" strokeWidth={4} />}
                                                 </button>
-                                                <div className="flex flex-col flex-1 leading-[1.15]">
-                                                    {time && <span className="text-[10px] font-black text-indigo-600 mb-[1px]">{time}</span>}
-                                                    <span className={`text-[9.5px] font-bold ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'}`}>
+                                                <div className="flex flex-col flex-1 pt-[1px]">
+                                                    {time && <span className={`text-[11px] font-black mb-0.5 ${task.concluido ? 'text-slate-400' : 'text-indigo-600'}`}>{time}</span>}
+                                                    <span className={`text-[11px] font-bold leading-snug tracking-normal ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700 group-hover:text-slate-900'}`}>
                                                         {text}
                                                     </span>
                                                 </div>
@@ -433,15 +436,15 @@ const HomeHub = () => {
     const ast2 = formatContactName(theme.hubAssistant2Name);
 
     return (
-        <div className="h-full w-full flex flex-col font-sans p-4 md:p-8 pt-[80px] md:pt-[96px] relative overflow-hidden">
-            <div className="relative z-10 flex-1 flex flex-col lg:flex-row gap-6 mb-4 px-2 lg:px-4 min-h-0 w-full max-w-[1500px] mx-auto overflow-y-auto lg:overflow-hidden custom-scrollbar">
+        <div className="h-full w-full flex flex-col font-sans px-4 pb-4 pt-[88px] md:px-8 md:pb-8 md:pt-[104px] relative overflow-hidden">
+            <div className="relative z-10 flex-1 flex flex-col lg:flex-row gap-4 lg:gap-6 mb-4 px-2 lg:px-4 min-h-0 w-full max-w-[1500px] mx-auto overflow-y-auto custom-scrollbar">
                 {/* Esquerda: Boas-vindas, Módulos e Agenda */}
-                <div className="lg:w-[70%] flex flex-col gap-6 min-h-0 lg:overflow-hidden lg:pr-2">
+                <div className="lg:w-[70%] flex flex-col gap-4 lg:gap-6 min-h-0 shrink-0 lg:shrink">
                     <div className="flex flex-col text-slate-800 drop-shadow-md shrink-0">
-                        <h1 className="text-4xl font-black tracking-normal mb-1">{saudacao}</h1>
-                        <p className="text-sm font-bold text-slate-600 uppercase tracking-widest">Seja {bemVindoText} ao sistema da iSM Saúde</p>
+                        <h1 className="text-3xl md:text-4xl font-black tracking-normal mb-1">{saudacao}</h1>
+                        <p className="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-widest">Seja {bemVindoText} ao sistema da iSM Saúde</p>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-4 lg:gap-6 flex-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-5 shrink-0">
                     {modules.map((mod, idx) => {
                         let darkIconColor = 'text-slate-800';
                         let darkIconBg = 'bg-white/70';
@@ -461,23 +464,23 @@ const HomeHub = () => {
                                     if (mod.id === 'compromissos') setShowCompromissosModal(true);
                                     else if (mod.path) navigate(mod.path);
                                 }}
-                                className={`group relative overflow-hidden rounded-[2rem] flex flex-col items-center justify-center text-center transition-all duration-500 cursor-pointer h-full w-full py-4 lg:py-6
+                                className={`group relative overflow-hidden rounded-[1.5rem] lg:rounded-[2rem] flex flex-col items-center justify-center text-center transition-all duration-500 cursor-pointer w-full p-4 lg:p-6 min-h-[110px] sm:min-h-[130px] lg:min-h-[140px] shrink-0
                                     ${!mod.path && mod.id !== 'compromissos'
                                         ? 'bg-transparent border-2 border-dashed border-white/80 opacity-50 cursor-default hover:opacity-70' 
                                         : 'bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)]'
                                     }`}
                             >
                                 {mod.icon ? (
-                                    <div className={`w-14 h-14 mb-3 rounded-[1rem] flex items-center justify-center ${darkIconBg} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-[0_0_15px_rgba(0,0,0,0.2)]`}>
-                                        <mod.icon size={24} className={darkIconColor} strokeWidth={2} />
+                                    <div className={`w-12 h-12 lg:w-14 lg:h-14 mb-2 lg:mb-3 rounded-[1rem] flex items-center justify-center shrink-0 ${darkIconBg} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-[0_0_15px_rgba(0,0,0,0.2)]`}>
+                                        <mod.icon size={20} className={`lg:w-6 lg:h-6 ${darkIconColor}`} strokeWidth={2} />
                                     </div>
                                 ) : (
-                                    <div className="w-16 h-16 mb-4 rounded-[1.25rem] border-2 border-dashed border-white/30 flex items-center justify-center">
-                                        <span className="text-3xl text-slate-400 font-light">+</span>
+                                    <div className="w-12 h-12 lg:w-14 lg:h-14 mb-2 lg:mb-3 rounded-[1.25rem] border-2 border-dashed border-white/30 flex items-center justify-center shrink-0">
+                                        <span className="text-2xl text-slate-400 font-light">+</span>
                                     </div>
                                 )}
 
-                                {mod.title && <h3 className="text-[15px] md:text-base font-black text-slate-800 mb-0 leading-snug tracking-wide z-10 px-2 drop-shadow-sm">{mod.title}</h3>}
+                                {mod.title && <h3 className="text-[12px] sm:text-[14px] md:text-base font-black text-slate-800 mb-0 leading-tight tracking-wide z-10 px-1 drop-shadow-sm">{mod.title}</h3>}
                             </div>
                         )
                     })}
@@ -485,11 +488,11 @@ const HomeHub = () => {
 
                     {/* Quadro de Avisos ou Agenda */}
                     {currentUser?.exibir_agenda_home ? (
-                        <div className="flex-1 w-full flex min-h-[220px]">
+                        <div className="w-full flex lg:flex-1 min-h-[160px] lg:min-h-[200px] shrink-0 mb-2 lg:mb-0">
                             <AgendaPessoalWidget currentUser={currentUser} refreshTrigger={agendaRefreshTrigger} />
                         </div>
                     ) : (
-                        <div className="shrink-0 h-[140px] w-full flex">
+                        <div className="shrink-0 min-h-[120px] lg:min-h-[140px] w-full flex mb-2 lg:mb-0">
                             <div className="flex-1 rounded-[2rem] p-6 flex items-center justify-center bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 transition-all">
                                 {marqueeText ? (
                                     <p className="text-[13px] md:text-[14px] lg:text-[15px] font-medium text-slate-700 leading-relaxed tracking-wide text-center drop-shadow-sm px-4">
@@ -507,8 +510,8 @@ const HomeHub = () => {
                 </div>
 
                 {/* Direita: Plantões e Suporte */}
-                <div className="w-full lg:w-[30%] flex flex-col gap-6 min-h-0">
-                    <div className="rounded-[2rem] p-6 flex flex-col h-full bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 transition-all overflow-hidden">
+                <div className="w-full lg:w-[30%] flex flex-col gap-4 lg:gap-6 pb-6 lg:pb-0 shrink-0 lg:shrink">
+                    <div className="rounded-[2rem] p-5 lg:p-6 flex flex-col flex-1 bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:bg-white/50 transition-all overflow-hidden min-h-[250px] lg:min-h-[300px]">
                         <div className="flex justify-between items-center mb-4 shrink-0">
                             <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
                                 <CalendarClock size={16}/>

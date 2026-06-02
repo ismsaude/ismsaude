@@ -26,7 +26,6 @@ export const Topbar = () => {
     const [hideDropdown, setHideDropdown] = useState(null);
     const dropdownRef = useRef(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loadingPassword, setLoadingPassword] = useState(false);
@@ -154,9 +153,6 @@ export const Topbar = () => {
 
                 {/* LOGO */}
                 <div className="flex items-center justify-center shrink-0">
-                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="lg:hidden p-2 -ml-2 mr-2 rounded-lg transition-colors text-slate-800 hover:bg-white/70">
-                        <Menu size={24} />
-                    </button>
                     <Link to="/home" className="cursor-pointer transition-transform hover:scale-105 active:scale-95 flex items-center">
                         <img src={theme.logoUrl} alt="Logo do Sistema" className="h-8 w-auto object-contain drop-shadow-sm transition-all duration-300 opacity-90" />
                     </Link>
@@ -165,7 +161,7 @@ export const Topbar = () => {
                 {/* NAV CONDICIONAL E CONTEXTUAL - REMOVIDO A PEDIDO DO USUÁRIO */}
                 <div className="hidden lg:flex flex-1 items-center h-full mx-4 sm:mx-8 min-w-0"></div>
                 {/* DIREITA */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                     <UnitSelector />
                     <div className="h-5 w-px hidden sm:block mx-1 bg-white/80"></div>
                     <button title="Meu Perfil" onClick={() => setIsProfileOpen(true)} className="p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent text-slate-800 hover:bg-white/70 hover:border-white/30">
@@ -228,85 +224,7 @@ export const Topbar = () => {
                 </div>
             )}
 
-            {/* OVERLAY DO MENU MOBILE */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-[1000] bg-slate-900/50 backdrop-blur-sm lg:hidden print:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-                    <div className="absolute left-0 top-0 bottom-0 w-[80%] max-w-[320px] bg-white shadow-2xl flex flex-col animate-in slide-in-from-left duration-300" onClick={e => e.stopPropagation()}>
-                        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                            <img src={theme.logoUrl} alt="Logo" className="h-8 object-contain" />
-                            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-500 hover:text-rose-600 rounded-lg bg-slate-50"><X size={18} /></button>
-                        </div>
-                        <div className="overflow-y-auto flex-1 py-4 px-3 space-y-3 custom-scrollbar">
-                            {menuItems.map(item => (
-                                <div key={item.id || item.path} className="flex flex-col">
-                                    {item.subItems ? (
-                                        <>
-                                            <div className="px-3 py-2 text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center gap-2">
-                                                <item.icon size={14} /> {item.label}
-                                            </div>
-                                            <div className="flex flex-col ml-3 pl-3 border-l border-slate-100 space-y-1">
-                                                {item.subItems.filter(s => s.show).map(sub => sub.isSoon ? (
-                                                    <div key={sub.label} className="px-3 py-2.5 text-xs font-bold text-slate-600 flex items-center gap-2 uppercase tracking-wider">
-                                                        <sub.icon size={14} /> {sub.label} <span className="text-[9px] text-amber-500 font-black ml-auto border border-amber-200 px-1 rounded bg-amber-50">Breve</span>
-                                                    </div>
-                                                ) : (
-                                                    <Link key={sub.path} to={sub.path} onClick={() => setIsMobileMenuOpen(false)} className={`px-3 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center gap-2 transition-all ${isActive(sub.path) ? 'bg-blue-50 text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:bg-slate-50'}`}>
-                                                        <sub.icon size={14} strokeWidth={isActive(sub.path) ? 2.5 : 2} /> {sub.label}
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <Link to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={`px-3 py-3 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center gap-2 transition-all ${isActive(item.path) ? 'bg-blue-50 text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:bg-slate-50'}`}>
-                                            <item.icon size={16} strokeWidth={isActive(item.path) ? 2.5 : 2} /> {item.label}
-                                        </Link>
-                                    )}
-                                </div>
-                            ))}
-
-                            {(hasPermission('Acessar Configurações') || hasPermission('Acessar Usuarios')) && (
-                                <div className="flex flex-col mt-4 pt-4 border-t border-slate-100">
-                                    <div className="px-3 py-2 text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center gap-2">
-                                        <Settings size={14} /> Configurações
-                                    </div>
-                                    <div className="flex flex-col ml-3 pl-3 border-l border-slate-100 space-y-1">
-                                        {menuItems.find(m => m.id === 'configuracoes')?.subItems.filter(s => s.show).map(sub => {
-                                            if (sub.dropdown) {
-                                                return (
-                                                    <div key={sub.label} className="space-y-1">
-                                                        <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500">{sub.label}</div>
-                                                        {sub.dropdown.map(dropItem => (
-                                                            <Link 
-                                                                key={dropItem.path}
-                                                                onClick={() => setIsMobileMenuOpen(false)} 
-                                                                to={dropItem.path} 
-                                                                className="px-3 py-2.5 ml-4 text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-50 hover:text-blue-600 rounded-xl flex items-center gap-2 transition-colors"
-                                                            >
-                                                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
-                                                                {dropItem.label}
-                                                            </Link>
-                                                        ))}
-                                                    </div>
-                                                );
-                                            }
-                                            return (
-                                                <Link 
-                                                    key={sub.path}
-                                                    onClick={() => setIsMobileMenuOpen(false)} 
-                                                    to={sub.path} 
-                                                    className="px-3 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-50 hover:text-blue-600 rounded-xl flex items-center gap-2 transition-colors"
-                                                >
-                                                    <sub.icon size={14}/> {sub.label}
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* MENU MOBILE REMOVIDO PARA ADOTAR NAVEGAÇÃO HUB-AND-SPOKE */}
         </>
     );
 };

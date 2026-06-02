@@ -78,6 +78,49 @@ const InlineCalendar = ({ value, onChange, disabled }) => {
     );
 };
 
+const DataNascInput = ({ value, onChange, disabled }) => {
+    const [displayValue, setDisplayValue] = useState('');
+
+    useEffect(() => {
+        if (value && value.includes('-')) {
+            setDisplayValue(value.split('-').reverse().join('/'));
+        } else {
+            setDisplayValue(value || '');
+        }
+    }, [value]);
+
+    const handleLocalChange = (e) => {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.length > 8) val = val.slice(0, 8);
+        
+        let formatted = val;
+        if (val.length > 2) formatted = val.slice(0,2) + '/' + val.slice(2);
+        if (val.length > 4) formatted = val.slice(0,2) + '/' + val.slice(2,4) + '/' + val.slice(4);
+        
+        setDisplayValue(formatted);
+        
+        if (val.length === 8) {
+            const d = val.slice(0,2);
+            const m = val.slice(2,4);
+            const y = val.slice(4,8);
+            onChange({ target: { name: 'dataNasc', value: `${y}-${m}-${d}`, type: 'text' }});
+        } else if (val.length === 0) {
+            onChange({ target: { name: 'dataNasc', value: '', type: 'text' }});
+        }
+    };
+
+    return (
+        <input 
+            type="tel"
+            disabled={disabled}
+            value={displayValue}
+            onChange={handleLocalChange}
+            placeholder="DD/MM/AAAA"
+            className="w-full px-3 py-1.5 text-base md:text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+        />
+    );
+};
+
 const getDoctorPrefix = (nome, sexo) => {
     if (sexo === 'Masculino' || sexo === 'M') return 'DR.';
     if (sexo === 'Feminino' || sexo === 'F') return 'DRA.';
@@ -1429,7 +1472,7 @@ Responda SOMENTE o bloco JSON.`;
                                                     )}
                                                 </div>
                                                 <div className="md:col-span-4"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CPF</label><input disabled={isReadOnly} type="text" name="cpf" value={formData.cpf} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
-                                                <div className="md:col-span-3"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">NASCIMENTO<span className="text-red-500 ml-0.5">*</span></label><input disabled={isReadOnly} type="date" name="dataNasc" value={formData.dataNasc} onChange={handleChange} className="w-full px-3 py-1.5 text-xs font-semibold bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all" /></div>
+                                                <div className="md:col-span-3"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">NASCIMENTO<span className="text-red-500 ml-0.5">*</span></label><DataNascInput disabled={isReadOnly} value={formData.dataNasc} onChange={handleChange} /></div>
                                                 <div className="md:col-span-2"><label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">IDADE</label><div className="w-full px-3 py-1.5 text-xs font-semibold bg-white/80 border-2 border-white shadow-sm rounded-lg text-slate-700 font-medium">{calcularIdade(formData.dataNasc)}</div></div>
                                                 <div className="md:col-span-3">
                                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">SEXO<span className="text-red-500 ml-0.5">*</span></label>
@@ -1655,7 +1698,7 @@ Responda SOMENTE o bloco JSON.`;
                                                                 <button type="button" disabled={isReadOnly} onClick={() => updateArray(medicamentos, setMedicamentos, i, 'conduta', 'Manter')} className={`flex-[0.8] px-2 py-1 text-[11px] font-bold uppercase rounded-md transition-all ${med.conduta === 'Manter' ? 'bg-emerald-500/200 text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-white/80'}`}>Manter</button>
                                                                 {(med.conduta !== 'Manter' && med.conduta !== '') ? (
                                                                     <div className="flex-[2] flex relative">
-                                                                        <input autoFocus disabled={isReadOnly} type="text" placeholder="Suspender..." value={med.conduta} onChange={e => updateArray(medicamentos, setMedicamentos, i, 'conduta', e.target.value)} className="w-full min-w-[100px] pl-2 pr-7 py-1 text-xs tracking-normal font-bold bg-white/60 text-rose-600 border border-rose-300 rounded-md outline-none focus:border-rose-500" />
+                                                                        <input disabled={isReadOnly} type="text" placeholder="Suspender..." value={med.conduta} onChange={e => updateArray(medicamentos, setMedicamentos, i, 'conduta', e.target.value)} className="w-full min-w-[100px] pl-2 pr-7 py-1 text-[16px] md:text-xs tracking-normal font-bold bg-white/60 text-rose-600 border border-rose-300 rounded-md outline-none focus:border-rose-500" />
                                                                         <button type="button" onClick={() => updateArray(medicamentos, setMedicamentos, i, 'conduta', '')} className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-500 hover:text-rose-500 z-10 w-5 h-5 flex items-center justify-center rounded-full hover:bg-rose-500/20">✕</button>
                                                                     </div>
                                                                 ) : (
@@ -1839,29 +1882,14 @@ Responda SOMENTE o bloco JSON.`;
                                             <div className="mb-6">
                                                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CLASSIFICAÇÃO DE MALLAMPATI <span className="text-rose-500 text-[11px]">*</span></label>
                                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                                    {['I', 'II', 'III', 'IV'].map(m => (
+                                                    {['I', 'II', 'III', 'IV'].map((m, index) => (
                                                         <div key={m} onClick={!isReadOnly ? () => setMallampati(m) : undefined} className={`p-4 rounded-xl border-2 text-center cursor-pointer transition-all ${mallampati === m ? 'border-blue-600 bg-blue-500/20 shadow-sm' : 'border-white/40 hover:border-white hover:bg-white/90 bg-white/5'} ${isReadOnly ? 'opacity-80 cursor-not-allowed' : ''}`}>
-                                                            <div className={`w-14 h-14 mx-auto mb-3 rounded-full overflow-hidden relative transition-all duration-300 ${mallampati === m ? 'shadow-[0_0_0_3px_#2563eb,inset_0_4px_10px_rgba(0,0,0,0.5)] bg-rose-950 scale-110' : 'shadow-[inset_0_4px_10px_rgba(0,0,0,0.4)] bg-rose-950 opacity-85'}`}>
-                                                                {/* Palato Mole Superior */}
-                                                                <div className="absolute top-[-5px] left-1/2 -translate-x-1/2 w-16 h-8 rounded-full bg-rose-300 opacity-90" />
-                                                                
-                                                                {/* Pilares Amigdalianos (Visíveis mais no I e II) */}
-                                                                {(m === 'I' || m === 'II') && (
-                                                                    <>
-                                                                        <div className="absolute top-2 left-1.5 w-3 h-8 rounded-full bg-rose-300 rotate-[15deg] opacity-80" />
-                                                                        <div className="absolute top-2 right-1.5 w-3 h-8 rounded-full bg-rose-300 -rotate-[15deg] opacity-80" />
-                                                                    </>
-                                                                )}
-
-                                                                {/* Úvula */}
-                                                                {m === 'I' && <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2.5 h-6 rounded-b-full bg-rose-400 shadow-[0_2px_4px_rgba(0,0,0,0.4)]" />}
-                                                                {m === 'II' && <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2.5 h-4 rounded-b-full bg-rose-400 shadow-[0_2px_4px_rgba(0,0,0,0.4)]" />}
-                                                                {m === 'III' && <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-2.5 rounded-b-[4px] bg-rose-400" />}
-                                                                
-                                                                {/* Língua Subindo */}
-                                                                <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 rounded-full bg-rose-500/200 shadow-[0_-4px_12px_rgba(0,0,0,0.4)] transition-all duration-300" 
-                                                                     style={{ width: m === 'IV' ? '120%' : m === 'III' ? '100%' : m === 'II' ? '85%' : '75%', 
-                                                                              height: m === 'IV' ? '85%' : m === 'III' ? '65%' : m === 'II' ? '45%' : '30%' }} />
+                                                            <div className={`w-20 h-24 mx-auto mb-3 rounded-xl overflow-hidden relative transition-all duration-300 ${mallampati === m ? 'shadow-[0_0_0_3px_#2563eb,0_4px_10px_rgba(0,0,0,0.1)] scale-110' : 'shadow-sm opacity-90'}`}>
+                                                                <img src={`/mallampati-${index + 1}.jpg`} alt={`Mallampati ${m}`} className="w-full h-full object-contain bg-white" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                                                                <div style={{ display: 'none' }} className="absolute inset-0 bg-slate-100 flex flex-col items-center justify-center text-slate-400 text-[9px] p-2">
+                                                                    <span>Salvar foto em</span>
+                                                                    <span className="font-bold text-blue-500">public/mallampati-{index + 1}.jpg</span>
+                                                                </div>
                                                             </div>
                                                             <div className={`text-xl font-black ${mallampati === m ? 'text-blue-700' : 'text-slate-500'}`}>{m}</div>
                                                         </div>
@@ -1935,7 +1963,7 @@ Responda SOMENTE o bloco JSON.`;
                                             <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3 border-b border-white/40 pb-1.5">10. Estado Físico (ASA)</h3>
                                             <div className="grid grid-cols-1 gap-3">
                                                 <div>
-                                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CLASSIFICAÇÃO ASA</label>
+                                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wide mb-1">CLASSIFICAÇÃO ASA <span className="text-rose-500 text-[11px]">*</span></label>
                                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                                         {[{val: 'ASA I', label: 'ASA I', sub: 'Saudável'}, {val: 'ASA II', label: 'ASA II', sub: 'Doença sist. leve'}, {val: 'ASA III', label: 'ASA III', sub: 'Doença sist. grave'}, {val: 'ASA IV', label: 'ASA IV', sub: 'Risco à vida'}, {val: 'ASA V', label: 'ASA V', sub: 'Sobrevida < 24h'}, {val: 'ASA VI', label: 'ASA VI', sub: 'Morte encefálica'}].map(opt => (
                                                             <button key={opt.val} type="button" disabled={isReadOnly} onClick={() => setFormData({...formData, asa: opt.val})} className={`w-full min-w-[100px] h-[40px] flex flex-col items-center justify-center px-1 whitespace-nowrap text-xs font-bold rounded-lg border transition-all ${formData.asa === opt.val ? 'bg-blue-500/20 border-blue-500 text-blue-700 shadow-sm' : 'bg-white/60 border-white/60 text-slate-600 hover:border-white hover:bg-white/90 hover:bg-white/5'}`}>

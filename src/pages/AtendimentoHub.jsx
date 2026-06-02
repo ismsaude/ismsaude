@@ -60,26 +60,26 @@ const AtendimentoHub = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-6">
                     {modules.map((mod, idx) => (
                         <Link 
                             key={idx} 
                             to={mod.path}
-                            className="group relative bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-[2rem] p-6 hover:shadow-xl hover:shadow-blue-900/5 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden min-h-[160px]"
+                            className="group relative bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 hover:shadow-xl hover:shadow-blue-900/5 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden min-h-[140px] sm:min-h-[160px]"
                         >
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-indigo-50/20 rounded-bl-[100px] -z-0 transition-transform group-hover:scale-110"></div>
+                            <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-50 to-indigo-50/20 rounded-bl-[80px] sm:rounded-bl-[100px] -z-0 transition-transform group-hover:scale-110"></div>
                             
                             <div className="relative z-10">
-                                <div className={`w-14 h-14 rounded-2xl bg-white/60 border border-white/40 flex items-center justify-center mb-5 group-hover:bg-blue-500/20 group-hover:border-blue-100 transition-colors shadow-sm`}>
-                                    <mod.icon size={28} className="text-slate-500 group-hover:text-blue-600 transition-colors" strokeWidth={2} />
+                                <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/60 border border-white/40 flex items-center justify-center mb-3 sm:mb-5 group-hover:bg-blue-500/20 group-hover:border-blue-100 transition-colors shadow-sm`}>
+                                    <mod.icon className="w-5 h-5 sm:w-7 sm:h-7 text-slate-500 group-hover:text-blue-600 transition-colors" strokeWidth={2} />
                                 </div>
-                                <h3 className="text-lg font-black text-slate-900 drop-shadow-none tracking-normal group-hover:text-blue-700 transition-colors">{mod.title}</h3>
-                                <p className="text-sm font-semibold text-slate-500 mt-1">{mod.description}</p>
+                                <h3 className="text-sm sm:text-lg font-black text-slate-900 drop-shadow-none tracking-normal group-hover:text-blue-700 transition-colors leading-tight">{mod.title}</h3>
+                                <p className="text-[10px] sm:text-sm font-semibold text-slate-500 mt-1 leading-tight">{mod.description}</p>
                             </div>
                             
-                            <div className="relative z-10 flex justify-end mt-4">
-                                <div className="w-10 h-10 rounded-full bg-white/60 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-slate-800 text-slate-600 transition-all shadow-sm">
-                                    <ChevronRight size={20} strokeWidth={2.5} />
+                            <div className="relative z-10 flex justify-end mt-3 sm:mt-4">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/60 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-slate-800 text-slate-600 transition-all shadow-sm">
+                                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
                                 </div>
                             </div>
                         </Link>

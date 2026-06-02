@@ -1506,24 +1506,24 @@ const Escala = () => {
                                 <thead className="bg-white/60">
                                     <tr>
                                         {/* Z-Index 30 para os cabeçalhos ficarem acima de tudo */}
-                                        <th className="px-4 py-3 border-b border-white/60 w-40 min-w-[160px] max-w-[160px] sticky left-0 z-30 bg-white/60 shadow-[1px_0_0_0_rgba(226,232,240,1)] text-center">
-                                            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Hospital</span>
+                                        <th className="px-3 py-1.5 border-b border-white/60 w-40 min-w-[160px] max-w-[160px] sticky left-0 z-30 bg-white/60 shadow-[1px_0_0_0_rgba(226,232,240,1)] text-center">
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Hospital</span>
                                         </th>
-                                        <th className="px-4 py-3 border-b border-white/60 w-36 min-w-[144px] max-w-[144px] sticky left-40 z-30 bg-white/60 shadow-[1px_0_0_0_rgba(226,232,240,1),_4px_0_12px_-5px_rgba(0,0,0,0.1)] border-r border-white/60 text-center">
-                                            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Tipo</span>
+                                        <th className="px-3 py-1.5 border-b border-white/60 w-36 min-w-[144px] max-w-[144px] sticky left-40 z-30 bg-white/60 shadow-[1px_0_0_0_rgba(226,232,240,1),_4px_0_12px_-5px_rgba(0,0,0,0.1)] border-r border-white/60 text-center">
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tipo</span>
                                         </th>
                                         {week.days.map((day, idx) => (
-                                            <th key={idx} className={`px-2 py-3 border-b border-white/60 min-w-[160px] border-r border-slate-200/60 last:border-r-0 ${day.isWeekend ? 'bg-white/5' : 'bg-white/5'}`}>
+                                            <th key={idx} className={`px-2 py-1.5 border-b border-white/60 min-w-[160px] border-r border-slate-200/60 last:border-r-0 ${day.isWeekend ? 'bg-white/5' : 'bg-white/5'}`}>
                                                 {/* Cabeçalho centralizado */}
                                                 {!day.isOutOfMonth ? (
-                                                    <div className="flex flex-col items-center justify-center gap-0.5 py-1">
-                                                        <span className={`text-[11px] font-black uppercase tracking-wider ${day.isWeekend ? 'text-slate-500' : 'text-blue-600 drop-shadow-none'}`}>
+                                                    <div className="flex flex-col items-center justify-center gap-0 py-0.5">
+                                                        <span className={`text-[10px] font-black uppercase tracking-wider ${day.isWeekend ? 'text-slate-500' : 'text-blue-600 drop-shadow-none'}`}>
                                                             {(() => {
                                                                 const isFeira = !['Sábado', 'Domingo'].includes(day.dayName);
                                                                 return `${day.dayName}${isFeira ? '-feira' : ''}`;
                                                             })()}
                                                         </span>
-                                                        <span className="text-[10px] font-bold text-slate-500 uppercase">
+                                                        <span className="text-[9px] font-bold text-slate-500 uppercase">
                                                             {(() => {
                                                                 const dayNum = day.date.split('/')[0];
                                                                 const monthNum = parseInt(day.date.split('/')[1]);
@@ -1587,20 +1587,20 @@ const Escala = () => {
                                                         <tr key={`${hospital.id}-${sIdx}`} className={`group transition-colors ${theme.bg} ${theme.hover}`}>
                                                             
                                                             {/* Coluna Unidade */}
-                                                            <td className={`px-4 py-3 sticky left-0 z-20 ${theme.bg} ${theme.hover} transition-colors ${hospitalTopBorder} ${sectorBottomBorder} shadow-[1px_0_0_0_rgba(226,232,240,1)] relative`}>
+                                                            <td className={`px-3 py-1.5 sticky left-0 z-20 ${theme.bg} ${theme.hover} transition-colors ${hospitalTopBorder} ${sectorBottomBorder} shadow-[1px_0_0_0_rgba(226,232,240,1)] relative`}>
                                                                 {/* Indicador de cor do hospital na borda esquerda */}
                                                                 <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${theme.indicator}`} />
                                                                 
                                                                 {isFirstRow && (
                                                                     <div className="flex items-center justify-center h-full absolute inset-0 left-2">
-                                                                        <span className={`text-sm font-black ${theme.textDark} tracking-normal text-center uppercase`}>{hospital.name}</span>
+                                                                        <span className={`text-xs font-black ${theme.textDark} tracking-normal text-center uppercase`}>{hospital.name}</span>
                                                                     </div>
                                                                 )}
                                                             </td>
                                                             
                                                             {/* Coluna Setor */}
-                                                            <td className={`px-4 py-3 sticky left-40 z-20 ${theme.bg} ${theme.hover} transition-colors border-r ${theme.border} shadow-[1px_0_0_0_rgba(226,232,240,1),_4px_0_12px_-5px_rgba(0,0,0,0.1)] ${hospitalTopBorder} ${sectorBottomBorder}`}>
-                                                                <div className={`inline-flex items-center justify-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-white/60 border ${theme.border} shadow-sm ${theme.pillText}`}>
+                                                            <td className={`px-3 py-1.5 sticky left-40 z-20 ${theme.bg} ${theme.hover} transition-colors border-r ${theme.border} shadow-[1px_0_0_0_rgba(226,232,240,1),_4px_0_12px_-5px_rgba(0,0,0,0.1)] ${hospitalTopBorder} ${sectorBottomBorder}`}>
+                                                                <div className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-white/60 border ${theme.border} shadow-sm ${theme.pillText}`}>
                                                                     {sector}
                                                                 </div>
                                                             </td>
@@ -1617,9 +1617,9 @@ const Escala = () => {
                                                                 const dayBgClass = day.isOutOfMonth ? 'bg-slate-100/50' : (day.isWeekend ? 'bg-slate-900/5' : '');
 
                                                                 return (
-                                                                    <td key={dIdx} className={`px-2 py-2 border-r border-slate-200/30 last:border-r-0 ${hospitalTopBorder} ${sectorBottomBorder} ${dayBgClass}`}>
+                                                                    <td key={dIdx} className={`px-1 py-1 border-r border-slate-200/30 last:border-r-0 ${hospitalTopBorder} ${sectorBottomBorder} ${dayBgClass}`}>
                                                                         {day.isOutOfMonth ? (
-                                                                            <div className="w-full h-[38px]"></div>
+                                                                            <div className="w-full h-[26px]"></div>
                                                                         ) : assignedDoctor ? (
                                                                             (viewMode === 'all' || assignedDoctor === selectedDoctor) ? (
                                                                                 // Design Premium: Pill branca neutra minimalista
@@ -1637,11 +1637,11 @@ const Escala = () => {
                                                                                             financial: assignedData?.financial || { baseValue: '', extraValue: '0', observations: '' }
                                                                                         });
                                                                                     }}
-                                                                                    className={`group/assigned w-full h-auto min-h-[38px] py-1.5 rounded-lg border shadow-sm flex flex-col items-center justify-center px-1 ${isEscalaAdmin ? 'cursor-pointer hover:shadow-md' : 'cursor-default'} transition-all relative overflow-hidden text-center ${appearance.color === 'red' ? 'bg-rose-50 border-rose-200' : 'bg-white/60 ' + theme.pillBorder}`}
+                                                                                    className={`group/assigned w-full h-auto min-h-[26px] py-0.5 rounded-lg border shadow-sm flex flex-col items-center justify-center px-0.5 ${isEscalaAdmin ? 'cursor-pointer hover:shadow-md' : 'cursor-default'} transition-all relative overflow-hidden text-center ${appearance.color === 'red' ? 'bg-rose-50 border-rose-200' : 'bg-white/60 ' + theme.pillBorder}`}
                                                                                 >
                                                                                     
                                                                                     <div className="flex items-center justify-center gap-1 w-full relative z-10 pr-6 pl-1">
-                                                                                        <span className={`text-xs truncate ${appearance.bold ? 'font-black' : 'font-bold'} ${appearance.color === 'red' ? 'text-rose-700' : theme.pillText}`} title={assignedDoctor}>
+                                                                                        <span className={`text-[10px] truncate ${appearance.bold ? 'font-black' : 'font-bold'} ${appearance.color === 'red' ? 'text-rose-700' : theme.pillText}`} title={assignedDoctor}>
                                                                                             {formatDoctorName(assignedDoctor)}
                                                                                         </span>
                                                                                         {appearance.verified && <Check size={10} className="text-emerald-500 shrink-0" strokeWidth={3}/>}
@@ -1649,10 +1649,10 @@ const Escala = () => {
                                                                                     </div>
                                                                                     
                                                                                     {assignedData?.subtitle && (
-                                                                                        <span className="text-[10px] font-medium text-slate-500 truncate block mt-0.5 relative z-10 w-full text-center px-1">{assignedData.subtitle}</span>
+                                                                                        <span className="text-[9px] font-medium text-slate-500 truncate block mt-0 relative z-10 w-full text-center px-1">{assignedData.subtitle}</span>
                                                                                     )}
                                                                                     {assignedData?.time && (
-                                                                                        <span className={`text-[10px] font-bold ${appearance.color === 'red' ? 'text-rose-500' : theme.iconText} mt-0.5 relative z-10 w-full text-center`}>{assignedData.time}</span>
+                                                                                        <span className={`text-[9px] font-bold ${appearance.color === 'red' ? 'text-rose-500' : theme.iconText} mt-0 relative z-10 w-full text-center`}>{assignedData.time}</span>
                                                                                     )}
                                                                                     
                                                                                     {isEscalaAdmin && (
@@ -1669,7 +1669,7 @@ const Escala = () => {
                                                                                 </div>
                                                                             ) : (
                                                                                 // Se estiver em Minha Escala e não for o médico selecionado, deixa um espaço vazio
-                                                                                <div className="w-full h-[38px]"></div>
+                                                                                <div className="w-full h-[26px]"></div>
                                                                             )
                                                                         ) : isEscalaAdmin ? (
                                                                             // Design Premium: Buraco super sutil, só aparece no hover ou se a escala estiver vazia
@@ -1686,12 +1686,12 @@ const Escala = () => {
                                                                                         financial: { baseValue: '', extraValue: '0', observations: '' }
                                                                                     });
                                                                                 }}
-                                                                                className="group/btn w-full h-[38px] rounded-lg border border-dashed border-white/60 bg-white/60 hover:border-indigo-300 hover:bg-indigo-50/50 flex items-center justify-center transition-all"
+                                                                                className="group/btn w-full h-[26px] rounded-lg border border-dashed border-white/60 bg-white/60 hover:border-indigo-300 hover:bg-indigo-50/50 flex items-center justify-center transition-all"
                                                                             >
                                                                                 <Plus size={14} className="text-slate-600 group-hover/btn:text-indigo-500 transition-colors opacity-0 group-hover/btn:opacity-100" />
                                                                             </button>
                                                                         ) : (
-                                                                            <div className="w-full h-[38px]"></div>
+                                                                            <div className="w-full h-[26px]"></div>
                                                                         )}
                                                                     </td>
                                                                 );

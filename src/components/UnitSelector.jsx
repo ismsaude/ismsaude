@@ -20,13 +20,13 @@ export const UnitSelector = () => {
         <div className="relative z-[999]" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-300 shadow-sm border bg-white/70 hover:bg-white/80 border-white/80"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-xl transition-all duration-300 shadow-sm border bg-white/70 hover:bg-white/80 border-white/80"
                 title="Alterar Local de Atendimento"
             >
                 <MapPin size={16} className="text-slate-800" />
                 <div className="flex flex-col items-start">
                     <span className="text-[9px] font-black uppercase tracking-widest leading-none text-slate-600">Local Atual</span>
-                    <span className="text-[11px] font-bold uppercase tracking-widest leading-tight truncate max-w-[150px] text-slate-800">
+                    <span className="text-[11px] font-bold uppercase tracking-widest leading-tight truncate max-w-[80px] sm:max-w-[150px] text-slate-800">
                         {unidadeAtual || 'SELECIONE O LOCAL'}
                     </span>
                 </div>
