@@ -40,6 +40,22 @@ const MOCK_FIXED_WEEKS = Array.from({ length: 5 }).map((_, i) => ({
     ]
 }));
 
+// Helper para abreviar os setores no celular
+const getMobileSectorName = (sector) => {
+    if (!sector) return '';
+    const s = sector.toUpperCase();
+    if (s.includes('DIURNO 2')) return 'D2';
+    if (s.includes('DIURNO')) return 'D';
+    if (s.includes('NOTURNO')) return 'N';
+    if (s.includes('ANESTESISTA EXTRA 1')) return 'EX-1';
+    if (s.includes('ANESTESISTA EXTRA 2')) return 'EX-2';
+    if (s.includes('EXTRA')) return 'EX';
+    if (s.includes('MANHÃ') || s.includes('MANHA')) return 'M';
+    if (s.includes('TARDE')) return 'T';
+    if (s.includes('AMBULATÓRIO') || s.includes('AMBULATORIO')) return 'AMB';
+    return sector.substring(0, 3);
+};
+
 // Helper para gerar iniciais do médico (ex: Marcos Andre = MA)
 const getInitials = (name) => {
     if (!name) return 'M';
@@ -1336,12 +1352,12 @@ const Escala = () => {
 
     return (
         <div className="flex flex-col h-full bg-transparent p-3 md:p-5 overflow-hidden font-sans relative">
-            <div className="flex flex-col mb-4 shrink-0 gap-4 relative z-[50]">
+            <div className="flex flex-col mb-2 md:mb-4 shrink-0 gap-2 md:gap-4 relative z-[50]">
                 {/* Tier 1: Title & Month Nav */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-3">
                     <div>
-                        <h1 className="text-2xl font-black text-slate-800 tracking-normal leading-none mb-1">Escala Médica</h1>
-                        <p className="text-xs font-medium text-slate-500">Gestão e alocação de plantões nas unidades.</p>
+                        <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-normal leading-none mb-0.5 md:mb-1">Escala Médica</h1>
+                        <p className="text-xs font-medium text-slate-500 hidden md:block">Gestão e alocação de plantões nas unidades.</p>
                     </div>
                     <div className="flex items-center gap-3">
                         {visualizationMode === 'mensal' ? (
@@ -1394,9 +1410,13 @@ const Escala = () => {
                         )}
                     </div>
                 </div>
-
-                {/* Tier 2: The Action Toolbar */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl p-1.5 shadow-sm backdrop-blur-md gap-2 lg:gap-0">
+            </div>
+            
+            {/* Scrollable Container para as Semanas */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-12 space-y-8 relative">
+                
+                {/* Tier 2: The Action Toolbar (Moved inside scrollable area for mobile vertical space optimization) */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl p-1.5 shadow-sm backdrop-blur-md gap-2 lg:gap-0 mb-4 z-[40] relative">
                     {/* Left Side: View Filters */}
                     <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
                         <div className="flex items-center bg-white/70 rounded-lg p-0.5 shrink-0">
@@ -1461,10 +1481,6 @@ const Escala = () => {
                         )}
                     </div>
                 </div>
-            </div>
-            
-            {/* Scrollable Container para as Semanas */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-12 space-y-8 relative">
                 
                 {/* Indicador de Modo Fixo */}
                 {visualizationMode === 'fixa' && (
@@ -1506,11 +1522,13 @@ const Escala = () => {
                                 <thead className="bg-white/60">
                                     <tr>
                                         {/* Z-Index 30 para os cabeçalhos ficarem acima de tudo */}
-                                        <th className="px-3 py-1.5 border-b border-white/60 w-40 min-w-[160px] max-w-[160px] sticky left-0 z-30 bg-white/60 shadow-[1px_0_0_0_rgba(226,232,240,1)] text-center">
-                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Hospital</span>
+                                        <th className="px-1.5 md:px-3 py-1.5 border-b border-white/60 w-[24px] min-w-[24px] max-w-[24px] md:w-40 md:min-w-[160px] md:max-w-[160px] sticky left-0 z-30 bg-white/60 shadow-[1px_0_0_0_rgba(226,232,240,1)] text-center">
+                                            <span className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-tight md:tracking-widest hidden md:inline">Hospital</span>
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase [writing-mode:vertical-rl] rotate-180 md:hidden mx-auto h-16 inline-flex justify-center items-center">Hosp</span>
                                         </th>
-                                        <th className="px-3 py-1.5 border-b border-white/60 w-36 min-w-[144px] max-w-[144px] sticky left-40 z-30 bg-white/60 shadow-[1px_0_0_0_rgba(226,232,240,1),_4px_0_12px_-5px_rgba(0,0,0,0.1)] border-r border-white/60 text-center">
-                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tipo</span>
+                                        <th className="px-1 md:px-3 py-1.5 border-b border-white/60 w-[36px] min-w-[36px] max-w-[36px] md:w-36 md:min-w-[144px] md:max-w-[144px] sticky left-[24px] md:left-[160px] z-30 bg-white/60 shadow-[1px_0_0_0_rgba(226,232,240,1),_4px_0_12px_-5px_rgba(0,0,0,0.1)] border-r border-white/60 text-center">
+                                            <span className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-tight md:tracking-widest hidden md:inline">Tipo</span>
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase md:hidden block">Tipo</span>
                                         </th>
                                         {week.days.map((day, idx) => (
                                             <th key={idx} className={`px-2 py-1.5 border-b border-white/60 min-w-[160px] border-r border-slate-200/60 last:border-r-0 ${day.isWeekend ? 'bg-white/5' : 'bg-white/5'}`}>
@@ -1545,6 +1563,24 @@ const Escala = () => {
                                 <tbody>
                                     {hospitais
                                         .filter(h => selectedHospital === null || h.id === selectedHospital)
+                                        .map(h => {
+                                            if (viewMode !== 'my_scale') {
+                                                return { ...h, renderSectors: h.sectors.map((s, i) => ({ sector: s, originalIdx: i })) };
+                                            }
+                                            // Se for "Minhas", filtra apenas os setores onde o médico tem plantão
+                                            const renderSectors = h.sectors.map((s, i) => ({ sector: s, originalIdx: i })).filter(info => {
+                                                return week.days.some((day, dIdx) => {
+                                                    const slotIdPrefix = visualizationMode === 'fixa' ? 'FIXED' : activeMonth;
+                                                    const dayIndex = day.originalIndex !== undefined ? day.originalIndex : dIdx;
+                                                    const slotId = `${slotIdPrefix}-${week.id}-${h.id}-${info.originalIdx}-${dayIndex}`;
+                                                    const assignedData = assignments[slotId];
+                                                    const assignedDoctor = typeof assignedData === 'string' ? assignedData : assignedData?.doctorName;
+                                                    return assignedDoctor && selectedDoctor && assignedDoctor === selectedDoctor;
+                                                });
+                                            });
+                                            return { ...h, renderSectors };
+                                        })
+                                        .filter(h => h.renderSectors && h.renderSectors.length > 0)
                                         .map((hospital, hIdx) => {
                                         const c = hospital.color || 'slate';
                                         
@@ -1577,9 +1613,9 @@ const Escala = () => {
 
                                         return (
                                             <React.Fragment key={hospital.id}>
-                                                {hospital.sectors.map((sector, sIdx) => {
-                                                    const isFirstRow = sIdx === 0;
-                                                    const isLastRow = sIdx === hospital.sectors.length - 1;
+                                                {hospital.renderSectors.map(({ sector, originalIdx: sIdx }, renderIdx) => {
+                                                    const isFirstRow = renderIdx === 0;
+                                                    const isLastRow = renderIdx === hospital.renderSectors.length - 1;
                                                     const hospitalTopBorder = isFirstRow && hIdx !== 0 ? `border-t-2 ${theme.border}` : '';
                                                     const sectorBottomBorder = isLastRow ? `border-b ${theme.border}` : '';
                                                     
@@ -1587,21 +1623,23 @@ const Escala = () => {
                                                         <tr key={`${hospital.id}-${sIdx}`} className={`group transition-colors ${theme.bg} ${theme.hover}`}>
                                                             
                                                             {/* Coluna Unidade */}
-                                                            <td className={`px-3 py-1.5 sticky left-0 z-20 ${theme.bg} ${theme.hover} transition-colors ${hospitalTopBorder} ${sectorBottomBorder} shadow-[1px_0_0_0_rgba(226,232,240,1)] relative`}>
-                                                                {/* Indicador de cor do hospital na borda esquerda */}
-                                                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${theme.indicator}`} />
-                                                                
-                                                                {isFirstRow && (
-                                                                    <div className="flex items-center justify-center h-full absolute inset-0 left-2">
-                                                                        <span className={`text-xs font-black ${theme.textDark} tracking-normal text-center uppercase`}>{hospital.name}</span>
+                                                            {isFirstRow && (
+                                                                <td rowSpan={hospital.renderSectors.length} className={`p-0 md:px-3 md:py-1.5 sticky left-0 z-20 ${theme.bg} transition-colors ${hospitalTopBorder} border-b ${theme.border} shadow-[1px_0_0_0_rgba(226,232,240,1)] relative align-middle`}>
+                                                                    {/* Indicador de cor do hospital na borda esquerda */}
+                                                                    <div className={`absolute left-0 top-0 bottom-0 w-0.5 md:w-1.5 ${theme.indicator}`} />
+                                                                    
+                                                                    <div className="flex items-center justify-center h-full w-full py-1">
+                                                                        <span className={`hidden md:block text-xs font-black ${theme.textDark} tracking-normal text-center uppercase break-words`}>{hospital.name}</span>
+                                                                        <span className={`md:hidden text-[10px] leading-[1.1] font-black ${theme.textDark} tracking-widest text-center uppercase whitespace-nowrap [writing-mode:vertical-rl] rotate-180`}>{hospital.name}</span>
                                                                     </div>
-                                                                )}
-                                                            </td>
+                                                                </td>
+                                                            )}
                                                             
                                                             {/* Coluna Setor */}
-                                                            <td className={`px-3 py-1.5 sticky left-40 z-20 ${theme.bg} ${theme.hover} transition-colors border-r ${theme.border} shadow-[1px_0_0_0_rgba(226,232,240,1),_4px_0_12px_-5px_rgba(0,0,0,0.1)] ${hospitalTopBorder} ${sectorBottomBorder}`}>
-                                                                <div className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-white/60 border ${theme.border} shadow-sm ${theme.pillText}`}>
-                                                                    {sector}
+                                                            <td className={`px-1 md:px-3 py-1.5 sticky left-[24px] md:left-[160px] z-20 ${theme.bg} ${theme.hover} transition-colors border-r ${theme.border} shadow-[1px_0_0_0_rgba(226,232,240,1),_4px_0_12px_-5px_rgba(0,0,0,0.1)] ${hospitalTopBorder} ${sectorBottomBorder} align-middle`}>
+                                                                <div className={`inline-flex w-full h-full min-h-[30px] items-center justify-center px-0.5 md:px-1.5 py-0.5 rounded md:rounded-md text-[9px] leading-tight text-center font-bold uppercase tracking-tight md:tracking-wider md:bg-white/60 border-none md:border ${theme.border} md:shadow-sm ${theme.pillText}`}>
+                                                                    <span className="truncate whitespace-normal line-clamp-2 break-words hidden md:block">{sector}</span>
+                                                                    <span className="md:hidden text-[10px] font-black text-center truncate">{getMobileSectorName(sector)}</span>
                                                                 </div>
                                                             </td>
 
@@ -1965,7 +2003,17 @@ const Escala = () => {
                                         const updatedAssignments = { ...assignments, [activeSlot.id]: finalAssignment };
                                         setAssignments(updatedAssignments);
                                         saveAssignmentsToDB(updatedAssignments);
-                                        const logSaveMsg = `Plantão ${activeSlot.sectorName} (${activeSlot.date}) no ${activeSlot.hospitalName} salvo - Médico: ${draftAssignment.doctorName}`;
+                                        const details = [];
+                                        if (draftAssignment.subtitle) details.push(`Legenda: "${draftAssignment.subtitle}"`);
+                                        if (draftAssignment.appearance?.bold) details.push('Negrito');
+                                        if (draftAssignment.appearance?.color === 'red') details.push('Cor Vermelha');
+                                        if (draftAssignment.appearance?.verified) details.push('Verificado');
+                                        if (draftAssignment.appearance?.flagged) details.push('Sinalizado');
+                                        
+                                        let logSaveMsg = `Plantão ${activeSlot.sectorName} (${activeSlot.date}) no ${activeSlot.hospitalName} salvo - Médico: ${draftAssignment.doctorName}`;
+                                        if (details.length > 0) {
+                                            logSaveMsg += ` | Detalhes: ${details.join(', ')}`;
+                                        }
                                         logAction('escala_plantao_salvo', logSaveMsg);
                                         setActiveSlot(null);
                                     }

@@ -605,31 +605,37 @@ export default function Apa({ paciente }) {
             if (!formData.resp_parentesco) return toast.error("Obrigatório: Grau de Parentesco (paciente menor de idade).");
         }
 
-        if (!formData.sexo) return toast.error("O Sexo é obrigatório.");
-        if (!formData.peso) return toast.error("O Peso é obrigatório.");
-        if (!formData.altura) return toast.error("A Altura é obrigatória.");
-        if (!formData.procedimento) return toast.error("O Procedimento Cirúrgico é obrigatório.");
-        if (!formData.carater) return toast.error("O Caráter é obrigatório.");
+        if (!formData.pacienteInapto) {
+            if (!formData.sexo) return toast.error("O Sexo é obrigatório.");
+            if (!formData.peso) return toast.error("O Peso é obrigatório.");
+            if (!formData.altura) return toast.error("A Altura é obrigatória.");
+            if (!formData.procedimento) return toast.error("O Procedimento Cirúrgico é obrigatório.");
+            if (!formData.carater) return toast.error("O Caráter é obrigatório.");
 
-        // Validação de Alergias
-        if (!negaAlergia && alergias.filter(a => a.substancia && a.substancia.trim() !== '').length === 0) {
-            return toast.error("Obrigatório: Marque 'Nega alergias' ou descreva as substâncias.");
+            // Validação de Alergias
+            if (!negaAlergia && alergias.filter(a => a.substancia && a.substancia.trim() !== '').length === 0) {
+                return toast.error("Obrigatório: Marque 'Nega alergias' ou descreva as substâncias.");
+            }
+
+            // Validação de Medicamentos (Conduta)
+            const medsPreenchidos = medicamentos.filter(m => m.nome && m.nome.trim() !== '');
+            if (medsPreenchidos.some(m => !m.conduta || m.conduta.trim() === '')) {
+                return toast.error("Obrigatório: Defina a Conduta (Manter ou Suspender) para cada medicamento inserido em uso.");
+            }
+
+            // Validação de Novos Campos Obrigatórios
+            if (!mallampati) return toast.error("Obrigatório: Preencha a Avaliação da Via Aérea (Mallampati).");
+            if (!formData.va_dificil) return toast.error("Obrigatório: Informe se há previsão de Via Aérea Difícil.");
+            if (!formData.asa) return toast.error("Obrigatório: Selecione a Classificação ASA.");
+            if (!formData.plan_tecnica) return toast.error("Obrigatório: Selecione a Técnica Anestésica Prevista.");
+            if (!formData.plan_recusa_hemo) return toast.error("Obrigatório: Informe se há Protocolo de Recusa de Hemotransfusão.");
+            if (!formData.plan_destino) return toast.error("Obrigatório: Informe o Destino Pós-Op Previsto.");
+            if (!parecer) return toast.error("Obrigatório: Assinale o Parecer Anestésico final (Apto/Restrição/Inapto).");
+            
+            if ((parecer === 'Restricao' || parecer === 'Inapto') && !formData.parecer_obs?.trim()) {
+                return toast.error("Obrigatório: Justificativas/Recomendações finais são obrigatórias quando o parecer for APTO C/ RESTRIÇÕES ou INAPTO.");
+            }
         }
-
-        // Validação de Medicamentos (Conduta)
-        const medsPreenchidos = medicamentos.filter(m => m.nome && m.nome.trim() !== '');
-        if (medsPreenchidos.some(m => !m.conduta || m.conduta.trim() === '')) {
-            return toast.error("Obrigatório: Defina a Conduta (Manter ou Suspender) para cada medicamento inserido em uso.");
-        }
-
-        // Validação de Novos Campos Obrigatórios
-        if (!mallampati) return toast.error("Obrigatório: Preencha a Avaliação da Via Aérea (Mallampati).");
-        if (!formData.va_dificil) return toast.error("Obrigatório: Informe se há previsão de Via Aérea Difícil.");
-        if (!formData.asa) return toast.error("Obrigatório: Selecione a Classificação ASA.");
-        if (!formData.plan_tecnica) return toast.error("Obrigatório: Selecione a Técnica Anestésica Prevista.");
-        if (!formData.plan_recusa_hemo) return toast.error("Obrigatório: Informe se há Protocolo de Recusa de Hemotransfusão.");
-        if (!formData.plan_destino) return toast.error("Obrigatório: Informe o Destino Pós-Op Previsto.");
-        if (!parecer) return toast.error("Obrigatório: Assinale o Parecer Anestésico final (Apto/Restrição/Inapto).");
 
         setIsSaving(true);
 
@@ -1464,7 +1470,17 @@ Responda SOMENTE o bloco JSON.`;
                                                     {showPacientes && searchTerm && (
                                                         <div className="absolute z-10 w-full mt-1 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg shadow-xl max-h-48 overflow-auto">
                                                             {filteredPacientes.map(p => (
-                                                                <div key={p.id} onMouseDown={() => { setFormData(f => ({ ...f, nome: p.nome || '', cpf: p.cpf || '', dataNasc: p.dataNascimento || p.nascimento || '', sexo: p.sexo || '', peso: p.peso || '', altura: p.altura || '', telefone: p.telefone1 || p.telefone || '' })); setSearchTerm(p.nome); setShowPacientes(false); }} className="p-3 hover:bg-blue-500/20 cursor-pointer border-b border-slate-50">
+                                                                <div key={p.id} onMouseDown={() => { 
+                                                                    const formatAltura = (alt) => {
+                                                                        if (!alt) return '';
+                                                                        const val = parseFloat(alt.toString().replace(',', '.'));
+                                                                        if (isNaN(val)) return '';
+                                                                        return val < 3 ? Math.round(val * 100).toString() : val.toString();
+                                                                    };
+                                                                    setFormData(f => ({ ...f, nome: p.nome || '', cpf: p.cpf || '', dataNasc: p.dataNascimento || p.nascimento || '', sexo: p.sexo || '', peso: p.peso || '', altura: formatAltura(p.altura), telefone: p.telefone1 || p.telefone || '' })); 
+                                                                    setSearchTerm(p.nome); 
+                                                                    setShowPacientes(false); 
+                                                                }} className="p-3 hover:bg-blue-500/20 cursor-pointer border-b border-slate-50">
                                                                     <div className="font-semibold text-sm">{p.nome}</div><div className="text-xs text-slate-500">{p.cpf}</div>
                                                                 </div>
                                                             ))}

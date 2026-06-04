@@ -118,7 +118,11 @@ const Pacientes = () => {
                 fetchPacientes();
             } catch (error) {
                 console.error(error);
-                toast.error('Erro ao excluir.');
+                if (error.code === '23503') {
+                    toast.error('Este paciente não pode ser excluído pois possui registros vinculados (consultas, cirurgias, etc).');
+                } else {
+                    toast.error('Erro ao excluir.');
+                }
             }
         }
     };
@@ -138,8 +142,8 @@ const Pacientes = () => {
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Prontuário Eletrônico</p>
                     </div>
                     {hasPermission('Criar Pacientes') && (
-                        <button onClick={() => handleOpenModal()} className="bg-blue-600 hover:bg-blue-700 text-slate-800 px-4 py-2 rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 transition-all">
-                            <Plus size={16} /> Novo Paciente
+                        <button onClick={() => handleOpenModal()} className="px-4 py-2 text-xs font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-[0_4px_15px_rgba(79,70,229,0.4)] transition-all flex items-center gap-2">
+                            <Plus size={16} strokeWidth={3} /> Novo Paciente
                         </button>
                     )}
                 </div>

@@ -212,9 +212,8 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
         e.preventDefault();
 
         // Validação
-        if (!formData.nome.trim() || !formData.cpf.trim()) {
-            return toast.error("Nome e CPF são obrigatórios!");
-        }
+        if (!formData.nome.trim()) return toast.error("O Nome é obrigatório!");
+        if (!formData.sexo) return toast.error("O Sexo é obrigatório!");
 
         setSaving(true);
         try {
@@ -270,8 +269,8 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
         }
     };
 
-    const inputStyle = "w-full h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-900 drop-shadow-none placeholder:text-slate-500";
-    const labelStyle = "text-[11px] font-black text-slate-500 uppercase ml-1 mb-1 block tracking-wider";
+    const inputStyle = "w-full h-10 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-800 placeholder:text-slate-400";
+    const labelStyle = "text-[11px] font-bold text-slate-600 uppercase ml-1 mb-1.5 block tracking-wide";
 
     const handleVisualizarPdf = (apa) => {
         setApaParaImprimir(apa);
@@ -305,11 +304,9 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
             
             {/* 2. Container centralizador invisível aos cliques (pointer-events-none) */}
             <div className="fixed top-16 inset-x-0 bottom-0 z-[99999] flex items-center justify-center p-4 font-sans pointer-events-none print:hidden">
-                
-                {/* 3. A Caixa do Modal (pointer-events-auto restaura os cliques nela) */}
-                <div className="bg-white/60 rounded-2xl shadow-2xl backdrop-blur-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] pointer-events-auto">
+                <div className="bg-slate-50 rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] pointer-events-auto">
                 {/* Header Modal */}
-                <div className="px-6 py-4 flex justify-between items-start bg-white/60">
+                <div className="px-6 py-4 flex justify-between items-start bg-white border-b border-slate-200">
                     <div>
                         {editingId ? (
                             <>
@@ -317,7 +314,7 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                                     {formData.nome || 'Carregando...'}
                                 </h2>
                                 <div className="flex items-center gap-3 mt-1">
-                                    <span className="text-[11px] font-bold tracking-widest uppercase text-blue-600 bg-blue-100 px-2 py-0.5 rounded-md">Prontuário Eletrônico</span>
+                                    <span className="text-[11px] font-bold tracking-widest uppercase text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">Prontuário Eletrônico</span>
                                     {formData.cpf && <span className="text-[11px] font-bold text-slate-500 uppercase">CPF: {formData.cpf}</span>}
                                 </div>
                             </>
@@ -326,18 +323,17 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                                 <h2 className="text-lg font-black text-slate-900 drop-shadow-none uppercase tracking-wider">
                                     Novo Paciente
                                 </h2>
-                                <p className="text-[11px] font-bold tracking-widest uppercase text-blue-600">Ficha Demográfica</p>
                             </>
                         )}
                     </div>
-                    <button onClick={() => { setAbaAtiva('cadastro'); onClose(); }} className="p-2 text-slate-500 hover:bg-rose-500/20 hover:text-rose-500 rounded-xl transition-colors shrink-0">
+                    <button onClick={() => { setAbaAtiva('cadastro'); onClose(); }} className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 rounded-xl transition-colors shrink-0">
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Navegação de Abas */}
                 {editingId && (
-                    <div className="flex border-b border-white/60 px-6 bg-white/60 overflow-x-auto custom-scrollbar">
+                    <div className="flex border-b border-slate-200 px-6 bg-white overflow-x-auto custom-scrollbar">
                         <button type="button" onClick={() => setAbaAtiva('cadastro')} className={`px-4 py-3 text-xs font-bold uppercase transition-all border-b-2 whitespace-nowrap ${abaAtiva === 'cadastro' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>Dados Cadastrais</button>
                         <button type="button" onClick={() => setAbaAtiva('historico')} className={`px-4 py-3 text-xs font-bold uppercase transition-all border-b-2 whitespace-nowrap ${abaAtiva === 'historico' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>Histórico Cirúrgico</button>
                         <button type="button" onClick={() => setAbaAtiva('aih')} className={`px-4 py-3 text-xs font-bold uppercase transition-all border-b-2 whitespace-nowrap ${abaAtiva === 'aih' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>AIHs</button>
@@ -348,10 +344,10 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                 {/* ABA 1: DADOS CADASTRAIS */}
                 {abaAtiva === 'cadastro' && (
                     <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-6">
-                        {/* Bloco 1: Dados Pessoais */}
-                        <div className="bg-white/60 p-5 rounded-xl border border-white/40">
+                        {/* Bloco 1: Dados Principais */}
+                        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                             <h3 className="text-xs font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <User size={14} /> Dados Pessoais
+                                <User size={14} /> Dados Principais
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div className="md:col-span-2">
@@ -359,29 +355,17 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                                     <input type="text" name="nome" value={formData.nome} onChange={handleChange} className={inputStyle} placeholder="Nome do paciente" required disabled={!podeEditar} />
                                 </div>
                                 <div>
-                                    <label className={labelStyle}>CPF *</label>
-                                    <input type="text" name="cpf" value={formData.cpf} onChange={handleChange} className={inputStyle} placeholder="000.000.000-00" maxLength="14" required disabled={!podeEditar} />
-                                </div>
-                                <div>
-                                    <label className={labelStyle}>CNS</label>
-                                    <input type="text" name="cns" value={formData.cns} onChange={handleChange} className={inputStyle} placeholder="000 0000 0000 0000" maxLength="18" disabled={!podeEditar} />
-                                </div>
-                                <div>
                                     <label className={labelStyle}>Data Nascimento</label>
                                     <input type="date" name="dataNascimento" value={formData.dataNascimento} onChange={handleChange} className={inputStyle} disabled={!podeEditar} />
                                 </div>
                                 <div>
-                                    <label className={labelStyle}>Sexo</label>
-                                    <select name="sexo" value={formData.sexo} onChange={handleChange} className={`${inputStyle} uppercase`} disabled={!podeEditar}>
+                                    <label className={labelStyle}>Sexo *</label>
+                                    <select name="sexo" value={formData.sexo} onChange={handleChange} className={`${inputStyle} uppercase`} required disabled={!podeEditar}>
                                         <option value="">Selecione...</option>
                                         <option value="Masculino">Masculino</option>
                                         <option value="Feminino">Feminino</option>
                                         <option value="Outro">Outro</option>
                                     </select>
-                                </div>
-                                <div className="md:col-span-2">
-                                    <label className={labelStyle}>Nome da Mãe</label>
-                                    <input type="text" name="nomeMae" value={formData.nomeMae} onChange={handleChange} className={inputStyle} placeholder="Nome completo da mãe" disabled={!podeEditar} />
                                 </div>
                                 <div>
                                     <label className={labelStyle}>Peso (kg)</label>
@@ -394,12 +378,24 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                             </div>
                         </div>
 
-                        {/* Bloco 2: Contato e Endereço */}
-                        <div className="bg-white/60 p-5 rounded-xl border border-white/40">
-                            <h3 className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <MapPin size={14} /> Contato e Endereço
+                        {/* Bloco 2: Dados Complementares */}
+                        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <FileText size={14} /> Dados Complementares
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label className={labelStyle}>CPF</label>
+                                    <input type="text" name="cpf" value={formData.cpf} onChange={handleChange} className={inputStyle} placeholder="000.000.000-00" maxLength="14" disabled={!podeEditar} />
+                                </div>
+                                <div>
+                                    <label className={labelStyle}>CNS</label>
+                                    <input type="text" name="cns" value={formData.cns} onChange={handleChange} className={inputStyle} placeholder="000 0000 0000 0000" maxLength="18" disabled={!podeEditar} />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className={labelStyle}>Nome da Mãe</label>
+                                    <input type="text" name="nomeMae" value={formData.nomeMae} onChange={handleChange} className={inputStyle} placeholder="Nome completo da mãe" disabled={!podeEditar} />
+                                </div>
                                 <div>
                                     <label className={labelStyle}>Telefone</label>
                                     <input type="text" name="telefone" value={formData.telefone} onChange={handleChange} className={inputStyle} placeholder="(00) 00000-0000" maxLength="15" disabled={!podeEditar} />
@@ -436,8 +432,8 @@ export const PacienteFormModal = ({ isOpen, onClose, onSuccess, paciente, onRelo
                         </div>
 
                         {/* Footer Moda/Ações */}
-                        <div className="pt-4 flex justify-end gap-3 border-t border-white/40">
-                            <button type="button" onClick={onClose} className="h-10 px-6 text-slate-500 font-bold text-xs uppercase hover:bg-white/70 rounded-lg transition-colors">
+                        <div className="pt-4 flex justify-end gap-3 border-t border-slate-200">
+                            <button type="button" onClick={onClose} className="h-10 px-6 text-slate-500 font-bold text-xs uppercase hover:bg-slate-100 rounded-lg transition-colors">
                                 {podeEditar ? 'Cancelar' : 'Fechar'}
                             </button>
                             {podeEditar && (
