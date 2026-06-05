@@ -8,14 +8,15 @@ import {
     Stethoscope, CheckCircle2, AlertCircle, Calendar as CalendarIcon,
     ChevronLeft, ChevronRight, Settings,
     XCircle, CalendarClock, X, Save, Loader2,
-    UserSquare2, SlidersHorizontal, UserPlus, CalendarCheck, ThumbsUp, ThumbsDown, UserX, Ban, RefreshCw, UserCheck, Pencil, Paperclip
+    UserSquare2, SlidersHorizontal, UserPlus, CalendarCheck, ThumbsUp, ThumbsDown, UserX, Ban, RefreshCw, UserCheck, Pencil, Paperclip, FileText
 } from 'lucide-react';
 import { maskCPF, maskTelefone } from '../utils/masks';
 import { PacienteFormModal } from '../components/PacienteFormModal';
+import { ImportAgendaModal } from '../components/ImportAgendaModal';
 import html2pdf from 'html2pdf.js';
 import UnitPrompt from '../components/UnitPrompt';
 
-const DIAS_NOME = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+const DIAS_NOME = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
 const STATUS_COLORS = {
     'Agendado': { bg: 'bg-blue-500/20', border: 'border-blue-400', text: 'text-blue-800' },
@@ -50,7 +51,7 @@ const getDoctorColorSet = (name) => {
 };
 
 // --- CONFIGURAÇÃO DA GRADE MATRIZ ---
-const ROW_HEIGHT = 240;
+const ROW_HEIGHT = 360;
 const PIXELS_PER_MINUTE = ROW_HEIGHT / 60;
 const DEFAULT_INTERVAL = 15;
 
@@ -157,6 +158,7 @@ const Agenda = () => {
     const [buscandoPacientes, setBuscandoPacientes] = useState(false);
 
     const [isNovoPacienteModalOpen, setIsNovoPacienteModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [novoPacienteSaving, setNovoPacienteSaving] = useState(false);
     const [novoPacienteForm, setNovoPacienteForm] = useState({ nome: '', cpf: '', telefone: '', dataNascimento: '', municipio: '' });
     const [checkinData, setCheckinData] = useState(null);
@@ -186,7 +188,7 @@ const Agenda = () => {
         d.setDate(diff);
 
         const week = [];
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 7; i++) {
             week.push(new Date(d));
             d.setDate(d.getDate() + 1);
         }
@@ -214,7 +216,7 @@ const Agenda = () => {
         setLoadingData(true);
         try {
             const startDate = paramDateStr(weekDays[0]);
-            const endDate = paramDateStr(weekDays[4]);
+            const endDate = paramDateStr(weekDays[6]);
 
             const { data, error } = await supabase
                 .from('consultas')
@@ -474,7 +476,7 @@ const Agenda = () => {
                 const cur = dayAps[i];
                 const next = dayAps[i + 1];
                 if (cur.top + cur.height > next.top) {
-                    cur.height = Math.max(next.top - cur.top, 18);
+                    cur.height = Math.max(next.top - cur.top, 24);
                 }
             }
         });
@@ -660,6 +662,9 @@ const Agenda = () => {
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
                         <input type="text" placeholder="Buscar Paciente..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-8 pl-8 pr-3 bg-white/70 border-none rounded text-xs outline-none focus:ring-1 focus:ring-blue-500 transition-all font-medium" />
                     </div>
+                    <button onClick={() => setIsImportModalOpen(true)} className="h-8 px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl text-slate-600 hover:text-emerald-600 rounded text-[11px] font-bold uppercase transition-all flex items-center gap-1.5 shadow-sm" title="Importar grade de consultas (PDF/Texto)">
+                        <FileText size={14} /> Importar
+                    </button>
                     <button onClick={() => setIsConfigModalOpen(true)} className="h-8 px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl text-slate-600 hover:text-blue-600 rounded text-[11px] font-bold uppercase transition-all flex items-center gap-1.5 shadow-sm" title="Personalizar visualização da grade neste dispositivo">
                         <Settings size={14} /> Ajustar Grade
                     </button>
@@ -673,7 +678,7 @@ const Agenda = () => {
                 <div className="flex items-center gap-2">
                     <button onClick={prevWeek} className="p-1 hover:bg-white/80 text-slate-600 rounded"><ChevronLeft size={16} /></button>
                     <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide px-2 min-w-[140px] text-center">
-                        {weekDays[0].getDate()}/{weekDays[0].getMonth() + 1} - {weekDays[4].getDate()}/{weekDays[4].getMonth() + 1}
+                        {weekDays[0].getDate()}/{weekDays[0].getMonth() + 1} - {weekDays[6].getDate()}/{weekDays[6].getMonth() + 1}
                     </div>
                     <button onClick={nextWeek} className="p-1 hover:bg-white/80 text-slate-600 rounded"><ChevronRight size={16} /></button>
                     <button onClick={() => setReferenceDate(new Date(new Date().setHours(12, 0, 0, 0)))} className="ml-2 px-3 py-1 bg-white/60 border border-white/80 text-[11px] font-bold text-slate-600 uppercase rounded hover:bg-white/70 hover:text-slate-900 drop-shadow-none transition shadow-sm">Hoje</button>
@@ -688,31 +693,31 @@ const Agenda = () => {
             </div>
 
             <div className="flex-1 overflow-auto bg-white/70 relative" ref={scrollRef}>
-                <div className="min-w-[1100px] flex flex-col relative pb-20">
+                <div className="min-w-[2400px] flex flex-col relative pb-20">
 
-                    <div className="flex sticky top-0 z-50 bg-white/60 border-b border-white/80 shadow-sm">
-                        <div className="w-16 shrink-0 border-r border-white/60 bg-white/60"></div>
+                    <div className="flex sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm backdrop-blur-md">
+                        <div className="w-16 shrink-0 border-r border-slate-200 bg-slate-50"></div>
                         {weekDays.map((dayObj, i) => {
                             const isToday = paramDateStr(dayObj) === hojePuro;
                             return (
-                                <div key={i} className={`flex-1 min-w-0 border-r border-white/60 h-10 flex flex-col items-center justify-center relative ${isToday ? 'bg-[#fffae6]' : 'bg-white/5'}`}>
-                                    <span className={`text-xs font-bold uppercase tracking-wider ${isToday ? 'text-blue-600' : 'text-slate-700'}`}>
+                                <div key={i} className={`flex-1 min-w-0 border-r border-slate-200 h-12 flex flex-col items-center justify-center relative ${isToday ? 'bg-blue-50/70' : 'bg-slate-50'} hover:bg-slate-100/50 transition-colors`}>
+                                    <span className={`text-xs font-black uppercase tracking-wider ${isToday ? 'text-blue-700' : 'text-slate-700'}`}>
                                         {DIAS_NOME[i]} {dayObj.getDate().toString().padStart(2, '0')}/{String(dayObj.getMonth() + 1).padStart(2, '0')}
                                     </span>
-                                    {isToday && <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
+                                    {isToday && <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600 rounded-b"></div>}
                                 </div>
                             );
                         })}
                     </div>
 
-                    <div className="flex relative bg-white/60 mt-10" style={{ height: `${(END_HOUR - START_HOUR + 1) * ROW_HEIGHT}px` }}>
+                    <div className="flex relative bg-white mt-10 shadow-sm border border-slate-200 rounded-sm mx-1" style={{ height: `${(END_HOUR - START_HOUR + 1) * ROW_HEIGHT}px` }}>
                         {loadingData && (
-                            <div className="absolute inset-0 z-50 bg-white/60 flex items-center justify-center">
+                            <div className="absolute inset-0 z-50 bg-white/80 flex items-center justify-center backdrop-blur-sm">
                                 <Loader2 size={30} className="animate-spin text-blue-500" />
                             </div>
                         )}
 
-                        <div className="w-16 shrink-0 border-r border-white/60 bg-white/60 relative z-40">
+                        <div className="w-16 shrink-0 border-r border-slate-200 bg-slate-50 relative z-40 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
                             {Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, idx) => {
                                 const h = START_HOUR + idx;
                                 const steps = 60 / gradeConfig.intervalo;
@@ -742,7 +747,7 @@ const Agenda = () => {
                             return (
                                 <div
                                     key={dataLocalStr}
-                                    className={`flex-1 min-w-0 border-r border-white/60 relative cursor-pointer ${isToday ? 'bg-[#fffae6]/30' : 'bg-white/5'}`}
+                                    className={`flex-1 min-w-0 border-r border-slate-200 relative cursor-pointer ${isToday ? 'bg-blue-50/20' : 'bg-white'} hover:bg-slate-50/40 transition-colors`}
                                     onClick={(e) => handleAreaClick(e, dataLocalStr)}
                                 >
                                     <div className="absolute inset-0 z-0 pointer-events-none day-column">
@@ -750,9 +755,9 @@ const Agenda = () => {
                                             const steps = 60 / gradeConfig.intervalo;
                                             const stepPx = ROW_HEIGHT / steps;
                                             return (
-                                                <div key={idx} className="w-full border-b border-slate-200/80 grid-line flex flex-col" style={{ height: `${ROW_HEIGHT}px` }}>
+                                                <div key={idx} className="w-full border-b border-slate-300 grid-line flex flex-col" style={{ height: `${ROW_HEIGHT}px` }}>
                                                     {Array.from({ length: steps }).map((_, stepIdx) => (
-                                                        <div key={stepIdx} className={`w-full ${stepIdx < steps - 1 ? 'border-b border-dashed border-slate-200/60' : ''}`} style={{ height: `${stepPx}px` }}></div>
+                                                        <div key={stepIdx} className={`w-full ${stepIdx < steps - 1 ? 'border-b border-dashed border-slate-200' : ''}`} style={{ height: `${stepPx}px` }}></div>
                                                     ))}
                                                 </div>
                                             );
@@ -1277,6 +1282,14 @@ const Agenda = () => {
                     }
                     setCheckinData(null);
                 }}
+            />
+
+            <ImportAgendaModal 
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onSuccess={() => { fetchConsultas(); }}
+                medicosDisponiveis={medicosDisponiveis}
+                unidadesDisponiveis={unidades}
             />
         </div>
     );
