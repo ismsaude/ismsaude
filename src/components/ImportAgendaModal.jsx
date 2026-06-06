@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { supabase } from '../services/supabase';
-import { extractTextFromPdf, parsePortoFelizCELK } from '../utils/agendaParsers';
+import { extractTextFromPdf, parsePortoFelizCELK, parseAmeSorocaba, parseSantaLucinda } from '../utils/agendaParsers';
 import { logAction } from '../utils/logger';
 import toast from 'react-hot-toast';
 import { X, UploadCloud, FileText, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
@@ -12,6 +12,7 @@ export const ImportAgendaModal = ({ isOpen, onClose, onSuccess, medicosDisponive
     const [file, setFile] = useState(null);
     const [rawText, setRawText] = useState('');
     const [modoEntrada, setModoEntrada] = useState('pdf'); // 'pdf' ou 'texto'
+    const [medicoSantaLucinda, setMedicoSantaLucinda] = useState('');
     
     const [consultasPreview, setConsultasPreview] = useState([]);
     const [isParsing, setIsParsing] = useState(false);
@@ -29,6 +30,7 @@ export const ImportAgendaModal = ({ isOpen, onClose, onSuccess, medicosDisponive
         setIsParsing(false);
         setIsImporting(false);
         setImportProgress(0);
+        setMedicoSantaLucinda('');
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
@@ -41,6 +43,10 @@ export const ImportAgendaModal = ({ isOpen, onClose, onSuccess, medicosDisponive
         let results = [];
         if (modelo === 'porto-feliz-celk') {
             results = parsePortoFelizCELK(text);
+        } else if (modelo === 'ame-sorocaba') {
+            results = parseAmeSorocaba(text);
+        } else if (modelo === 'santa-lucinda') {
+            results = parseSantaLucinda(text, medicoSantaLucinda);
         }
         
         if (results.length > 0) {
@@ -53,6 +59,12 @@ export const ImportAgendaModal = ({ isOpen, onClose, onSuccess, medicosDisponive
     };
 
     const handleFileChange = async (e) => {
+        if (modelo === 'santa-lucinda' && !medicoSantaLucinda) {
+            toast.error("Selecione o Médico Atendente antes de anexar o arquivo.");
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
         const selectedFile = e.target.files[0];
         if (!selectedFile) return;
 
@@ -65,8 +77,18 @@ export const ImportAgendaModal = ({ isOpen, onClose, onSuccess, medicosDisponive
         setIsParsing(true);
         
         try {
-            const extractedText = await extractTextFromPdf(selectedFile);
-            processTextAndPreview(extractedText);
+            const pdfText = await extractTextFromPdf(selectedFile);
+            
+            if (!pdfText || pdfText.trim() === '') {
+                toast.error("O arquivo PDF está vazio ou é apenas uma IMAGEM. O sistema não lê fotos dentro de PDFs.", { duration: 6000 });
+                toast.error("Por favor, copie o texto da imagem e cole na aba 'Colar Texto Manual'.", { duration: 7000 });
+                setIsParsing(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+
+            setRawText(pdfText); // Opcional: mostrar na aba de texto o que foi extraído
+            processTextAndPreview(pdfText);
         } catch (error) {
             console.error("Erro ao ler PDF:", error);
             toast.error("Falha ao ler o PDF. Tente colar o texto na aba 'Colar Texto'.");
@@ -76,7 +98,15 @@ export const ImportAgendaModal = ({ isOpen, onClose, onSuccess, medicosDisponive
     };
 
     const handleTextProcess = () => {
-        if (!rawText.trim()) return toast.error("Cole o texto do relatório antes de processar.");
+        if (modelo === 'santa-lucinda' && !medicoSantaLucinda) {
+            toast.error("Selecione o Médico Atendente antes de processar.");
+            return;
+        }
+
+        if (!rawText.trim()) {
+            toast.error("Cole o texto antes de processar.");
+            return;
+        }
         processTextAndPreview(rawText);
     };
 
@@ -178,12 +208,21 @@ export const ImportAgendaModal = ({ isOpen, onClose, onSuccess, medicosDisponive
                     }
 
                     let unidadeFormatada = unidadeAtual;
-                    const matchUnidade = unidadesDisponiveis.find(u => u.toUpperCase().includes('PORTO FELIZ') && u.toUpperCase().includes('SANTA CASA'));
-                    if (matchUnidade) {
-                        unidadeFormatada = matchUnidade;
-                    } else {
-                        const fallbackMatch = unidadesDisponiveis.find(u => u.toUpperCase().includes('PORTO FELIZ'));
-                        if (fallbackMatch) unidadeFormatada = fallbackMatch;
+                    
+                    if (modelo === 'porto-feliz-celk') {
+                        const matchUnidade = unidadesDisponiveis.find(u => u.toUpperCase().includes('PORTO FELIZ') && u.toUpperCase().includes('SANTA CASA'));
+                        if (matchUnidade) {
+                            unidadeFormatada = matchUnidade;
+                        } else {
+                            const fallbackMatch = unidadesDisponiveis.find(u => u.toUpperCase().includes('PORTO FELIZ'));
+                            if (fallbackMatch) unidadeFormatada = fallbackMatch;
+                        }
+                    } else if (modelo === 'ame-sorocaba') {
+                        const matchUnidade = unidadesDisponiveis.find(u => u.toUpperCase().includes('AME'));
+                        if (matchUnidade) unidadeFormatada = matchUnidade;
+                    } else if (modelo === 'santa-lucinda') {
+                        const matchUnidade = unidadesDisponiveis.find(u => u.toUpperCase().includes('SANTA LUCINDA'));
+                        if (matchUnidade) unidadeFormatada = matchUnidade;
                     }
 
                     // Criar a consulta
@@ -269,7 +308,27 @@ export const ImportAgendaModal = ({ isOpen, onClose, onSuccess, medicosDisponive
                                     disabled={isImporting}
                                 >
                                     <option value="porto-feliz-celk">Porto Feliz - CELK (PDF de Agendamento)</option>
-                                    <option value="ame" disabled>AME (Em breve)</option>
+                                    <option value="ame-sorocaba">AME Sorocaba (PDF Interconsulta)</option>
+                                    <option value="santa-lucinda">Santa Lucinda (Print de Tela)</option>
+                                </select>
+                            </div>
+                        )}
+
+                        {consultasPreview.length === 0 && modelo === 'santa-lucinda' && (
+                            <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                                <label className="text-[11px] font-bold text-orange-800 uppercase mb-2 block tracking-wide">
+                                    Selecione o Médico Atendente
+                                </label>
+                                <select 
+                                    value={medicoSantaLucinda} 
+                                    onChange={(e) => setMedicoSantaLucinda(e.target.value)}
+                                    className="w-full h-10 px-3 py-2 bg-white border border-orange-300 rounded-lg text-sm font-semibold text-slate-800 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                                    disabled={isImporting}
+                                >
+                                    <option value="">Selecione o Médico...</option>
+                                    {medicosDisponiveis.map(m => (
+                                        <option key={m} value={m}>{m}</option>
+                                    ))}
                                 </select>
                             </div>
                         )}

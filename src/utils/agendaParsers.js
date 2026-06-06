@@ -154,3 +154,144 @@ export const parsePortoFelizCELK = (text) => {
 
     return consultas;
 };
+
+export const parseAmeSorocaba = (text) => {
+    const consultas = [];
+    
+    // Pegar o profissional
+    let medico = '';
+    const profMatch = text.match(/PROFISSIONAL:\s*([A-ZÀ-ÖØ-öø-ÿ\s]+?)(?=\s+DATA AGENDA|\n|$)/i);
+    if (profMatch) {
+        medico = profMatch[1].trim();
+    }
+    
+    // Pegar a data da agenda
+    let dataAgendamento = null;
+    const dataMatch = text.match(/DATA AGENDA:\s*(\d{2})-(\d{2})-(\d{4})/i) || text.match(/DATA AGENDA:\s*(\d{2})\/(\d{2})\/(\d{4})/i);
+    if (dataMatch) {
+        dataAgendamento = `${dataMatch[3]}-${dataMatch[2]}-${dataMatch[1]}`;
+    }
+    
+    // Procurar por horários e pacientes
+    // Matcher para: 13:00 25303926 JOVELINA SILVA DE OLIVEIRA F 72 anos...
+    const matches = Array.from(text.matchAll(/(\d{2}:\d{2})\s+(\d{5,12})\s+([A-ZÀ-ÖØ-öø-ÿ\s]+?)\s+(?=[FM]\b|\d+\s*anos)/g));
+    
+    for (let i = 0; i < matches.length; i++) {
+        const horario = matches[i][1];
+        const paciente_nome = matches[i][3].trim();
+        
+        const startIdx = matches[i].index;
+        const endIdx = i + 1 < matches.length ? matches[i+1].index : text.length;
+        const bloco = text.substring(startIdx, endIdx);
+        
+        let telefone = '';
+        const telMatch = bloco.match(/(?:\(\d{2}\)\s*\d{4,5}-?\d{4})/);
+        if (telMatch) {
+            telefone = telMatch[0].trim();
+        }
+        
+        consultas.push({
+            paciente_nome,
+            paciente_telefone: telefone,
+            paciente_nascimento: null, 
+            data_agendamento: dataAgendamento,
+            horario,
+            tipo: 'Consulta',
+            medico
+        });
+    }
+
+    // BURLANDO O SISTEMA: Espalhar as consultas para garantir intervalo mínimo de 10 minutos
+    const porData = {};
+    consultas.forEach(c => {
+        if (!c.data_agendamento) return;
+        if (!porData[c.data_agendamento]) porData[c.data_agendamento] = [];
+        porData[c.data_agendamento].push(c);
+    });
+
+    Object.keys(porData).forEach(data => {
+        porData[data].sort((a, b) => a.horario.localeCompare(b.horario));
+        let lastTimeMin = -1;
+        porData[data].forEach(c => {
+            const [h, m] = c.horario.split(':').map(Number);
+            let currentMin = h * 60 + m;
+            if (lastTimeMin !== -1 && currentMin < lastTimeMin + 10) {
+                currentMin = lastTimeMin + 10;
+                const newH = Math.floor(currentMin / 60).toString().padStart(2, '0');
+                const newM = (currentMin % 60).toString().padStart(2, '0');
+                c.horario = `${newH}:${newM}`;
+            }
+            lastTimeMin = currentMin;
+        });
+    });
+
+    return consultas;
+};
+
+export const parseSantaLucinda = (text, medicoStr = '') => {
+    const consultas = [];
+    
+    // Pegar a data no texto: "quarta-feira, 27 de maio de 2026"
+    let dataAgendamento = null;
+    const meses = {
+        'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
+        'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
+        'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12'
+    };
+    
+    const dataMatch = text.match(/(\d{1,2})\s+de\s+([a-zç]+)\s+de\s+(\d{4})/i);
+    if (dataMatch) {
+        const dia = dataMatch[1].padStart(2, '0');
+        const mesStr = dataMatch[2].toLowerCase();
+        const ano = dataMatch[3];
+        const mes = meses[mesStr] || '01';
+        dataAgendamento = `${ano}-${mes}-${dia}`;
+    }
+    
+    // Regex para pegar os agendamentos:
+    // 08:00 CONSULTA IZAIAS DOS REIS CARDOSO
+    // Se não tiver quebra de linha (tudo na mesma linha), ele para no próximo número.
+    const regex = /(\d{2}:\d{2})\s+(?:CONSULTA\s+)?([A-ZÀ-ÖØ-öø-ÿ\s\.]+)/gi;
+    
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+        const horario = match[1];
+        let paciente_nome = match[2].trim();
+        
+        // Nomes cortados por "..." são comuns no print, guardamos como estão
+        consultas.push({
+            paciente_nome,
+            paciente_telefone: '', 
+            paciente_nascimento: null, 
+            data_agendamento: dataAgendamento,
+            horario,
+            tipo: 'Consulta',
+            medico: medicoStr
+        });
+    }
+
+    const porData = {};
+    consultas.forEach(c => {
+        if (!c.data_agendamento) return;
+        if (!porData[c.data_agendamento]) porData[c.data_agendamento] = [];
+        porData[c.data_agendamento].push(c);
+    });
+
+    Object.keys(porData).forEach(data => {
+        porData[data].sort((a, b) => a.horario.localeCompare(b.horario));
+        let lastTimeMin = -1;
+        porData[data].forEach(c => {
+            const [h, m] = c.horario.split(':').map(Number);
+            let currentMin = h * 60 + m;
+            if (lastTimeMin !== -1 && currentMin < lastTimeMin + 10) {
+                currentMin = lastTimeMin + 10;
+                const newH = Math.floor(currentMin / 60).toString().padStart(2, '0');
+                const newM = (currentMin % 60).toString().padStart(2, '0');
+                c.horario = `${newH}:${newM}`;
+            }
+            lastTimeMin = currentMin;
+        });
+    });
+
+    return consultas;
+};
