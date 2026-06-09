@@ -9,11 +9,12 @@ import {
     Activity, CalendarDays, CalendarRange, FileText, Stethoscope,
     Bed, FileSignature, ShieldCheck, CheckSquare, Building2, User,
     Lock, X, Save, Syringe, ChevronDown, Clock, UploadCloud, FileSpreadsheet, Palette, Menu,
-    DollarSign, ArrowRightLeft
+    DollarSign, ArrowRightLeft, Bell
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import toast from 'react-hot-toast';
 import { formatNameStandard } from '../utils/nameFormatter';
+import { CompromissosModal } from '../pages/CompromissosModal';
 
 export const Topbar = () => {
     const { currentUser, logout } = useAuth();
@@ -30,15 +31,71 @@ export const Topbar = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loadingPassword, setLoadingPassword] = useState(false);
 
+    // Notificações de Agenda
+    const [notifications, setNotifications] = useState([]);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [openAgenda, setOpenAgenda] = useState(false);
+    const notifRef = useRef(null);
+
     const isActive = (path) => location.pathname === path;
 
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setActiveDropdown(null);
+            if (notifRef.current && !notifRef.current.contains(event.target)) setShowNotifications(false);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // Lógica de buscar notificações
+    const fetchNotifications = async () => {
+        if (!currentUser) return;
+        try {
+            const todayStr = new Date().toISOString().split('T')[0];
+            let query = supabase
+                .from('agenda_pessoal')
+                .select('*, agenda_categorias(nome, cor)')
+                .gte('data_agendada', todayStr)
+                .eq('concluido', false)
+                .not('alerta_minutos', 'is', null)
+                .not('hora_agendada', 'is', null);
+
+            const isDoctorOrIuri = currentUser?.role === 'Médico' || (currentUser?.name && currentUser.name.toLowerCase().includes('iuri'));
+            if (isDoctorOrIuri) {
+                query = query.or(`user_id.eq.${currentUser?.id},autor_id.eq.${currentUser?.id}`);
+            }
+
+            const { data, error } = await query;
+            if (error || !data) return;
+
+            const activeNotifs = [];
+            const now = new Date();
+            data.forEach(task => {
+                const [hours, minutes] = task.hora_agendada.split(':');
+                const eventTime = new Date(task.data_agendada);
+                eventTime.setHours(parseInt(hours), parseInt(minutes), 0);
+                
+                const alertTime = new Date(eventTime.getTime() - task.alerta_minutos * 60000);
+                const limitTime = new Date(eventTime.getTime() + 2 * 60 * 60000); // Fica ativo até 2h depois
+                
+                if (now >= alertTime && now <= limitTime) {
+                    activeNotifs.push({ ...task, eventTime });
+                }
+            });
+            
+            activeNotifs.sort((a, b) => a.eventTime - b.eventTime);
+            setNotifications(activeNotifs);
+        } catch (e) {
+            console.error("Erro buscar notificações", e);
+        }
+    };
+
+    useEffect(() => {
+        fetchNotifications();
+        const interval = setInterval(fetchNotifications, 60000);
+        return () => clearInterval(interval);
+    }, [currentUser]);
 
     const handleLogout = async () => {
         try { await logout(); navigate('/login'); }
@@ -120,7 +177,8 @@ export const Topbar = () => {
                         { path: '/configuracoes?tab=motivos_suspensao', label: 'Motivos de Suspensão' },
                         { path: '/configuracoes?tab=prioridades', label: 'Prioridades' },
                         { path: '/configuracoes?tab=clinicas', label: 'Clínicas AIH' },
-                        { path: '/configuracoes?tab=caraterInternacao', label: 'Caráter AIH' }
+                        { path: '/configuracoes?tab=caraterInternacao', label: 'Caráter AIH' },
+                        { path: '/configuracoes?tab=categorias_agenda', label: 'Equipes/Categorias' }
                     ]
                 },
                 { path: '/configuracoes?tab=usuarios', icon: Users, label: 'Gestão de Acessos', show: hasPermission('Acesso Total (Admin)') || hasPermission('Acessar Usuarios') },
@@ -164,6 +222,54 @@ export const Topbar = () => {
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                     <UnitSelector />
                     <div className="h-5 w-px hidden sm:block mx-1 bg-white/80"></div>
+                    
+                    {/* BELL ICON NOTIFICATIONS */}
+                    <div className="relative" ref={notifRef}>
+                        <button 
+                            title="Notificações" 
+                            onClick={() => setShowNotifications(!showNotifications)} 
+                            className="p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent text-slate-800 hover:bg-white/70 hover:border-white/30 relative"
+                        >
+                            <Bell size={18} className={notifications.length > 0 ? "text-red-500 animate-pulse" : "text-slate-600"}/>
+                            {notifications.length > 0 && (
+                                <span className="absolute top-1 right-1 flex items-center justify-center w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full border border-white">
+                                    {notifications.length > 9 ? '9+' : notifications.length}
+                                </span>
+                            )}
+                        </button>
+
+                        {/* DROPDOWN DE NOTIFICAÇÕES */}
+                        {showNotifications && (
+                            <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+                                    <span className="text-sm font-bold text-slate-800">Lembretes ({notifications.length})</span>
+                                    <button onClick={() => { setShowNotifications(false); setOpenAgenda(true); }} className="text-xs font-semibold text-blue-600 hover:text-blue-700">Abrir Agenda</button>
+                                </div>
+                                <div className="max-h-[300px] overflow-y-auto">
+                                    {notifications.length === 0 ? (
+                                        <div className="p-6 text-center text-sm text-slate-500">Nenhum lembrete no momento.</div>
+                                    ) : (
+                                        <div className="divide-y divide-slate-100">
+                                            {notifications.map(n => (
+                                                <div key={n.id} className="p-3 hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => { setShowNotifications(false); setOpenAgenda(true); }}>
+                                                    <div className="flex gap-2">
+                                                        <div className={`w-2 h-2 mt-1.5 rounded-full shrink-0 ${n.agenda_categorias?.cor || 'bg-blue-500'}`}></div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-[13px] font-semibold text-slate-800 leading-tight">{n.texto}</p>
+                                                            <p className="text-[11px] font-medium text-slate-500 mt-0.5">
+                                                                Hoje às {n.hora_agendada.substring(0,5)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <button title="Meu Perfil" onClick={() => setIsProfileOpen(true)} className="p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent text-slate-800 hover:bg-white/70 hover:border-white/30">
                         <User size={16} />
                     </button>
@@ -224,7 +330,8 @@ export const Topbar = () => {
                 </div>
             )}
 
-            {/* MENU MOBILE REMOVIDO PARA ADOTAR NAVEGAÇÃO HUB-AND-SPOKE */}
+            {/* MODAL DE AGENDA CASO ABERTO VIA NOTIFICAÇÃO */}
+            {openAgenda && <CompromissosModal onClose={() => setOpenAgenda(false)} />}
         </>
     );
 };

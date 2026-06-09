@@ -362,9 +362,14 @@ const UserCreationModal = ({ onClose, onSave }) => {
         name: '', email: '', password: '', role: 'Visualizador',
         crm: '', rqe: '', sexo: '', cpf: '', telefone: '', categoria_medica: 'Normal',
         unidades_permitidas: ['*'], modules_access: AVAILABLE_MODULES.map(m => m.id),
-        exibir_agenda_home: false
+        exibir_agenda_home: false, categoria_agenda_id: ''
     });
+    const [categoriasAgenda, setCategoriasAgenda] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        supabase.from('agenda_categorias').select('*').order('nome').then(({data}) => setCategoriasAgenda(data || []));
+    }, []);
 
     const handleCreate = async () => {
         if (!formData.name || !formData.email || !formData.password) return toast.error("Preencha todos os campos");
@@ -417,6 +422,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
             userData.unidades_permitidas = formData.unidades_permitidas;
             userData.modules_access = formData.modules_access;
             userData.exibir_agenda_home = formData.exibir_agenda_home;
+            userData.categoria_agenda_id = formData.categoria_agenda_id || null;
 
             await supabase.from('users').insert([{ id: uid, ...userData }]);
 
@@ -437,66 +443,84 @@ const UserCreationModal = ({ onClose, onSave }) => {
     };
 
     return createPortal(
-        <div className="fixed inset-0 bg-white/40 backdrop-blur-sm backdrop-blur-sm z-[10000] overflow-y-auto p-4 flex">
-            <div className="m-auto bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl backdrop-blur-xl border border-white/60 max-w-md w-full p-8 relative">
+        <div className="fixed inset-0 bg-white/40 backdrop-blur-sm z-[10000] overflow-y-auto p-4 flex">
+            <div className="m-auto bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/60 max-w-2xl w-full p-8 relative">
                 <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-500 hover:text-slate-600 hover:bg-white/70 rounded-lg transition-all"><X size={20} /></button>
 
                 <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-1">Novo Usuário</h2>
                 <p className="text-xs text-slate-500 mb-6">Preencha os dados para criar um novo acesso.</p>
 
                 <div className="space-y-4">
-                    <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome Completo</label>
-                        <input
-                            value={formData.name}
-                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500"
-                            placeholder="Ex: Dr. João Silva"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email Corporativo</label>
-                        <input
-                            value={formData.email}
-                            onChange={e => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500"
-                            placeholder="usuario@santacasa.com.br"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Senha Provisória</label>
-                        <div className="flex gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome Completo</label>
                             <input
-                                value={formData.password}
-                                onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                type="text"
-                                className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500 font-mono"
-                                placeholder="******"
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                className="w-full px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 font-semibold outline-none focus:border-blue-500"
+                                placeholder="Ex: Dr. João Silva"
                             />
-                            <button onClick={() => setFormData({ ...formData, password: Math.random().toString(36).slice(-8) })} className="p-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg hover:bg-white/80 text-slate-500 backdrop-blur-md" title="Gerar Senha"><Shuffle size={18} /></button>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email Corporativo</label>
+                            <input
+                                value={formData.email}
+                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                className="w-full px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 font-semibold outline-none focus:border-blue-500"
+                                placeholder="usuario@santacasa.com.br"
+                            />
                         </div>
                     </div>
-                    <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Perfil de Acesso</label>
-                        <select
-                            value={formData.role}
-                            onChange={e => setFormData({ ...formData, role: e.target.value })}
-                            className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500"
-                        >
-                            {availableRoles.map(r => <option key={r} value={r}>{r}</option>)}
-                        </select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Senha Provisória</label>
+                            <div className="flex gap-2">
+                                <input
+                                    value={formData.password}
+                                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                    type="text"
+                                    className="w-full px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 font-semibold outline-none focus:border-blue-500 font-mono"
+                                    placeholder="******"
+                                />
+                                <button onClick={() => setFormData({ ...formData, password: Math.random().toString(36).slice(-8) })} className="p-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg hover:bg-white/80 text-slate-500" title="Gerar Senha"><Shuffle size={18} /></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Perfil de Acesso</label>
+                            <select
+                                value={formData.role}
+                                onChange={e => setFormData({ ...formData, role: e.target.value })}
+                                className="w-full px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 font-semibold outline-none focus:border-blue-500"
+                            >
+                                {availableRoles.map(r => <option key={r} value={r}>{r}</option>)}
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Gênero</label>
-                        <select
-                            value={formData.sexo}
-                            onChange={e => setFormData({ ...formData, sexo: e.target.value })}
-                            className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500"
-                        >
-                            <option value="">Selecione...</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Feminino">Feminino</option>
-                        </select>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Equipe/Categoria (Agenda)</label>
+                            <select
+                                value={formData.categoria_agenda_id || ''}
+                                onChange={e => setFormData({ ...formData, categoria_agenda_id: e.target.value || null })}
+                                className="w-full px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 font-semibold outline-none focus:border-blue-500"
+                            >
+                                <option value="">-- Nenhuma Equipe (Geral) --</option>
+                                {categoriasAgenda.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Gênero</label>
+                            <select
+                                value={formData.sexo}
+                                onChange={e => setFormData({ ...formData, sexo: e.target.value })}
+                                className="w-full px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 font-semibold outline-none focus:border-blue-500"
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Feminino">Feminino</option>
+                            </select>
+                        </div>
                     </div>
 
                     {['Médico', 'Médico Autorizador'].includes(formData.role) && (
@@ -611,9 +635,15 @@ const UserEditModal = ({ user, onClose, onSave }) => {
         categoria_medica: user.categoria_medica || 'Normal',
         unidades_permitidas: user.unidades_permitidas || ['*'],
         modules_access: user.modules_access || AVAILABLE_MODULES.map(m => m.id),
-        exibir_agenda_home: user.exibir_agenda_home || false
+        exibir_agenda_home: user.exibir_agenda_home || false,
+        categoria_agenda_id: user.categoria_agenda_id || ''
     });
+    const [categoriasAgenda, setCategoriasAgenda] = useState([]);
     const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        supabase.from('agenda_categorias').select('*').order('nome').then(({data}) => setCategoriasAgenda(data || []));
+    }, []);
 
     const handleSave = async () => {
         if (['Médico', 'Médico Autorizador'].includes(formData.role) && !formData.crm) {
@@ -658,9 +688,8 @@ const UserEditModal = ({ user, onClose, onSave }) => {
     };
 
     return createPortal(
-        <div className="fixed inset-0 bg-white/40 backdrop-blur-sm backdrop-blur-sm z-[10000] overflow-y-auto p-4 flex">
-            <div className="m-auto bg-white/95 backdrop-blur-2xl rounded-[2rem] shadow-2xl border border-white/60 max-w-md w-full p-8 relative">
-                {/* Close Button */}
+        <div className="fixed inset-0 bg-white/40 backdrop-blur-sm z-[10000] overflow-y-auto p-4 flex">
+            <div className="m-auto bg-white/95 backdrop-blur-2xl rounded-[2rem] shadow-2xl border border-white/60 max-w-2xl w-full p-8 relative">
                 <button
                     onClick={onClose}
                     className="absolute top-6 right-6 p-2 text-slate-500 hover:text-slate-600 hover:bg-white/70 rounded-lg transition-all"
@@ -668,58 +697,61 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                     <X size={20} />
                 </button>
 
-                {/* Header */}
                 <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-2">
                     Editar Usuário
                 </h2>
                 <p className="text-xs text-slate-500 font-bold mb-6">{user.email}</p>
 
-                {/* Form */}
                 <div className="space-y-4">
-                    {/* Name Input */}
-                    <div>
-                        <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">
-                            Nome
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
-                            placeholder="Nome completo"
-                        />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Nome</label>
+                            <input
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                className="w-full px-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                                placeholder="Nome completo"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Perfil de Acesso</label>
+                            <select
+                                value={formData.role}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                className="w-full px-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all cursor-pointer"
+                            >
+                                {availableRoles.map(role => (
+                                    <option key={role} value={role}>{role}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
-                    {/* Role Dropdown */}
-                    <div>
-                        <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">
-                            Perfil de Acesso
-                        </label>
-                        <select
-                            value={formData.role}
-                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                            className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all cursor-pointer"
-                        >
-                            {availableRoles.map(role => (
-                                <option key={role} value={role}>{role}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Sexo Dropdown */}
-                    <div>
-                        <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">
-                            Gênero
-                        </label>
-                        <select
-                            value={formData.sexo}
-                            onChange={(e) => setFormData({ ...formData, sexo: e.target.value })}
-                            className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all cursor-pointer"
-                        >
-                            <option value="">Selecione...</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Feminino">Feminino</option>
-                        </select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Equipe/Categoria (Agenda)</label>
+                            <select
+                                value={formData.categoria_agenda_id || ''}
+                                onChange={(e) => setFormData({ ...formData, categoria_agenda_id: e.target.value || null })}
+                                className="w-full px-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all cursor-pointer"
+                            >
+                                <option value="">-- Nenhuma Equipe (Geral) --</option>
+                                {categoriasAgenda.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Gênero</label>
+                            <select
+                                value={formData.sexo}
+                                onChange={(e) => setFormData({ ...formData, sexo: e.target.value })}
+                                className="w-full px-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all cursor-pointer"
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Feminino">Feminino</option>
+                            </select>
+                        </div>
                     </div>
 
                     {['Médico', 'Médico Autorizador'].includes(formData.role) && (
@@ -762,26 +794,27 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                                     />
                                 </div>
                             </div>
-                            <div className="mt-4">
-                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">CPF *</label>
-                                <input
-                                    value={formData.cpf}
-                                    onChange={e => setFormData({ ...formData, cpf: maskCPF(e.target.value) })}
-                                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
-                                    placeholder="Ex: 000.000.000-00"
-                                    maxLength="14"
-                                />
-                            </div>
-
-                            <div className="mt-4">
-                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Telefone (Celular)</label>
-                                <input
-                                    value={formData.telefone}
-                                    onChange={e => setFormData({ ...formData, telefone: maskTelefone(e.target.value) })}
-                                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
-                                    placeholder="Ex: (11) 99999-9999"
-                                    maxLength="15"
-                                />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">CPF *</label>
+                                    <input
+                                        value={formData.cpf}
+                                        onChange={e => setFormData({ ...formData, cpf: maskCPF(e.target.value) })}
+                                        className="w-full px-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                                        placeholder="Ex: 000.000.000-00"
+                                        maxLength="14"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Telefone (Celular)</label>
+                                    <input
+                                        value={formData.telefone}
+                                        onChange={e => setFormData({ ...formData, telefone: maskTelefone(e.target.value) })}
+                                        className="w-full px-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                                        placeholder="Ex: (11) 99999-9999"
+                                        maxLength="15"
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}

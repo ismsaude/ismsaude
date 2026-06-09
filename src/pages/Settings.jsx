@@ -773,6 +773,106 @@ const UnidadesManager = () => {
     );
 };
 
+// --- AGENDA CATEGORIAS MANAGER COMPONENT ---
+const AgendaCategoriasManager = () => {
+    const [categorias, setCategorias] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [newNome, setNewNome] = useState('');
+    const [newCor, setNewCor] = useState('bg-blue-500');
+    const [editingId, setEditingId] = useState(null);
+    const [editNome, setEditNome] = useState('');
+    const [editCor, setEditCor] = useState('');
+
+    const colors = ['bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-pink-500', 'bg-rose-500', 'bg-slate-500'];
+
+    useEffect(() => { fetchCategorias(); }, []);
+
+    const fetchCategorias = async () => {
+        setLoading(true);
+        const { data, error } = await supabase.from('agenda_categorias').select('*').order('nome');
+        if (!error) setCategorias(data || []);
+        setLoading(false);
+    };
+
+    const handleAdd = async () => {
+        if (!newNome.trim()) return;
+        const { error } = await supabase.from('agenda_categorias').insert([{ nome: newNome, cor: newCor }]);
+        if (!error) {
+            await logAction('CRIAÇÃO DE CATEGORIA', `Categoria da agenda adicionada: ${newNome}`);
+            toast.success('Categoria adicionada!');
+            setNewNome('');
+            fetchCategorias();
+        } else { toast.error('Erro ao adicionar categoria.'); }
+    };
+
+    const handleEdit = async (id) => {
+        if (!editNome.trim()) return;
+        const { error } = await supabase.from('agenda_categorias').update({ nome: editNome, cor: editCor }).eq('id', id);
+        if (!error) {
+            await logAction('EDIÇÃO DE CATEGORIA', `Categoria da agenda atualizada: ${editNome}`);
+            toast.success('Categoria atualizada!');
+            setEditingId(null);
+            fetchCategorias();
+        } else { toast.error('Erro ao atualizar categoria.'); }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Remover esta categoria?")) return;
+        const { error } = await supabase.from('agenda_categorias').delete().eq('id', id);
+        if (!error) {
+            toast.success('Categoria removida!');
+            fetchCategorias();
+        } else { toast.error('Não é possível remover se houver eventos ou usuários vinculados.'); }
+    };
+
+    return (
+        <div className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/60 shadow-sm p-8 animate-in fade-in max-w-2xl mx-auto space-y-6">
+            <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div> Categorias / Equipes da Agenda
+            </h2>
+            <div className="flex gap-2 items-center bg-white/40 p-2 rounded-xl">
+                <input value={newNome} onChange={e => setNewNome(e.target.value)} placeholder="Nova Equipe/Categoria..." className="flex-1 h-10 px-3 rounded-lg border border-white/60 outline-none focus:border-blue-500 text-sm font-bold text-slate-700" />
+                <select value={newCor} onChange={e => setNewCor(e.target.value)} className="h-10 px-2 rounded-lg border border-white/60 outline-none font-bold text-sm text-slate-700">
+                    {colors.map(c => <option key={c} value={c}>{c.replace('bg-', '').replace('-500', '').toUpperCase()}</option>)}
+                </select>
+                <div className={`w-8 h-8 rounded-full shadow-sm ${newCor}`}></div>
+                <button onClick={handleAdd} className="bg-blue-600 hover:bg-blue-700 text-slate-800 font-black text-xs uppercase px-4 h-10 rounded-lg shadow-lg transition-all active:scale-95">Adicionar</button>
+            </div>
+            {loading ? <div className="p-4 text-center"><Loader2 className="animate-spin text-blue-500 mx-auto" /></div> : (
+                <ul className="space-y-2">
+                    {categorias.map(c => (
+                        <li key={c.id} className="flex justify-between items-center bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl p-2 rounded-xl">
+                            {editingId === c.id ? (
+                                <div className="flex gap-2 w-full items-center">
+                                    <input value={editNome} onChange={e => setEditNome(e.target.value)} className="flex-1 px-2 py-2 rounded-lg border border-blue-400 outline-none text-sm font-bold text-slate-700" />
+                                    <select value={editCor} onChange={e => setEditCor(e.target.value)} className="py-2 px-1 rounded-lg border border-blue-400 outline-none font-bold text-sm text-slate-700">
+                                        {colors.map(col => <option key={col} value={col}>{col.replace('bg-', '').replace('-500', '').toUpperCase()}</option>)}
+                                    </select>
+                                    <div className={`w-6 h-6 rounded-full shadow-sm ${editCor}`}></div>
+                                    <button onClick={() => handleEdit(c.id)} className="text-emerald-600 font-bold px-3"><Check size={16} /></button>
+                                    <button onClick={() => setEditingId(null)} className="text-rose-600 font-bold px-3"><X size={16} /></button>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-3 ml-2">
+                                        <div className={`w-4 h-4 rounded-full shadow-sm ${c.cor || 'bg-slate-500'}`}></div>
+                                        <span className="text-sm font-bold text-slate-700 leading-tight">{c.nome}</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => { setEditingId(c.id); setEditNome(c.nome); setEditCor(c.cor || 'bg-blue-500'); }} className="p-1.5 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md"><Edit2 size={14} /></button>
+                                        <button onClick={() => handleDelete(c.id)} className="p-1.5 text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-md"><Trash2 size={14} /></button>
+                                    </div>
+                                </>
+                            )}
+                        </li>
+                    ))}
+                    {categorias.length === 0 && <p className="text-xs text-slate-500 font-bold uppercase text-center py-4">Nenhuma categoria cadastrada.</p>}
+                </ul>
+            )}
+        </div>
+    );
+};
+
 // --- MOTIVOS SUSPENSAO MANAGER COMPONENT ---
 const MotivosSuspensaoManager = () => {
     const [motivos, setMotivos] = useState([]);
@@ -1905,7 +2005,8 @@ const Settings = () => {
             { id: 'motivos_suspensao', label: 'Suspensões', show: hasPermission('Acessar Configurações') },
             { id: 'prioridades', label: 'Prioridades', show: hasPermission('Acessar Configurações') },
             { id: 'clinicas', label: 'Clínicas AIH', show: hasPermission('Acessar Configurações') },
-            { id: 'caraterInternacao', label: 'Caráter AIH', show: hasPermission('Acessar Configurações') }
+            { id: 'caraterInternacao', label: 'Caráter AIH', show: hasPermission('Acessar Configurações') },
+            { id: 'categorias_agenda', label: 'Equipes/Categorias', show: hasPermission('Acessar Configurações') }
         ],
         'cadastros_medicos': [
             { id: 'medicas', label: 'Configurações Médicas', show: hasPermission('Acessar Configurações') }
@@ -1965,6 +2066,7 @@ const Settings = () => {
                         {activeSection === 'convenios' && <RenderSection title="Convênios" category="convenios" placeholder="Novo convênio..." inputValue={newItem.convenios} items={data.convenios} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
                         {activeSection === 'status' && <RenderSection title="Status da Fila" category="status" placeholder="Ex: Aguardando..." inputValue={newItem.status} items={data.status} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
                         {activeSection === 'locais' && <RenderSection title="Salas Cirúrgicas" category="locais" placeholder="Nova sala..." inputValue={newItem.locais} items={data.locais} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
+                        {activeSection === 'categorias_agenda' && <AgendaCategoriasManager />}
                         {activeSection === 'cidades' && <RenderSection title="Cidades" category="cidades" placeholder="Nova cidade..." inputValue={newItem.cidades} items={data.cidades} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
                         {activeSection === 'anestesias' && <RenderSection title="Anestesias" category="anestesias" placeholder="Tipo de anestesia..." inputValue={newItem.anestesias} items={data.anestesias} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
                         {activeSection === 'prioridades' && <RenderSection title="Prioridades" category="prioridades" placeholder="Classificação..." inputValue={newItem.prioridades} items={data.prioridades} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}

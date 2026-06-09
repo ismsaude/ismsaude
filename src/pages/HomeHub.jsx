@@ -12,6 +12,9 @@ import { CompromissosModal } from './CompromissosModal';
 export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [quickAddDate, setQuickAddDate] = useState(null);
+    const [quickAddText, setQuickAddText] = useState('');
+    const [quickAddSaving, setQuickAddSaving] = useState(false);
 
     const generateDays = () => {
         const days = [];
@@ -28,11 +31,17 @@ export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
     const loadTasks = async () => {
         if (!currentUser?.id) return;
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('agenda_pessoal')
-                .select('*')
-                .eq('user_id', currentUser.id)
-                .order('created_at', { ascending: false });
+                .select('*, users!agenda_pessoal_user_id_fkey(name)');
+            
+            const isDoctorOrIuri = currentUser?.role === 'Médico' || (currentUser?.name && currentUser.name.toLowerCase().includes('iuri'));
+            
+            if (isDoctorOrIuri) {
+                query = query.or(`user_id.eq.${currentUser?.id},autor_id.eq.${currentUser?.id}`);
+            }
+
+            const { data, error } = await query.order('created_at', { ascending: false });
             if (error) throw error;
             setTasks(data || []);
         } catch (error) {
@@ -67,6 +76,31 @@ export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
         }
     };
 
+    const handleQuickAdd = async () => {
+        if (!quickAddText.trim() || !quickAddDate) return;
+        setQuickAddSaving(true);
+        try {
+            const dateStr = formatDateString(quickAddDate);
+            const { error } = await supabase
+                .from('agenda_pessoal')
+                .insert([{
+                    user_id: currentUser.id,
+                    texto: quickAddText,
+                    data_agendada: dateStr,
+                    autor_id: currentUser.id
+                }]);
+            if (error) throw error;
+            toast.success("Adicionado!");
+            setQuickAddText('');
+            setQuickAddDate(null);
+            loadTasks();
+        } catch (error) {
+            toast.error("Erro ao salvar.");
+        } finally {
+            setQuickAddSaving(false);
+        }
+    };
+
     const formatDayName = (date) => {
         const nomes = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
         return nomes[date.getDay()];
@@ -95,7 +129,7 @@ export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
                     });
 
                     return (
-                        <div key={idx} className={`group/day flex flex-col min-w-[130px] flex-1 rounded-[1.5rem] p-3 border shrink-0 transition-all duration-300 ${isToday ? 'bg-indigo-50/80 border-indigo-200/80 shadow-sm' : 'bg-white/40 border-white/50 hover:bg-white/70 hover:shadow-sm'}`}>
+                        <div key={idx} onClick={() => setQuickAddDate(date)} className={`cursor-pointer group/day flex flex-col min-w-[130px] flex-1 rounded-[1.5rem] p-3 border shrink-0 transition-all duration-300 ${isToday ? 'bg-indigo-50/80 border-indigo-200/80 shadow-sm' : 'bg-white/40 border-white/50 hover:bg-white/70 hover:shadow-sm'}`}>
                             <div className={`flex items-center justify-between mb-3 border-b pb-2 ${isToday ? 'border-indigo-200/60' : 'border-white/50'}`}>
                                 <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${isToday ? 'text-indigo-600' : 'text-slate-500'}`}>
                                     {isToday ? 'HOJE' : formatDayName(date)}
@@ -116,7 +150,7 @@ export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
                                     sortedTasks.map(task => {
                                         const { time, text } = task.parsed;
                                         return (
-                                            <div key={task.id} className="flex items-start gap-2.5 group cursor-pointer p-1.5 -mx-1.5 rounded-xl hover:bg-white/60 transition-colors" onClick={() => toggleTask(task.id, task.concluido)}>
+                                            <div key={task.id} className="flex items-start gap-2.5 group cursor-pointer p-1.5 -mx-1.5 rounded-xl hover:bg-white/60 transition-colors" onClick={(e) => { e.stopPropagation(); toggleTask(task.id, task.concluido); }}>
                                                 <button 
                                                     className={`w-4 h-4 mt-[2px] rounded-md border-2 flex items-center justify-center shrink-0 transition-colors shadow-sm ${task.concluido ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300 group-hover:border-indigo-400 bg-white/80'}`}
                                                 >
@@ -125,6 +159,9 @@ export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
                                                 <div className="flex flex-col flex-1 pt-[1px]">
                                                     {time && <span className={`text-[11px] font-black mb-0.5 ${task.concluido ? 'text-slate-400' : 'text-indigo-600'}`}>{time}</span>}
                                                     <span className={`text-[11px] font-bold leading-snug tracking-normal ${task.concluido ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700 group-hover:text-slate-900'}`}>
+                                                        {task.users?.name && (
+                                                            <span className="block text-[8px] uppercase tracking-widest text-indigo-500 mb-[1px]">Para: {task.users.name.split(' ')[0]}</span>
+                                                        )}
                                                         {text}
                                                     </span>
                                                 </div>
@@ -137,6 +174,33 @@ export const AgendaPessoalWidget = ({ currentUser, refreshTrigger }) => {
                     );
                 })}
             </div>
+
+            {quickAddDate && (
+                <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center p-4 rounded-[2.5rem] transition-all" onClick={() => setQuickAddDate(null)}>
+                    <div className="bg-white/90 backdrop-blur-xl p-5 rounded-[2rem] shadow-2xl border border-white w-full max-w-sm flex flex-col gap-3 animate-in fade-in zoom-in-95" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest flex items-center gap-1.5"><CalendarClock size={14}/> {quickAddDate.getDate()} de {['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][quickAddDate.getMonth()]}</span>
+                            <button onClick={() => setQuickAddDate(null)} className="text-slate-400 hover:text-rose-500 bg-slate-100 hover:bg-rose-50 p-1 rounded-full transition-colors"><X size={14}/></button>
+                        </div>
+                        <input 
+                            autoFocus
+                            type="text" 
+                            placeholder="Compromisso (Ex: [14:00] Reunião)..." 
+                            className="w-full text-xs font-semibold p-3.5 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 shadow-sm"
+                            value={quickAddText}
+                            onChange={e => setQuickAddText(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleQuickAdd()}
+                        />
+                        <button 
+                            onClick={handleQuickAdd}
+                            disabled={!quickAddText.trim() || quickAddSaving}
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:text-slate-500 text-white font-black py-2.5 rounded-xl text-[10px] uppercase tracking-widest transition-all flex justify-center items-center h-10 shadow-md hover:shadow-lg"
+                        >
+                            {quickAddSaving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Salvar Compromisso'}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -487,7 +551,7 @@ const HomeHub = () => {
                     </div>
 
                     {/* Quadro de Avisos ou Agenda */}
-                    {currentUser?.exibir_agenda_home ? (
+                    {currentUser?.exibir_agenda_home || currentUser?.role === 'Desenvolvedor' ? (
                         <div className="w-full flex lg:flex-1 min-h-[160px] lg:min-h-[200px] shrink-0 mb-2 lg:mb-0">
                             <AgendaPessoalWidget currentUser={currentUser} refreshTrigger={agendaRefreshTrigger} />
                         </div>
