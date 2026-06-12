@@ -711,11 +711,35 @@ const Escala = () => {
                 setExistingMonths(escData.data.months);
             }
 
-            // BUSCAR PLANTÕES DA NOVA TABELA RELACIONAL
-            const { data: plantoesData, error: plantoesError } = await supabase.from('escala_plantoes').select('*').limit(50000);
-            if (!plantoesError && plantoesData) {
+            // BUSCAR PLANTÕES DA NOVA TABELA RELACIONAL (COM PAGINAÇÃO PARA BURLAR O LIMITE DE 1000 LINHAS DA API)
+            let allPlantoes = [];
+            let fromRange = 0;
+            const step = 1000;
+            let hasMore = true;
+            
+            while (hasMore) {
+                const { data: pageData, error: pageError } = await supabase
+                    .from('escala_plantoes')
+                    .select('*')
+                    .range(fromRange, fromRange + step - 1);
+                    
+                if (pageError || !pageData) {
+                    console.error("Erro na paginação dos plantões:", pageError);
+                    break;
+                }
+                
+                allPlantoes = [...allPlantoes, ...pageData];
+                
+                if (pageData.length < step) {
+                    hasMore = false;
+                } else {
+                    fromRange += step;
+                }
+            }
+
+            if (allPlantoes.length > 0) {
                 const loadedAssignments = {};
-                plantoesData.forEach(p => {
+                allPlantoes.forEach(p => {
                     loadedAssignments[p.assignment_id] = {
                         doctorName: p.doctor_name,
                         hospitalName: p.hospital_name,
