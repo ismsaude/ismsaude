@@ -712,7 +712,7 @@ const Escala = () => {
             }
 
             // BUSCAR PLANTÕES DA NOVA TABELA RELACIONAL
-            const { data: plantoesData, error: plantoesError } = await supabase.from('escala_plantoes').select('*');
+            const { data: plantoesData, error: plantoesError } = await supabase.from('escala_plantoes').select('*').limit(50000);
             if (!plantoesError && plantoesData) {
                 const loadedAssignments = {};
                 plantoesData.forEach(p => {
