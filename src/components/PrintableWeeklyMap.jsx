@@ -157,7 +157,7 @@ const PrintableWeeklyMap = ({ surgeries, weekDays, temposByCode, temposByName, p
                 
                 {/* Coluna Horários */}
                 <div className="w-10 border-r border-slate-200 shrink-0 bg-slate-50/50 flex flex-col">
-                    <div className="h-7 border-b border-slate-200 bg-slate-100 flex items-center justify-center shrink-0">
+                    <div className="h-8 border-b border-slate-200 bg-slate-100 flex items-center justify-center shrink-0">
                         <Clock size={12} className="text-slate-500" />
                     </div>
                     {timeSlots.map((hour, idx) => (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { X, Save, Loader2, Calendar, Plus, Trash2, Clock, User, Stethoscope, Printer, Copy, Layers, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { X, Save, Loader2, Calendar, Plus, Trash2, Clock, User, Stethoscope, Printer, Copy, Layers, ChevronLeft, ChevronRight, CheckCircle2, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { toJpeg } from 'html-to-image';
 import { jsPDF } from 'jspdf';
@@ -8,7 +8,7 @@ import { useWhiteLabel } from '../contexts/WhiteLabelContext';
 import { format, parse, addMonths, subMonths, startOfMonth, startOfWeek, endOfMonth, differenceInCalendarWeeks, addDays, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
+export const FixedScheduleModal = ({ isOpen, onClose, rooms = [], allRooms = [], hiddenRooms = [], setHiddenRooms = () => {} }) => {
     const { theme } = useWhiteLabel();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -21,11 +21,13 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     });
     const [scheduleData, setScheduleData] = useState({});
-    const [settingsData, setSettingsData] = useState({ especialidades: [], cirurgioes: [] });
+    const [settingsData, setSettingsData] = useState({ especialidades: [] });
+    const [medicos, setMedicos] = useState([]);
 
     // UI states
     const [editingBlock, setEditingBlock] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showRoomModal, setShowRoomModal] = useState(false);
 
     // DYNAMIC WEEKS BASED ON SELECTED MONTH
     const monthDateObj = parse(selectedMonth, 'yyyy-MM', new Date());
@@ -90,9 +92,13 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
 
                 if (genRes.data && genRes.data.data) {
                     setSettingsData({
-                        especialidades: genRes.data.data.especialidades || [],
-                        cirurgioes: genRes.data.data.cirurgioes || []
+                        especialidades: genRes.data.data.especialidades || []
                     });
+                }
+                
+                const { data: medicosData } = await supabase.from('users').select('*').in('role', ['Médico', 'Médico Autorizador']).eq('status', 'Ativo').order('name', { ascending: true });
+                if (medicosData) {
+                    setMedicos(medicosData);
                 }
             } catch (err) {
                 toast.error("Erro ao carregar programação fixa.");
@@ -363,22 +369,26 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
     };
 
     const renderGrid = (isPrint = false) => (
-        <div className={`bg-white/60 border-white/60 flex flex-col min-w-max overflow-hidden ${isPrint ? 'border' : 'bg-white/80 backdrop-blur-lg rounded-[1.5rem] shadow-sm border min-h-full'}`}>
+        <div className={`bg-white border-slate-200 flex flex-col min-w-max overflow-hidden ${isPrint ? 'border' : 'bg-white/95 backdrop-blur-xl rounded-[1.5rem] shadow-sm border min-h-full'}`}>
             
             {/* Header dos Dias da Semana */}
-            <div className={`flex border-b-2 border-white/80 bg-white/60 shrink-0 ${isPrint ? '' : 'sticky top-0 z-30 shadow-sm'}`}>
-                <div className={`shrink-0 border-r border-white/80 flex items-center justify-center bg-white/70 ${isPrint ? 'w-10' : 'w-16'}`} />
+            <div className={`flex border-b-2 border-slate-300/60 bg-white/80 shrink-0 ${isPrint ? '' : 'sticky top-0 z-30 shadow-sm backdrop-blur-md'}`}>
+                <div className={`shrink-0 border-r border-slate-200/80 flex items-center justify-center bg-slate-50/50 ${isPrint ? 'w-10' : 'w-12'}`} />
                 {DAYS.map(day => (
-                    <div key={`head-${day.id}`} className={`flex-1 flex flex-col border-r border-white/60 last:border-0 ${isPrint ? 'min-w-[150px]' : 'min-w-[300px]'}`}>
-                        <div className={`flex items-center justify-center border-b border-white/60 ${isPrint ? 'py-1' : 'py-2.5'}`}>
-                            <span className={`${isPrint ? 'text-[10px]' : 'text-xs'} font-black uppercase tracking-widest text-slate-700`}>{day.label}</span>
+                    <div key={`head-${day.id}`} className={`flex-1 flex flex-col border-r-[3px] border-slate-300 last:border-0`} style={{ minWidth: isPrint ? '180px' : `${Math.max(400, rooms.length * 180)}px` }}>
+                        <div className={`flex items-center justify-center border-b border-slate-200/80 bg-slate-50/50 ${isPrint ? 'py-1' : 'py-2.5'}`}>
+                            <span className={`${isPrint ? 'text-[10px]' : 'text-xs'} font-black uppercase tracking-widest text-slate-800`}>{day.label}</span>
                         </div>
-                        <div className="flex">
-                            {rooms.map((room, idx) => (
-                                <div key={`h-${day.id}-${room}`} className={`flex-1 flex items-center justify-center bg-white/70 ${isPrint ? 'py-0.5' : 'py-1.5'} ${idx !== rooms.length - 1 ? 'border-r border-white/60' : ''}`}>
-                                    <span className={`${isPrint ? 'text-[7px]' : 'text-[10px]'} font-black tracking-normal text-slate-500 truncate`}>SALA {room}</span>
-                                </div>
-                            ))}
+                        <div className="flex flex-1">
+                            {rooms.map((room, idx) => {
+                                const roomName = String(room).toUpperCase();
+                                const displayName = roomName.includes('SALA') || roomName.includes('SETOR') || roomName.includes('CENTRO') ? roomName : `SALA ${roomName}`;
+                                return (
+                                    <div key={`h-${day.id}-${room}`} className={`flex-1 flex items-center justify-center px-1 bg-white/80 ${isPrint ? 'py-0.5' : 'py-2'} ${idx !== rooms.length - 1 ? 'border-r border-slate-200' : ''}`}>
+                                        <span className={`${isPrint ? 'text-[7px]' : 'text-[9px]'} font-black tracking-normal text-slate-600 text-center uppercase leading-tight line-clamp-2`}>{displayName}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 ))}
@@ -386,11 +396,11 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
 
             {/* Linhas das Semanas */}
             {WEEKS.map((week, wIdx) => (
-                <div key={`week-${week}`} className={`flex flex-1 hover:bg-blue-500/20/30 transition-colors ${wIdx !== WEEKS.length - 1 ? 'border-b border-white/60' : ''}`}>
+                <div key={`week-${week}`} className={`flex hover:bg-slate-50/30 transition-colors ${wIdx !== WEEKS.length - 1 ? 'border-b-4 border-slate-300' : ''}`} style={{ minHeight: isPrint ? '120px' : '260px' }}>
                     
                     {/* Título da Semana (Coluna Lateral) */}
-                    <div className={`shrink-0 border-r border-white/60 flex flex-col items-center justify-center bg-white/60 ${isPrint ? 'w-10 py-1' : 'w-16 py-4'}`}>
-                        <span className={`${isPrint ? 'text-[9px]' : 'text-[11px]'} font-black uppercase text-slate-500 tracking-widest rotate-180`} style={{ writingMode: 'vertical-rl' }}>Semana {week}</span>
+                    <div className={`shrink-0 border-r border-slate-200/80 flex flex-col items-center justify-center bg-slate-50/50 ${isPrint ? 'w-10 py-1' : 'w-12 py-4'}`}>
+                        <span className={`${isPrint ? 'text-[9px]' : 'text-[11px]'} font-black uppercase text-slate-600 tracking-widest rotate-180`} style={{ writingMode: 'vertical-rl' }}>Semana {week}</span>
                     </div>
 
                     {/* Células dos Dias */}
@@ -399,20 +409,20 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                         const isCurrentMonth = isSameMonth(cellDate, monthDateObj);
                         
                         return (
-                            <div key={`cell-${week}-${day.id}`} className={`flex-1 flex flex-col border-r border-white/40 last:border-0 ${isPrint ? 'min-w-[150px] p-0.5 gap-0.5' : 'min-w-[300px] p-1.5 gap-1.5'} ${!isCurrentMonth ? 'bg-white/60 opacity-50' : 'bg-white/5'}`}>
+                            <div key={`cell-${week}-${day.id}`} className={`flex-1 flex flex-col border-r-[3px] border-slate-300 last:border-0 ${isPrint ? 'p-0.5 gap-0.5' : 'p-2.5 gap-2'} ${!isCurrentMonth ? 'bg-slate-100 opacity-60' : 'bg-white'}`} style={{ minWidth: isPrint ? '180px' : `${Math.max(400, rooms.length * 180)}px` }}>
                                 
                                 {/* DATA DO DIA */}
-                                <div className={`w-full text-center ${isPrint ? 'text-[7px] pb-0.5' : 'text-[11px] pb-1'} font-black uppercase tracking-wider ${!isCurrentMonth ? 'text-slate-600' : 'text-slate-500'}`}>
+                                <div className={`w-full text-center ${isPrint ? 'text-[7px] pb-0.5' : 'text-[11px] pb-1'} font-black uppercase tracking-wider ${!isCurrentMonth ? 'text-slate-500' : 'text-slate-700'}`}>
                                     {format(cellDate, "dd 'de' MMM", { locale: ptBR })}
                                 </div>
                                 
-                                <div className={`flex w-full flex-1 ${isPrint ? 'gap-0.5' : 'gap-1.5'}`}>
+                                <div className={`flex w-full flex-1 ${isPrint ? 'gap-0.5' : 'gap-2'}`}>
                                     {/* Célula das Salas Lado a Lado */}
                                     {rooms.map((room, rIdx) => {
                                         const blocks = getBlocks(week, room, day.id);
                                         return (
-                                            <div key={`cell-r-${room}`} className={`flex-1 flex flex-col min-w-0 bg-white/60 border border-slate-100/60 overflow-hidden group hover:border-blue-200 transition-colors ${isPrint ? 'rounded-sm' : 'rounded-lg'}`}>
-                                        <div className={`flex-1 flex flex-col overflow-y-auto ${isPrint ? 'p-0.5 gap-0.5' : 'p-1 gap-1'}`}>
+                                            <div key={`cell-r-${room}`} className={`flex-1 flex flex-col min-w-0 bg-slate-50/50 border border-slate-200 overflow-hidden group hover:border-blue-400 transition-colors ${isPrint ? 'rounded-sm' : 'rounded-xl shadow-sm'}`}>
+                                        <div className={`flex-1 flex flex-col overflow-y-auto ${isPrint ? 'p-0.5 gap-0.5' : 'p-1.5 gap-1.5'}`}>
                                             {blocks.map(block => {
                                                 const colorTheme = COLORS.find(c => c.id === block.color) || COLORS[0];
                                                 return (
@@ -424,12 +434,12 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                                                         <div className={`${isPrint ? 'text-[7px] mb-0' : 'text-[10px] mb-0.5'} font-black tracking-normal opacity-80 flex items-center justify-between`}>
                                                             <span>{block.startHour} - {block.endHour}</span>
                                                         </div>
-                                                        <div className={`${isPrint ? 'text-[9px]' : 'text-[11px]'} font-black uppercase leading-tight line-clamp-2`}>
+                                                        <div className={`${isPrint ? 'text-[9px]' : 'text-[11px]'} font-black uppercase leading-tight whitespace-normal break-words`}>
                                                             {block.especialidade}
                                                         </div>
                                                         {block.medico && (
-                                                            <div className={`${isPrint ? 'text-[6px]' : 'text-[9px]'} font-bold mt-0.5 uppercase truncate opacity-80 flex items-center gap-1`}>
-                                                                <User size={10} /> {block.medico}
+                                                            <div className={`${isPrint ? 'text-[6px]' : 'text-[9px]'} font-bold mt-0.5 uppercase whitespace-normal break-words opacity-80 flex items-start gap-1 leading-tight`}>
+                                                                <User size={10} className="mt-0.5 shrink-0" /> <span className="flex-1">{block.medico}</span>
                                                             </div>
                                                         )}
                                                         {block.observacoes && (
@@ -509,6 +519,12 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                             )}
                         </div>
 
+                        <div className="relative print:hidden flex shrink-0">
+                            <button type="button" onClick={() => setShowRoomModal(true)} className="p-2.5 sm:px-4 sm:py-2.5 bg-white/70 hover:bg-white text-slate-600 border border-slate-200/50 rounded-xl font-black text-[11px] uppercase flex items-center gap-2 transition-all shadow-sm">
+                                <Eye size={16} /> <span className="hidden sm:inline">Salas</span>
+                            </button>
+                        </div>
+
                         <button onClick={handleExportPdf} disabled={isPrinting || loading} className="p-2.5 sm:px-5 sm:py-2.5 bg-indigo-500/20 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl font-black text-[11px] uppercase flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 shrink-0">
                             {isPrinting ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
                             <span className="hidden sm:inline">Exportar PDF</span>
@@ -533,13 +549,13 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
 
             {/* INVISIBLE PRINT AREA FOR PDF EXPORT */}
             <div style={{ position: 'absolute', top: '-20000px', left: '-20000px', width: '2200px', backgroundColor: '#ffffff', opacity: 0 }} className="print:hidden pointer-events-none">
-                <div id="fixed-schedule-print-area" className="flex flex-col bg-white/60 p-6" style={{ width: '2200px', height: '1400px', backgroundColor: '#ffffff' }}>
+                <div id="fixed-schedule-print-area" className="flex flex-col bg-white/60" style={{ width: '2200px', height: '1400px', backgroundColor: '#ffffff', padding: '80px' }}>
                     <div className="flex items-center justify-between border-b-2 border-slate-800 pb-4 mb-6">
                         <div className="flex items-center gap-4">
                             {theme?.logoUrl && <img src={theme.logoUrl} alt="Logo" className="h-12 object-contain" />}
                             <div>
                                 <h1 className="text-2xl font-black text-slate-900 drop-shadow-none uppercase tracking-wider">Grade Padrão - Centro Cirúrgico</h1>
-                                <p className="text-sm font-bold text-slate-500 uppercase">Mapa de Escala Cirúrgica Fixa</p>
+                                <p className="text-sm font-bold text-slate-500 uppercase">Mapa de Escala Cirúrgica Fixa &bull; {format(monthDateObj, "MMMM 'de' yyyy", { locale: ptBR })}</p>
                             </div>
                         </div>
                     </div>
@@ -647,12 +663,53 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [] }) => {
                                 <button type="button" onClick={replicateBlock} className="px-5 py-2.5 bg-indigo-500/20 hover:bg-indigo-100 text-indigo-700 rounded-xl transition-colors flex items-center gap-2 text-[10px] font-black uppercase">
                                     <Layers size={14} /> Replicar Mensal
                                 </button>
-                                <button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-slate-800 rounded-xl transition-colors flex items-center gap-2 text-[11px] font-bold uppercase shadow-sm shadow-blue-500/20">
+                                <button type="submit" className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600 text-white rounded-xl transition-all flex items-center gap-2 text-[11px] font-black uppercase shadow-md shadow-blue-500/30">
                                     <Save size={16} /> Salvar Neste Dia
                                 </button>
                             </div>
                         </div>
                     </form>
+                </div>
+            )}
+
+            {/* Modal de Salas Visíveis */}
+            {showRoomModal && (
+                <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 print:hidden">
+                    <div className="bg-white/95 backdrop-blur-2xl border border-white/60 rounded-[2rem] shadow-2xl w-full max-w-sm flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-white/40 flex items-center justify-between bg-white/60">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl">
+                                    <Eye size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-slate-900 drop-shadow-none uppercase text-lg tracking-normal leading-none">Visibilidade</h3>
+                                    <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                        Exibir ou Ocultar Salas
+                                    </p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowRoomModal(false)} className="text-slate-500 hover:text-rose-500 bg-white/60 p-2 rounded-full shadow-sm hover:shadow transition-all border border-white/40"><X size={18} /></button>
+                        </div>
+                        <div className="p-5 max-h-[50vh] overflow-y-auto custom-scrollbar flex flex-col gap-2">
+                            {allRooms.map(r => (
+                                <label key={r} className="flex items-center justify-between p-4 bg-white/60 border border-slate-200/60 rounded-xl cursor-pointer hover:border-blue-300 transition-colors shadow-sm group">
+                                    <span className="text-sm font-black text-slate-700 uppercase">{String(r).includes('SALA') || String(r).includes('SETOR') || String(r).includes('CENTRO') ? r : `SALA ${r}`}</span>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={!hiddenRooms.includes(r)} 
+                                        onChange={(e) => {
+                                            if (e.target.checked) setHiddenRooms(prev => prev.filter(h => h !== r));
+                                            else setHiddenRooms(prev => [...prev, r]);
+                                        }} 
+                                        className="w-5 h-5 rounded text-blue-600 border-slate-300 focus:ring-blue-500 bg-white"
+                                    />
+                                </label>
+                            ))}
+                        </div>
+                        <div className="p-5 border-t border-white/40 bg-white/60">
+                            <button onClick={() => setShowRoomModal(false)} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase tracking-widest text-[11px] shadow-sm shadow-blue-500/20 transition-colors">Confirmar</button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

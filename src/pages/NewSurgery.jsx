@@ -16,13 +16,13 @@ const NewSurgery = () => {
 
     // Estados para dados externos (listas)
     const [settings, setSettings] = useState({
-        cirurgioes: [],
         convenios: [],
         status: [],
         locais: [],
         cidades: [],
         anestesias: []
     });
+    const [medicos, setMedicos] = useState([]);
 
     // --- ESTADO PARA MÚLTIPLOS ARQUIVOS (NOVO) ---
     const [selectedFiles, setSelectedFiles] = useState([]);
@@ -67,6 +67,12 @@ const NewSurgery = () => {
                 const { data: settingsData } = await supabase.from('settings').select('data').eq('id', 'general').maybeSingle();
                 if (settingsData && settingsData.data) {
                     setSettings(settingsData.data);
+                }
+                
+                // 2. Carrega Médicos
+                const { data: medicosData } = await supabase.from('users').select('*').in('role', ['Médico', 'Médico Autorizador']).eq('status', 'Ativo').order('name', { ascending: true });
+                if (medicosData) {
+                    setMedicos(medicosData);
                 }
             } catch (error) {
                 console.error("Erro ao carregar dados:", error);
@@ -243,10 +249,7 @@ const NewSurgery = () => {
                             <label className="text-xs font-semibold text-slate-500 uppercase ml-1 mb-1.5 block">Cirurgião</label>
                             <select value={formData.cirurgiao} onChange={e => setFormData({ ...formData, cirurgiao: e.target.value })} className={`${baseInputStyle} uppercase`}>
                                 <option value="">Selecione...</option>
-                                {settings.cirurgioes?.map((m, idx) => {
-                                    const label = typeof m === 'string' ? m : m.nome;
-                                    return <option key={idx} value={label}>{label}</option>;
-                                })}
+                                {medicos.map(m => <option key={m.id} value={m.name}>{m.name}</option>)}
                             </select>
                         </div>
 

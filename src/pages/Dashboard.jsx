@@ -26,7 +26,8 @@ const Dashboard = () => {
     const [procedures, setProcedures] = useState([]);
     const [loading, setLoading] = useState(true);
     const { theme } = useWhiteLabel();
-    const [settings, setSettings] = useState({ status: [], cirurgioes: [], convenios: [], prioridades: [], especialidades: [] });
+    const [settings, setSettings] = useState({ status: [], convenios: [], prioridades: [], especialidades: [] });
+    const [medicos, setMedicos] = useState([]);
     // Estado para o Autocomplete de Procedimentos
     const [procSearch, setProcSearch] = useState('');
     const [showProcList, setShowProcList] = useState(false);
@@ -90,6 +91,12 @@ const Dashboard = () => {
                 if (procList && Array.isArray(procList)) {
                     procList.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
                     setProcedures(procList);
+                }
+
+                // 3. Médicos
+                const { data: medicosData } = await supabase.from('users').select('*').in('role', ['Médico', 'Médico Autorizador']).eq('status', 'Ativo').order('name', { ascending: true });
+                if (medicosData) {
+                    setMedicos(medicosData);
                 }
             } catch (error) {
                 console.error("Erro ao carregar dados iniciais:", error);
@@ -665,9 +672,8 @@ const Dashboard = () => {
                             )}
                         </div>
 
-                        {/* Cirurgião */}
                         <div className="">
-                            <select className="w-full h-10 px-3 rounded-lg border border-white/80 text-xs uppercase bg-white/60 font-bold text-slate-900 drop-shadow-none shadow-sm outline-none transition-colors" value={advancedFilters.cirurgiao} onChange={(e) => setAdvancedFilters({ ...advancedFilters, cirurgiao: e.target.value })}><option value="">Cirurgião...</option>{settings?.cirurgioes?.map((c, idx) => { const label = typeof c === 'string' ? c : c.nome; return <option key={idx} value={String(label).toUpperCase()}>{label}</option>; })}</select>
+                            <select className="w-full h-10 px-3 rounded-lg border border-white/80 text-xs uppercase bg-white/60 font-bold text-slate-900 drop-shadow-none shadow-sm outline-none transition-colors" value={advancedFilters.cirurgiao} onChange={(e) => setAdvancedFilters({ ...advancedFilters, cirurgiao: e.target.value })}><option value="">Cirurgião...</option>{medicos.map((m) => <option key={m.id} value={String(m.name).toUpperCase()}>{m.name}</option>)}</select>
                         </div>
 
                         {/* Especialidade */}

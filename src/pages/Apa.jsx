@@ -371,7 +371,7 @@ export default function Apa({ paciente }) {
             if (mostrarTodasUnidades && unidades && unidades.length > 0) {
                 query = query.in('unidade', unidades);
             } else if (unidadeAtual) {
-                query = query.or(`unidade.eq.${unidadeAtual},unidade.is.null`);
+                query = query.or(`unidade.eq."${unidadeAtual}",unidade.is.null`);
             }
 
             if (mostrarLixeira) {
@@ -398,7 +398,7 @@ export default function Apa({ paciente }) {
                     if (mostrarTodasUnidades && unidades && unidades.length > 0) {
                         fallbackQuery = fallbackQuery.in('unidade', unidades);
                     } else if (unidadeAtual) {
-                        fallbackQuery = fallbackQuery.or(`unidade.eq.${unidadeAtual},unidade.is.null`);
+                        fallbackQuery = fallbackQuery.or(`unidade.eq."${unidadeAtual}",unidade.is.null`);
                     }
 
                     const fallback = await fallbackQuery;

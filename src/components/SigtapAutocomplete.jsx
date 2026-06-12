@@ -25,7 +25,7 @@ export const SigtapAutocomplete = ({ value, onSelect, disabled, className }) => 
                 const { data, error } = await supabase
                     .from('sigtap')
                     .select('codigo, nome')
-                    .or(`nome.ilike.%${searchTerm}%,codigo.ilike.%${searchTerm}%`)
+                    .or(`nome.ilike."%${searchTerm}%",codigo.ilike."%${searchTerm}%"`)
                     .limit(300);
 
                 if (error) throw error;

@@ -1020,7 +1020,7 @@ const RenderSection = ({ title, category, placeholder, inputValue, items, onInpu
                         value={inputValue || ''}
                         onChange={(e) => onInputChange(category, e.target.value)}
                         placeholder={placeholder}
-                        className="flex-1 h-9 px-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-[13px] font-semibold text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-500"
+                        className="flex-1 h-9 px-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-[13px] font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-500"
                         onKeyDown={(e) => e.key === 'Enter' && onAdd(category)}
                     />
                     <button
@@ -1082,231 +1082,6 @@ const RenderSection = ({ title, category, placeholder, inputValue, items, onInpu
     );
 };
 
-// --- DOCTOR EDITABLE LIST COMPONENT ---
-const RenderDoctorSection = ({ items, especialidades = [], onAdd, onRemove, onEdit }) => {
-    const [editingIndex, setEditingIndex] = useState(null);
-    const [editValue, setEditValue] = useState({ nome: '', crm: '', cpf: '', especialidade: '', sexo: '', rqe: '' });
-    const [newValue, setNewValue] = useState({ nome: '', crm: '', cpf: '', especialidade: '', sexo: '', rqe: '' });
-
-    const handleAdd = () => {
-        if (!newValue.nome) {
-            toast.error("Preencha ao menos o Nome da Equipe/Médico");
-            return;
-        }
-        onAdd('cirurgioes', { id: Date.now().toString(), ...newValue });
-        setNewValue({ nome: '', crm: '', cpf: '', especialidade: '', sexo: '', rqe: '' });
-    };
-
-    const startEdit = (index, item) => {
-        setEditingIndex(index);
-        if (typeof item === 'string') {
-            setEditValue({ nome: item, crm: '', cpf: '', especialidade: '', sexo: '', rqe: '' });
-        } else {
-            setEditValue({ nome: item.nome || '', crm: item.crm || '', cpf: item.cpf || '', especialidade: item.especialidade || '', sexo: item.sexo || '', rqe: item.rqe || '' });
-        }
-    };
-
-    const saveEdit = async (index) => {
-        if (!editValue.nome) return;
-        const original = items[index];
-        const updated = typeof original === 'string'
-            ? { id: Date.now().toString(), ...editValue }
-            : { ...original, ...editValue };
-
-        await onEdit('cirurgioes', index, updated);
-        setEditingIndex(null);
-        setEditValue({ nome: '', crm: '', cpf: '', especialidade: '', sexo: '', rqe: '' });
-    };
-
-    const cancelEdit = () => {
-        setEditingIndex(null);
-    };
-
-    return (
-        <div className="flex flex-col bg-white/60 backdrop-blur-md rounded-xl border border-white/60 shadow-sm overflow-hidden md:col-span-2 lg:col-span-3">
-            <div className="p-4 border-b border-white/60 bg-white/60 flex flex-col md:flex-row gap-2 md:items-end flex-wrap">
-                <div className="flex-1 min-w-[200px]">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
-                        Nome da Equipe / Médico
-                    </label>
-                    <input
-                        value={newValue.nome}
-                        onChange={(e) => setNewValue({ ...newValue, nome: e.target.value })}
-                        placeholder="Nome Completo..."
-                        className="w-full h-8 px-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs font-semibold text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all uppercase placeholder:normal-case placeholder:text-slate-500"
-                    />
-                </div>
-                <div className="w-full md:w-[200px]">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">CRM</label>
-                    <input
-                        value={newValue.crm}
-                        onChange={(e) => setNewValue({ ...newValue, crm: e.target.value })}
-                        placeholder="Ex: 12345-SP"
-                        className="w-full h-8 px-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs font-semibold text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all uppercase placeholder:normal-case placeholder:text-slate-500"
-                    />
-                </div>
-                <div className="w-full md:w-[200px]">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">CPF</label>
-                    <input
-                        value={newValue.cpf}
-                        onChange={(e) => setNewValue({ ...newValue, cpf: maskCPF(e.target.value) })}
-                        placeholder="Ex: 000.000.000-00"
-                        maxLength="14"
-                        className="w-full h-8 px-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs font-semibold text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-500"
-                    />
-                </div>
-                <div className="w-full md:w-[150px]">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">RQE</label>
-                    <input
-                        value={newValue.rqe}
-                        onChange={(e) => setNewValue({ ...newValue, rqe: e.target.value })}
-                        placeholder="Ex: 144064"
-                        className="w-full h-8 px-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs font-semibold text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all uppercase placeholder:normal-case placeholder:text-slate-500"
-                    />
-                </div>
-                <div className="w-full md:w-[200px]">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Especialidade Principal</label>
-                    <select
-                        value={newValue.especialidade}
-                        onChange={(e) => setNewValue({ ...newValue, especialidade: e.target.value })}
-                        className="w-full h-8 px-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs font-semibold text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all uppercase"
-                    >
-                        <option value="">Nenhuma</option>
-                        {especialidades?.map((esp, i) => (
-                            <option key={i} value={esp}>{esp}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="w-full md:w-[150px]">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Sexo</label>
-                    <select
-                        value={newValue.sexo}
-                        onChange={(e) => setNewValue({ ...newValue, sexo: e.target.value })}
-                        className="w-full h-8 px-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs font-semibold text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all uppercase"
-                    >
-                        <option value="">Nenhum</option>
-                        <option value="Masculino">Masculino</option>
-                        <option value="Feminino">Feminino</option>
-                    </select>
-                </div>
-                <button
-                    onClick={handleAdd}
-                    disabled={!newValue.nome}
-                    className="bg-blue-600 text-white h-8 px-4 rounded-lg font-black text-[10px] uppercase hover:bg-blue-700 transition-all flex justify-center items-center shadow-md shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <Plus size={14} className="mr-1" />
-                    Adicionar
-                </button>
-            </div>
-
-            <div className="flex-1 overflow-x-auto min-h-[150px] max-h-[400px] overflow-y-auto">
-                <table className="min-w-full text-left border-collapse">
-                    <thead className="bg-transparent sticky top-0 z-10">
-                        <tr className="border-b border-white/60 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                            <th className="py-2 px-3">Nome / Equipe</th>
-                            <th className="py-2 px-3">Especialidade</th>
-                            <th className="py-2 px-3">CRM / RQE</th>
-                            <th className="py-2 px-3">CPF</th>
-                            <th className="py-2 px-3">Sexo</th>
-                            <th className="py-2 px-3 text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/50">
-                        {items?.map((item, index) => {
-                            const isString = typeof item === 'string';
-                            const nome = isString ? item : item.nome;
-                            const especialidade = isString ? '---' : (item.especialidade || '---');
-                            const crm = isString ? '---' : (item.crm || '---');
-                            const rqe = isString ? '' : (item.rqe || '');
-                            const cpf = isString ? '---' : (item.cpf || '---');
-                            const sexoC = isString ? '---' : (item.sexo || '---');
-
-                            return (
-                                <tr key={index} className="hover:bg-transparent transition-colors group">
-                                    {editingIndex === index ? (
-                                        <td colSpan={5} className="px-5 py-2 animate-in fade-in duration-200">
-                                            <div className="flex gap-2 flex-wrap">
-                                                <input
-                                                    value={editValue.nome}
-                                                    onChange={(e) => setEditValue({ ...editValue, nome: e.target.value })}
-                                                    className="flex-1 h-8 px-2 bg-white/60 border border-blue-400 rounded text-sm font-bold text-slate-800 uppercase outline-none focus:border-blue-500 shadow-sm"
-                                                />
-                                                <select
-                                                    value={editValue.especialidade}
-                                                    onChange={(e) => setEditValue({ ...editValue, especialidade: e.target.value })}
-                                                    className="w-32 h-8 px-2 bg-white/60 border border-blue-400 rounded text-xs font-bold text-slate-800 uppercase outline-none focus:border-blue-500 shadow-sm"
-                                                >
-                                                    <option value="">Nenhuma</option>
-                                                    {especialidades?.map((esp, i) => (
-                                                        <option key={i} value={esp}>{esp}</option>
-                                                    ))}
-                                                </select>
-                                                <input
-                                                    value={editValue.crm}
-                                                    onChange={(e) => setEditValue({ ...editValue, crm: e.target.value })}
-                                                    className="w-20 h-8 px-2 bg-white/60 border border-blue-400 rounded text-xs font-bold text-slate-800 uppercase outline-none focus:border-blue-500 shadow-sm"
-                                                    placeholder="CRM"
-                                                />
-                                                <input
-                                                    value={editValue.rqe}
-                                                    onChange={(e) => setEditValue({ ...editValue, rqe: e.target.value })}
-                                                    className="w-20 h-8 px-2 bg-white/60 border border-blue-400 rounded text-xs font-bold text-slate-800 uppercase outline-none focus:border-blue-500 shadow-sm"
-                                                    placeholder="RQE"
-                                                />
-                                                <input
-                                                    value={editValue.cpf}
-                                                    onChange={(e) => setEditValue({ ...editValue, cpf: maskCPF(e.target.value) })}
-                                                    className="w-28 h-8 px-2 bg-white/60 border border-blue-400 rounded text-xs font-bold text-slate-100 outline-none focus:border-blue-500 shadow-sm"
-                                                    placeholder="CPF"
-                                                    maxLength="14"
-                                                />
-                                                <select
-                                                    value={editValue.sexo}
-                                                    onChange={(e) => setEditValue({ ...editValue, sexo: e.target.value })}
-                                                    className="w-24 h-8 px-2 bg-white/60 border border-blue-400 rounded text-xs font-bold text-slate-800 uppercase outline-none focus:border-blue-500 shadow-sm"
-                                                >
-                                                    <option value="">Nenhum</option>
-                                                    <option value="Masculino">Masculino</option>
-                                                    <option value="Feminino">Feminino</option>
-                                                </select>
-                                                <button onClick={() => saveEdit(index)} className="px-2 text-emerald-600 border border-emerald-200 hover:bg-emerald-50 rounded-md font-bold text-[11px] uppercase shadow-sm"><Check size={14} /></button>
-                                                <button onClick={cancelEdit} className="px-2 text-rose-600 border border-rose-200 hover:bg-rose-50 rounded-md font-bold text-[11px] uppercase shadow-sm"><X size={14} /></button>
-                                            </div>
-                                        </td>
-                                    ) : (
-                                        <>
-                                            <td className="px-3 py-1.5 text-xs font-bold text-slate-800 uppercase">{nome}</td>
-                                            <td className="px-3 py-1.5 text-[11px] font-semibold text-slate-600 uppercase bg-blue-50/50 rounded">{especialidade}</td>
-                                            <td className="px-3 py-1.5 text-[11px] font-semibold text-slate-500 uppercase">{crm} {rqe ? `| RQE ${rqe}` : ''}</td>
-                                            <td className="px-3 py-1.5 text-[11px] font-semibold text-slate-500">{cpf}</td>
-                                            <td className="px-3 py-1.5 text-[11px] font-semibold text-slate-500">{sexoC}</td>
-                                            <td className="px-3 py-1.5 text-center">
-                                                <div className="flex items-center justify-center gap-1.5">
-                                                    <button onClick={() => startEdit(index, item)} className="p-1.5 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-md transition-all shadow-sm">
-                                                        <Edit2 size={12} />
-                                                    </button>
-                                                    <button onClick={() => onRemove('cirurgioes', item)} className="p-1.5 text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-100 rounded-md transition-all shadow-sm">
-                                                        <Trash2 size={12} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </>
-                                    )}
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-                {(!items || items.length === 0) && (
-                    <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-2 py-8 opacity-70">
-                        <AlertTriangle size={24} />
-                        <span className="text-xs uppercase font-bold tracking-widest mt-2">Nenhum médico cadastrado.</span>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
 
 // --- ORIENTACOES E REGRAS DE INTERNAÇÃO MANAGER COMPONENT ---
 const OrientacoesManager = () => {
@@ -1884,7 +1659,7 @@ const Settings = () => {
         let qb = supabase.from('logs').select('*').order('timestamp', { ascending: false });
         
         if (query) {
-            qb = qb.or(`action.ilike.%${query}%,details.ilike.%${query}%,userName.ilike.%${query}%`);
+            qb = qb.or(`action.ilike."%${query}%",details.ilike."%${query}%",userName.ilike."%${query}%"`);
             // Limite maior pra pesquisa
             qb = qb.limit(500);
         } else {
@@ -1904,14 +1679,14 @@ const Settings = () => {
     }, [activeSection]);
 
     const [data, setData] = useState({
-        cirurgioes: [], convenios: [], status: [], locais: [], cidades: [], anestesias: [], especialidades: [],
+        convenios: [], status: [], locais: [], cidades: [], anestesias: [], especialidades: [],
         clinicas: ['Cirúrgica', 'Ambulatorial'],
         caraterInternacao: ['01 - ELETIVA', '02 - URGÊNCIA', '03 - EMERGÊNCIA'],
         nomeInstituicao: 'Porto Feliz Saúde', corPrincipal: '#2563eb', logoUrl: '/logo.png'
     });
 
     const [newItem, setNewItem] = useState({
-        cirurgioes: '', convenios: '', status: '', locais: '', cidades: '', anestesias: '', especialidades: '', clinicas: '', caraterInternacao: ''
+        convenios: '', status: '', locais: '', cidades: '', anestesias: '', especialidades: '', clinicas: '', caraterInternacao: ''
     });
 
     const navigate = useNavigate();

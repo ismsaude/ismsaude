@@ -337,21 +337,17 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
     const handleInternalSave = async (e) => {
         e.preventDefault();
 
-        // Validação Rigorosa
+        // Validação Rigorosa (Apenas campos solicitados)
         const rq = (val) => val && String(val).trim() !== '';
         const isPacienteValido = rq(formData.nomePaciente || formData.paciente) &&
-            rq(formData.cpf) &&
-            rq(formData.cns) &&
             rq(formData.dataNascimento || formData.nascimento) &&
-            rq(formData.telefone1 || formData.telefone) &&
-            rq(formData.municipio || formData.cidade);
+            rq(formData.telefone1 || formData.telefone);
 
         const isAgendamentoValido = rq(formData.procedimento) &&
             rq(formData.cirurgiao) &&
             rq(formData.especialidade) &&
             rq(formData.anestesia) &&
             rq(formData.convenio) &&
-            rq(formData.prioridade) &&
             rq(formData.status);
 
         if (!isPacienteValido || !isAgendamentoValido) {
@@ -526,9 +522,9 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
         }
     };
 
-    const inputStyle = "w-full h-8 px-2 py-1 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all text-slate-900 drop-shadow-none disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white/70";
-    const labelStyle = "text-[10px] font-black text-slate-600 uppercase ml-1 mb-0.5 block";
-    const sectionStyle = "bg-white/60 backdrop-blur-lg p-3.5 rounded-xl shadow-sm border border-white/400";
+    const inputStyle = "w-full h-10 px-3 bg-white/40 backdrop-blur-2xl border border-white/60 shadow-inner rounded-xl text-[11px] font-bold text-slate-800 outline-none focus:bg-white/80 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-400 transition-all placeholder:text-slate-400 uppercase disabled:opacity-50 disabled:cursor-not-allowed drop-shadow-sm";
+    const labelStyle = "text-[9px] font-black text-slate-500 uppercase tracking-[0.15em] ml-1 mb-1.5 block flex items-center gap-1";
+    const sectionStyle = "bg-white/30 backdrop-blur-3xl p-5 rounded-2xl shadow-xl border border-white/60 relative overflow-hidden";
 
     return (
         <>
@@ -539,29 +535,31 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
             <div className="fixed top-16 inset-x-0 bottom-0 z-[9999] flex items-center justify-center p-4 font-sans text-slate-800 pointer-events-none print:hidden">
 
                 {/* A Caixa Branca (Restaura cliques) */}
-                <div className="bg-white/90 backdrop-blur-3xl rounded-xl shadow-2xl w-full max-w-6xl overflow-hidden max-h-[95vh] flex flex-col border border-white/400 pointer-events-auto">
+                <div className="bg-gradient-to-br from-slate-50/95 to-slate-100/90 backdrop-blur-3xl rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] w-full max-w-6xl overflow-hidden max-h-[95vh] flex flex-col border border-white pointer-events-auto ring-1 ring-black/5">
 
-                    <div className="px-6 py-4 border-b border-white/400 flex justify-between items-center bg-white/60 sticky top-0 z-10 backdrop-blur-md">
+                    <div className="px-6 py-5 border-b border-white/400 flex justify-between items-center bg-white/40 sticky top-0 z-10 backdrop-blur-2xl">
                         <div>
-                            <h3 className="font-bold text-lg text-slate-800 uppercase tracking-wider">
+                            <h3 className="font-black text-xl text-slate-800 uppercase tracking-widest flex items-center gap-3">
+                                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
                                 {surgery.id ? 'Edição de Prontuário' : 'INSERIR NA FILA'}
                             </h3>
-                            <p className="text-[11px] text-slate-600 font-semibold uppercase mt-0.5">Base unificada</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 ml-5">Base unificada de procedimentos</p>
                         </div>
-                        <button onClick={onClose} className="p-2 hover:bg-rose-500/20 rounded-lg text-slate-600 hover:text-rose-600"><X size={20} /></button>
+                        <button onClick={onClose} className="p-2 hover:bg-rose-500/20 bg-white/60 rounded-full text-slate-600 hover:text-rose-600 shadow-sm border border-white transition-all"><X size={18} strokeWidth={3} /></button>
                     </div>
 
-                    <form onSubmit={handleInternalSave} className="p-4 overflow-y-auto space-y-3 bg-white/60">
+                    <form onSubmit={handleInternalSave} className="p-5 overflow-y-auto space-y-4 bg-transparent custom-scrollbar">
 
                         {/* 1. DADOS PESSOAIS */}
                         <div className={sectionStyle}>
-                            <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-2 flex items-center gap-2"><User size={14} /> Dados Pessoais</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                            <h3 className="text-[11px] font-black text-blue-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><User size={16} /> Dados Pessoais</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                                 <div className="md:col-span-2 relative">
-                                    <label className={labelStyle}>Nome Completo <span className="text-red-500 ml-1">*</span></label>
+                                    <label className={labelStyle}>Nome Completo <span className="text-red-500 ml-1 text-xs">*</span></label>
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
-                                        <input value={searchPaciente} onChange={e => { setSearchPaciente(e.target.value); setShowPacientes(true); setFormData({ ...formData, nomePaciente: e.target.value }); }} onFocus={() => setShowPacientes(true)} placeholder="Buscar por Nome ou CPF..." className={`${inputStyle} pl-9 uppercase`} disabled={!podeEditar} required />
+                                        <input value={searchPaciente} onChange={e => { setSearchPaciente(e.target.value); setShowPacientes(true); setFormData({ ...formData, nomePaciente: e.target.value }); }} onFocus={() => setShowPacientes(true)} placeholder="Buscar por Nome ou CPF..." className={`${inputStyle} pl-9`} disabled={!podeEditar} required />
                                     </div>
                                     {showPacientes && searchPaciente && (
                                         <div className="absolute z-50 w-full mt-1 bg-white/95 backdrop-blur-xl border border-white/60 rounded-xl shadow-2xl max-h-60 overflow-y-auto custom-scrollbar">
@@ -573,7 +571,7 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                             )) : (
                                                 <div className="p-3 bg-white/60 flex flex-col items-center text-center gap-2 border-t border-white/40">
                                                     <span className="text-[11px] font-bold text-slate-500 uppercase">Nenhum paciente encontrado.</span>
-                                                    <button type="button" onClick={() => { setShowModalNovoPaciente(true); setShowPacientes(false); }} className="text-[11px] font-black text-blue-600 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg uppercase transition-colors flex items-center gap-1">
+                                                    <button type="button" onClick={() => { setShowModalNovoPaciente(true); setShowPacientes(false); }} className="text-[11px] font-black text-blue-600 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg uppercase transition-colors flex items-center gap-1 shadow-sm">
                                                         <Plus size={12} /> Deseja adicionar um novo cadastro?
                                                     </button>
                                                 </div>
@@ -581,14 +579,14 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                         </div>
                                     )}
                                 </div>
-                                <div><label className={labelStyle}>CPF <span className="text-red-500 ml-1">*</span></label><input name="cpf" value={formData.cpf || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} placeholder="000.000.000-00" maxLength="14" required /></div>
-                                <div><label className={labelStyle}>CNS <span className="text-red-500 ml-1">*</span></label><input name="cns" value={formData.cns || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} maxLength="18" required /></div>
-                                <div><label className={labelStyle}>Nascimento <span className="text-red-500 ml-1">*</span></label><input type="date" name="nascimento" value={formData.nascimento || formData.dataNascimento || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} required /></div>
-                                <div><label className={labelStyle}>Telefone <span className="text-red-500 ml-1">*</span></label><input name="telefone1" value={formData.telefone1 || formData.telefone || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} maxLength="15" required /></div>
+                                <div><label className={labelStyle}>CPF</label><input name="cpf" value={formData.cpf || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} placeholder="000.000.000-00" maxLength="14" /></div>
+                                <div><label className={labelStyle}>CNS</label><input name="cns" value={formData.cns || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} maxLength="18" /></div>
+                                <div><label className={labelStyle}>Nascimento <span className="text-red-500 ml-1 text-xs">*</span></label><input type="date" name="nascimento" value={formData.nascimento || formData.dataNascimento || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} required /></div>
+                                <div><label className={labelStyle}>Telefone <span className="text-red-500 ml-1 text-xs">*</span></label><input name="telefone1" value={formData.telefone1 || formData.telefone || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} maxLength="15" required /></div>
                                 <div><label className={labelStyle}>Tel. 2</label><input name="telefone2" value={formData.telefone2 || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} maxLength="15" /></div>
                                 <div className="md:col-span-2">
-                                    <label className={labelStyle}>Cidade <span className="text-red-500 ml-1">*</span></label>
-                                    <select name="municipio" value={String(formData.municipio || formData.cidade || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase`} required>
+                                    <label className={labelStyle}>Cidade</label>
+                                    <select name="municipio" value={String(formData.municipio || formData.cidade || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={inputStyle}>
                                         <option value="">SELECIONE...</option>
                                         {settings?.cidades?.length > 0 ? (
                                             settings.cidades.map(c => <option key={c} value={String(c).toUpperCase()}>{c}</option>)
@@ -597,16 +595,17 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                         )}
                                     </select>
                                 </div>
-                                <div><label className={`${labelStyle} text-center`}>Idade</label><div className={`bg-white/70 text-slate-500 border border-white/60 rounded-lg h-9 flex items-center justify-center font-semibold text-sm italic ${isLocked ? 'opacity-50' : ''}`}>{calculateAge(formData.dataNascimento || formData.nascimento)} anos</div></div>
+                                <div><label className={`${labelStyle} justify-center`}>Idade</label><div className={`bg-white/40 shadow-inner text-slate-500 border border-white/60 rounded-xl h-10 flex items-center justify-center font-bold text-xs uppercase tracking-widest ${isLocked ? 'opacity-50' : ''}`}>{calculateAge(formData.dataNascimento || formData.nascimento)} anos</div></div>
                             </div>
                         </div>
 
                         {/* 2. PROCEDIMENTO (SIGTAP) */}
                         <div className={`${sectionStyle} relative z-[60]`}>
-                            <h3 className="text-xs font-black text-emerald-600 uppercase tracking-[0.2em] mb-3 flex items-center gap-3"><Stethoscope size={16} /> Procedimento</h3>
+                            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                            <h3 className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><Stethoscope size={16} /> Procedimento</h3>
                             <div className={`grid grid-cols-1 md:grid-cols-12 gap-3 ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
                                 <div className="md:col-span-8 relative">
-                                    <label className={labelStyle}>Descrição da Cirurgia (SIGTAP) <span className="text-red-500 ml-1">*</span></label>
+                                    <label className={labelStyle}>Descrição da Cirurgia (SIGTAP) <span className="text-red-500 ml-1 text-xs">*</span></label>
                                     <SigtapAutocomplete
                                         value={formData.procedimento}
                                         onSelect={(selecionado) => setFormData({ ...formData, procedimento: selecionado.nome })}
@@ -614,41 +613,42 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                                         disabled={disableInputs}
                                     />
                                 </div>
-                                <div className="md:col-span-4"><label className={labelStyle}>Cirurgião <span className="text-red-500 ml-1">*</span></label><select name="cirurgiao" value={String(formData.cirurgiao || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase`} required><option value="">SELECIONE...</option>{settings.cirurgioes?.map((c, idx) => { const label = typeof c === 'string' ? c : c.nome; return <option key={idx} value={String(label).toUpperCase()}>{label}</option>; })}</select></div>
-                                <div className="md:col-span-4"><label className={labelStyle}>Especialidade <span className="text-red-500 ml-1">*</span></label><select name="especialidade" value={String(formData.especialidade || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase`} required><option value="">SELECIONE...</option>{settings.especialidades?.map((esp, idx) => <option key={idx} value={String(esp).toUpperCase()}>{esp}</option>)}</select></div>
-                                <div className="md:col-span-4"><label className={labelStyle}>Tipo de Anestesia <span className="text-red-500 ml-1">*</span></label><select name="anestesia" value={String(formData.anestesia || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase`} required><option value="">SELECIONE...</option>{settings.anestesias?.map((a, idx) => <option key={idx} value={String(a).toUpperCase()}>{a}</option>)}</select></div>
-                                <div className="md:col-span-4"><label className={labelStyle}>Convênio <span className="text-red-500 ml-1">*</span></label><select name="convenio" value={String(formData.convenio || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase`} required><option value="">SELECIONE...</option>{settings.convenios?.map((c, idx) => <option key={idx} value={String(c).toUpperCase()}>{c}</option>)}</select></div>
-                                <div className="md:col-span-4"><label className={labelStyle}>Prioridade <span className="text-red-500 ml-1">*</span></label><select name="prioridade" value={String(formData.prioridade || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase text-slate-800`} required><option value="">SELECIONE...</option>{settings.prioridades?.map((p, idx) => <option key={idx} value={String(p).toUpperCase()}>{p}</option>)}</select></div>
+                                <div className="md:col-span-4"><label className={labelStyle}>Cirurgião <span className="text-red-500 ml-1 text-xs">*</span></label><select name="cirurgiao" value={String(formData.cirurgiao || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={inputStyle} required><option value="">SELECIONE...</option>{settings.cirurgioes?.map((c, idx) => { const label = typeof c === 'string' ? c : c.nome; return <option key={idx} value={String(label).toUpperCase()}>{label}</option>; })}</select></div>
+                                <div className="md:col-span-4"><label className={labelStyle}>Especialidade <span className="text-red-500 ml-1 text-xs">*</span></label><select name="especialidade" value={String(formData.especialidade || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={inputStyle} required><option value="">SELECIONE...</option>{settings.especialidades?.map((esp, idx) => <option key={idx} value={String(esp).toUpperCase()}>{esp}</option>)}</select></div>
+                                <div className="md:col-span-4"><label className={labelStyle}>Tipo de Anestesia <span className="text-red-500 ml-1 text-xs">*</span></label><select name="anestesia" value={String(formData.anestesia || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={inputStyle} required><option value="">SELECIONE...</option>{settings.anestesias?.map((a, idx) => <option key={idx} value={String(a).toUpperCase()}>{a}</option>)}</select></div>
+                                <div className="md:col-span-4"><label className={labelStyle}>Convênio <span className="text-red-500 ml-1 text-xs">*</span></label><select name="convenio" value={String(formData.convenio || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={inputStyle} required><option value="">SELECIONE...</option>{settings.convenios?.map((c, idx) => <option key={idx} value={String(c).toUpperCase()}>{c}</option>)}</select></div>
+                                <div className="md:col-span-4"><label className={labelStyle}>Prioridade</label><select name="prioridade" value={String(formData.prioridade || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={inputStyle}><option value="">SELECIONE...</option>{settings.prioridades?.map((p, idx) => <option key={idx} value={String(p).toUpperCase()}>{p}</option>)}</select></div>
                             </div>
                         </div>
 
                         {/* 3. ADMINISTRATIVO SUS */}
                         <div className={`${sectionStyle} relative z-[40]`}>
-                            <div className="flex flex-wrap items-center justify-between mb-3 gap-3">
-                                <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-3">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                            <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
+                                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
                                     <ShieldCheck size={16} /> Controle Administrativo
                                 </h3>
                                 <button
                                     type="button"
                                     onClick={handleManualSync}
                                     disabled={isSyncing || isLocked}
-                                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none hover:bg-blue-100 border border-blue-100 hover:border-blue-200 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-sm disabled:opacity-50"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg border-none hover:from-indigo-600 hover:to-blue-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50"
                                     title="Vasculhar sistema por AIHs e APAs deste paciente"
                                 >
-                                    <RefreshCw size={12} className={isSyncing ? "animate-spin" : ""} />
+                                    <RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
                                     {isSyncing ? 'Buscando...' : 'Sincronizar AIH / APA'}
                                 </button>
                             </div>
-                            <div className={`grid grid-cols-1 md:grid-cols-5 gap-3 mb-3 ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <div className={`grid grid-cols-1 md:grid-cols-5 gap-3 mb-4 ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
                                 <div><label className={labelStyle}>Atendimento</label><input type="date" name="dataAtendimento" value={formData.dataAtendimento || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} /></div>
                                 <div><label className={labelStyle}>Autorização</label><input type="date" name="dataAutorizacao" value={formData.dataAutorizacao || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} /></div>
                                 <div><label className={labelStyle}>Agendamento</label><input type="date" name="dataAgendado" value={formData.dataAgendado || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} /></div>
-                                <div><label className={labelStyle}>Horário {formData.dataAgendado && <span className="text-red-500 ml-1">*</span>}</label><input type="time" name="horario" value={formData.horario || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} required={!!formData.dataAgendado} /></div>
-                                <div><label className={labelStyle}>Sala {formData.dataAgendado && <span className="text-red-500 ml-1">*</span>}</label><select name="sala" value={String(formData.sala || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase`} required={!!formData.dataAgendado}><option value="">Selecione...</option>{settings.locais?.map(l => <option key={l} value={String(l).toUpperCase()}>{l}</option>)}</select></div>
+                                <div><label className={labelStyle}>Horário {formData.dataAgendado && <span className="text-red-500 ml-1 text-xs">*</span>}</label><input type="time" name="horario" value={formData.horario || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} required={!!formData.dataAgendado} /></div>
+                                <div><label className={labelStyle}>Sala {formData.dataAgendado && <span className="text-red-500 ml-1 text-xs">*</span>}</label><select name="sala" value={String(formData.sala || '').toUpperCase()} onChange={handleChange} disabled={disableInputs} className={inputStyle} required={!!formData.dataAgendado}><option value="">Selecione...</option>{settings.locais?.map(l => <option key={l} value={String(l).toUpperCase()}>{l}</option>)}</select></div>
                             </div>
-                            <div className={`grid grid-cols-2 md:grid-cols-4 gap-2 ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
                                 {['aih', 'autorizada', 'apa', 'opme'].map(field => (
-                                    <button key={field} type="button" disabled={disableInputs} onClick={podeEditar ? () => setFormData({ ...formData, [field]: !formData[field] }) : undefined} className={`py-2 px-3 rounded-xl border flex items-center justify-between transition-all ${formData[field] ? 'bg-emerald-500/20 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-white/60 border-white/40 text-slate-500'} ${!podeEditar ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-blue-300'}`}><span className="text-[11px] font-bold uppercase">{field.toUpperCase()}</span><CheckCircle2 size={14} className={formData[field] ? 'opacity-100' : 'opacity-30'} /></button>
+                                    <button key={field} type="button" disabled={disableInputs} onClick={podeEditar ? () => setFormData({ ...formData, [field]: !formData[field] }) : undefined} className={`py-2 px-4 rounded-xl border-2 flex items-center justify-between transition-all shadow-sm ${formData[field] ? 'bg-indigo-50/80 border-indigo-500 text-indigo-700' : 'bg-white/40 border-white/60 text-slate-500'} ${!podeEditar ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-indigo-300'}`}><span className="text-[11px] font-black tracking-widest uppercase">{field.toUpperCase()}</span><CheckCircle2 size={16} className={formData[field] ? 'opacity-100 text-indigo-500' : 'opacity-30'} /></button>
                                 ))}
                             </div>
                         </div>
@@ -656,13 +656,14 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                         {/* 4. STATUS E DOCUMENTOS (ATUALIZADO) */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className={`${sectionStyle} flex flex-col justify-between ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
-                                <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-2"><Activity size={16} /> Status e Notas</h3>
+                                <div className="absolute top-0 left-0 w-1 h-full bg-rose-400"></div>
+                                <h3 className="text-[11px] font-black text-rose-500 uppercase tracking-widest mb-4 flex items-center gap-2"><Activity size={16} /> Status e Notas</h3>
                                 <div className="space-y-6">
                                     <div>
                                         <div className="flex justify-between items-center mb-1">
-                                            <label className={labelStyle}>Status <span className="text-red-500 ml-1">*</span></label>
+                                            <label className={labelStyle}>Status <span className="text-red-500 ml-1 text-xs">*</span></label>
                                         </div>
-                                        <select name="status" value={formData.status?.toUpperCase() || ''} onChange={handleChange} disabled={disableInputs} className={`${inputStyle} uppercase`} required>
+                                        <select name="status" value={formData.status?.toUpperCase() || ''} onChange={handleChange} disabled={disableInputs} className={inputStyle} required>
                                             <option value="">Selecione...</option>
                                             {settings.status?.map(s => <option key={s} value={s.toUpperCase()}>{s.toUpperCase()}</option>)}
                                             {!settings.status?.map(s => s.toUpperCase()).includes('NÃO INTERNOU') && <option value="NÃO INTERNOU">NÃO INTERNOU</option>}
@@ -736,7 +737,8 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                             </div>
 
                             <div className={`${sectionStyle} flex flex-col justify-between ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
-                                <div><h3 className="text-xs font-black uppercase tracking-widest mb-2 text-slate-600 flex items-center gap-2"><Paperclip size={16} /> Central de Documentos</h3></div>
+                                <div className="absolute top-0 left-0 w-1 h-full bg-slate-400"></div>
+                                <div><h3 className="text-[11px] font-black uppercase tracking-widest mb-4 text-slate-600 flex items-center gap-2"><Paperclip size={16} /> Central de Documentos</h3></div>
 
                                 {/* LISTA DE ARQUIVOS E GUIAS VIRTUAIS */}
                                 <div className="space-y-2 mb-4 max-h-32 overflow-y-auto custom-scrollbar bg-white/60 p-2 rounded-2xl border border-white/400">
@@ -801,12 +803,12 @@ export const EditSurgeryModal = ({ surgery, settings, pacientes = [], allSurgeri
                             </div>
                         </div>
 
-                        <div className="pt-4 flex justify-end gap-3">
-                            <button type="button" onClick={onClose} className="h-9 px-6 text-slate-500 font-semibold text-xs uppercase hover:text-slate-600">{podeEditar ? 'Cancelar' : 'Fechar'}</button>
+                        <div className="pt-4 flex justify-end gap-3 sticky bottom-0 bg-white/50 backdrop-blur-3xl -mx-5 -mb-5 p-5 border-t border-white/60">
+                            <button type="button" onClick={onClose} className="h-10 px-6 text-slate-500 font-bold text-[11px] uppercase hover:text-slate-700 bg-white/60 hover:bg-white/90 rounded-xl transition-all shadow-sm">{podeEditar ? 'Cancelar' : 'Fechar'}</button>
                             {podeEditar && (
-                                <button type="submit" disabled={uploading} className="bg-blue-600 text-white h-10 px-8 rounded-lg font-bold text-xs uppercase shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2">
-                                    {uploading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                                    {uploading ? 'Enviando...' : 'Salvar'}
+                                <button type="submit" disabled={uploading} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white h-10 px-8 rounded-xl font-black text-[11px] tracking-widest uppercase shadow-lg shadow-blue-500/30 hover:from-blue-700 hover:to-indigo-700 hover:shadow-blue-500/50 transition-all flex items-center gap-2 border border-blue-400/50">
+                                    {uploading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} strokeWidth={2.5} />}
+                                    {uploading ? 'Enviando...' : 'Salvar Prontuário'}
                                 </button>
                             )}
                         </div>
@@ -861,6 +863,8 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
     });
     const [sortConfig, setSortConfig] = useState({ field: 'createdAt', direction: 'desc' });
     const [editingSurgery, setEditingSurgery] = useState(null);
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [medicos, setMedicos] = useState([]);
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -878,7 +882,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
             const { data, error } = await supabase
                 .from('surgeries')
                 .select('*')
-                .or(`unidade.eq.${unidadeAtual},unidade.is.null`)
+                .or(`unidade.eq."${unidadeAtual}",unidade.is.null`)
                 .order('createdAt', { ascending: false })
                 .limit(8000);
             
@@ -920,6 +924,12 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
             if (data) setPacientes(data);
         };
         fetchPacientes();
+
+        const fetchMedicos = async () => {
+            const { data } = await supabase.from('users').select('*').in('role', ['Médico', 'Médico Autorizador']).eq('status', 'Ativo').order('name', { ascending: true });
+            if (data) setMedicos(data);
+        };
+        fetchMedicos();
 
         const subscription = supabase
             .channel('custom-surgeries-channel')
@@ -1148,15 +1158,28 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
 
             {/* UPPER SPACE FREED */}
 
-            <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 backdrop-blur-lg p-3 rounded-2xl shadow-sm backdrop-blur-md border border-blue-100/50 space-y-3">
-                <div className="flex flex-col md:flex-row gap-3 items-center">
+            <div className="bg-white/60 backdrop-blur-2xl p-3 rounded-2xl shadow-lg shadow-slate-200/50 border border-white space-y-3">
+                <div className="flex flex-wrap md:flex-nowrap gap-2 items-center">
                     <div className="relative w-full md:flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-                        <input type="text" placeholder="Pesquisar paciente ou CNS..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-9 pl-9 pr-4 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 font-bold text-xs text-slate-700 placeholder:text-slate-500 shadow-sm transition-all" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <input type="text" placeholder="Pesquisar paciente ou procedimento..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-10 pl-9 pr-4 bg-white/80 border border-white shadow-sm rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 font-bold text-[11px] uppercase text-slate-700 placeholder:normal-case placeholder:text-slate-400 transition-all" />
                     </div>
                     
+                    <select value={filters.status?.toUpperCase() || ''} onChange={e => setFilters({ ...filters, status: e.target.value })} className="h-10 px-3 bg-white/80 border border-white shadow-sm rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 w-full md:w-40 shrink-0">
+                        <option value="">Status: Todos</option>
+                        {settings.status?.map(s => <option key={s} value={s.toUpperCase()}>{s.toUpperCase()}</option>)}
+                    </select>
+
+                    <select value={filters.cirurgiao} onChange={e => setFilters({ ...filters, cirurgiao: e.target.value })} className="h-10 px-3 bg-white/80 border border-white shadow-sm rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 w-full md:w-56 shrink-0">
+                        <option value="">Cirurgião: Todos</option>
+                        {medicos.map((m) => <option key={m.id} value={String(m.name).toUpperCase()}>{m.name}</option>)}
+                    </select>
+
                     <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0 justify-end">
-                        <button onClick={resetFilters} className="h-9 px-3 text-rose-500 hover:bg-rose-500/20 rounded-xl transition-all flex items-center gap-1.5 font-black text-[10px] uppercase border border-white/60 bg-white/60 shadow-sm"><FilterX size={14} /> Limpar</button>
+                        <button onClick={() => setShowAdvancedFilters(!showAdvancedFilters)} className={`h-10 px-4 rounded-xl transition-all flex items-center gap-2 font-black text-[10px] uppercase border shadow-sm ${showAdvancedFilters ? 'bg-blue-100 border-blue-200 text-blue-700' : 'bg-white border-white text-slate-600 hover:bg-slate-50'}`}>
+                            <FilterX size={14} /> Filtros
+                        </button>
+                        <button onClick={resetFilters} className="h-10 px-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-all flex items-center gap-1.5 font-black text-[10px] uppercase border border-white bg-white shadow-sm"><X size={14} /> Limpar</button>
                         
                         {hasPermission('Criar Agendamentos') && (
                             <button onClick={() => setEditingSurgery({
@@ -1165,40 +1188,42 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                                 prioridade: 'ELETIVA',
                                 convenio: settings.convenios?.[0] || 'SUS',
                                 municipio: settings.cidades?.[0] || 'Porto Feliz'
-                            })} className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-slate-800 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center gap-1.5 shadow-md shadow-blue-500/20">
+                            })} className="h-10 px-5 bg-blue-600 text-white hover:bg-blue-700 border-none rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center gap-2 shadow-[0_4px_15px_rgba(59,130,246,0.3)]">
                                 <Plus size={14} /> Novo Paciente
                             </button>
                         )}
                     </div>
                 </div>
                 
-                <div className="grid grid-cols-2 lg:grid-cols-6 gap-2">
-                    <select value={filters.status?.toUpperCase() || ''} onChange={e => setFilters({ ...filters, status: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Status: Todos</option>{settings.status?.map(s => <option key={s} value={s.toUpperCase()}>{s.toUpperCase()}</option>)}</select>
-                    <select value={filters.procedimento} onChange={e => setFilters({ ...filters, procedimento: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Cirurgia: Todas</option>{uniqueProcedures.map(p => <option key={p} value={p}>{p}</option>)}</select>
-                    <select value={filters.cirurgiao} onChange={e => setFilters({ ...filters, cirurgiao: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Cirurgião: Todos</option>{settings.cirurgioes?.map((c, idx) => { const label = typeof c === 'string' ? c : c.nome; return <option key={idx} value={String(label).toUpperCase()}>{label}</option>; })}</select>
-                    <select value={filters.especialidade} onChange={e => setFilters({ ...filters, especialidade: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Especialidade: Todas</option>{settings.especialidades?.map(e => <option key={e} value={String(e).toUpperCase()}>{e}</option>)}</select>
-                    <select value={filters.convenio} onChange={e => setFilters({ ...filters, convenio: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Convênio: Todos</option>{settings.convenios?.map(c => <option key={c} value={c}>{c}</option>)}</select>
-                    <select value={filters.prioridade} onChange={e => setFilters({ ...filters, prioridade: e.target.value })} className="h-9 px-3 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400 shadow-sm"><option value="">Class.: Todas</option>{settings.prioridades?.map(p => <option key={p} value={p}>{p}</option>)}</select>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-blue-100/50">
-                    {['atend', 'autoriz', 'agend'].map((type) => (
-                        <div key={type} className="flex flex-col gap-1">
-                            <span className="text-[9px] font-black text-blue-800/60 uppercase pl-1">{type === 'atend' ? 'Atendimento' : type === 'autoriz' ? 'Autorização' : 'Agendamento'}</span>
-                            <div className="flex items-center bg-white/60 rounded-xl p-1 gap-1 border border-white/60 shadow-sm h-8">
-                                <input type="date" value={filters[`${type}Inicio`]} onChange={e => setFilters({ ...filters, [`${type}Inicio`]: e.target.value })} className="bg-transparent text-[10px] font-black text-slate-700 outline-none flex-1 text-center w-full" />
-                                <span className="text-slate-600">➜</span>
-                                <input type="date" value={filters[`${type}Fim`]} onChange={e => setFilters({ ...filters, [`${type}Fim`]: e.target.value })} className="bg-transparent text-[10px] font-black text-slate-700 outline-none flex-1 text-center w-full" />
-                            </div>
+                {showAdvancedFilters && (
+                    <div className="animate-in fade-in slide-in-from-top-2 pt-3 border-t border-slate-200/60 space-y-3">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                            <select value={filters.procedimento} onChange={e => setFilters({ ...filters, procedimento: e.target.value })} className="h-9 px-3 bg-white/70 border border-white shadow-sm rounded-lg text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400"><option value="">Cirurgia: Todas</option>{uniqueProcedures.map(p => <option key={p} value={p}>{p}</option>)}</select>
+                            <select value={filters.especialidade} onChange={e => setFilters({ ...filters, especialidade: e.target.value })} className="h-9 px-3 bg-white/70 border border-white shadow-sm rounded-lg text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400"><option value="">Especialidade: Todas</option>{settings.especialidades?.map(e => <option key={e} value={String(e).toUpperCase()}>{e}</option>)}</select>
+                            <select value={filters.convenio} onChange={e => setFilters({ ...filters, convenio: e.target.value })} className="h-9 px-3 bg-white/70 border border-white shadow-sm rounded-lg text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400"><option value="">Convênio: Todos</option>{settings.convenios?.map(c => <option key={c} value={c}>{c}</option>)}</select>
+                            <select value={filters.prioridade} onChange={e => setFilters({ ...filters, prioridade: e.target.value })} className="h-9 px-3 bg-white/70 border border-white shadow-sm rounded-lg text-[10px] text-slate-700 font-black uppercase outline-none focus:border-blue-400"><option value="">Classificação: Todas</option>{settings.prioridades?.map(p => <option key={p} value={p}>{p}</option>)}</select>
                         </div>
-                    ))}
-                </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {['atend', 'autoriz', 'agend'].map((type) => (
+                                <div key={type} className="flex flex-col gap-1">
+                                    <span className="text-[9px] font-black text-slate-500 uppercase pl-1">{type === 'atend' ? 'Atendimento' : type === 'autoriz' ? 'Autorização' : 'Agendamento'}</span>
+                                    <div className="flex items-center bg-white/60 rounded-lg p-1 gap-1 border border-white/60 shadow-sm h-8">
+                                        <input type="date" value={filters[`${type}Inicio`]} onChange={e => setFilters({ ...filters, [`${type}Inicio`]: e.target.value })} className="bg-transparent text-[10px] font-black text-slate-700 outline-none flex-1 text-center w-full" />
+                                        <span className="text-slate-400">➜</span>
+                                        <input type="date" value={filters[`${type}Fim`]} onChange={e => setFilters({ ...filters, [`${type}Fim`]: e.target.value })} className="bg-transparent text-[10px] font-black text-slate-700 outline-none flex-1 text-center w-full" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
 
-                {!isSimplifiedContract && (
-                    <div className="flex flex-wrap gap-2 pt-3 border-t border-blue-100/50">
-                        {['aih', 'autorizada', 'apa', 'opme'].map(f => (
-                            <label key={f} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase cursor-pointer transition-all shadow-sm ${filters[f] ? 'bg-blue-600 border-blue-600 text-slate-800' : 'bg-white/60 border-white/60 text-slate-500 hover:bg-blue-500/20 hover:text-blue-600'}`}><input type="checkbox" className="hidden" checked={filters[f]} onChange={e => setFilters({ ...filters, [f]: e.target.checked })} /> {f}</label>
-                        ))}
+                        {!isSimplifiedContract && (
+                            <div className="flex flex-wrap gap-2 pt-2">
+                                {['aih', 'autorizada', 'apa', 'opme'].map(f => (
+                                    <label key={f} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-[9px] font-black uppercase cursor-pointer transition-all shadow-sm ${filters[f] ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/60 border-white/60 text-slate-500 hover:bg-slate-50'}`}><input type="checkbox" className="hidden" checked={filters[f]} onChange={e => setFilters({ ...filters, [f]: e.target.checked })} /> {f}</label>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -1416,7 +1441,7 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
     );
 
     if (isModal) {
-        return (
+        return createPortal(
             <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in print:hidden" onClick={onCloseModal}>
                 <div className="w-full h-full max-h-[96vh] max-w-[96vw] bg-white/70 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col border border-white/40" onClick={e => e.stopPropagation()}>
                     {slotInfo ? (
@@ -1459,7 +1484,8 @@ const SurgeryQueue = ({ isModal = false, onCloseModal, onSelectForScheduling, sl
                         {QueueContent}
                     </div>
                 </div>
-            </div>
+            </div>,
+            document.body
         );
     }
 

@@ -35,6 +35,12 @@ const WeeklyView = () => {
     const [surgeries, setSurgeries] = useState([]);
     const [allSurgeriesMap, setAllSurgeriesMap] = useState([]);
     const [rooms, setRooms] = useState([]);
+    const [hiddenRooms, setHiddenRooms] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('ism_hidden_rooms') || '[]'); } catch { return []; }
+    });
+    useEffect(() => { localStorage.setItem('ism_hidden_rooms', JSON.stringify(hiddenRooms)); }, [hiddenRooms]);
+    const visibleRooms = rooms.filter(r => !hiddenRooms.includes(r));
+
     const [loading, setLoading] = useState(true);
     const [orientacoes, setOrientacoes] = useState({});
     const [regrasInternacao, setRegrasInternacao] = useState([]);
@@ -1074,7 +1080,7 @@ const WeeklyView = () => {
                                     </div>
 
                                     <div className="flex relative">
-                                        {rooms.map((room, index) => {
+                                        {visibleRooms.map((room, index) => {
                                             const colorClass = roomColors[index % roomColors.length];
                                             const hasActivePopoverThisRoom = daySurgeries.some(s => {
                                                 const cleanRoom = String(room || '').toUpperCase().trim();
@@ -1545,7 +1551,7 @@ const WeeklyView = () => {
                     <div id="print-area" style={{ width: '794px', height: '1123px', backgroundColor: 'white' }}>
                         <PrintableDailyMap
                             surgeries={surgeries}
-                            rooms={rooms}
+                            rooms={visibleRooms}
                             currentDate={weekDays[0]}
                             temposByCode={temposByCode}
                             temposByName={temposByName}
@@ -1585,7 +1591,10 @@ const WeeklyView = () => {
             <FixedScheduleModal 
                 isOpen={isFixedScheduleOpen} 
                 onClose={() => setIsFixedScheduleOpen(false)} 
-                rooms={rooms} 
+                rooms={visibleRooms}
+                allRooms={rooms}
+                hiddenRooms={hiddenRooms}
+                setHiddenRooms={setHiddenRooms}
             />
 
         </div>

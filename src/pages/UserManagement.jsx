@@ -360,15 +360,19 @@ const UserCreationModal = ({ onClose, onSave }) => {
     const availableRoles = ROLES.filter(r => r !== 'Desenvolvedor' || currentUser?.role === 'Desenvolvedor');
     const [formData, setFormData] = useState({
         name: '', email: '', password: '', role: 'Visualizador',
-        crm: '', rqe: '', sexo: '', cpf: '', telefone: '', categoria_medica: 'Normal',
+        crm: '', rqe: '', sexo: '', cpf: '', telefone: '', categoria_medica: 'Normal', especialidade: '',
         unidades_permitidas: ['*'], modules_access: AVAILABLE_MODULES.map(m => m.id),
         exibir_agenda_home: false, categoria_agenda_id: ''
     });
     const [categoriasAgenda, setCategoriasAgenda] = useState([]);
+    const [especialidades, setEspecialidades] = useState([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         supabase.from('agenda_categorias').select('*').order('nome').then(({data}) => setCategoriasAgenda(data || []));
+        supabase.from('settings').select('data').eq('id', 'general').maybeSingle().then(({data}) => {
+            if (data?.data?.especialidades) setEspecialidades(data.data.especialidades);
+        });
     }, []);
 
     const handleCreate = async () => {
@@ -417,6 +421,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                 userData.telefone = formData.telefone || '';
                 if (['Médico', 'Médico Autorizador'].includes(formData.role)) {
                     userData.categoria_medica = formData.categoria_medica || 'Normal';
+                    userData.especialidade = formData.especialidade || '';
                 }
             }
             userData.unidades_permitidas = formData.unidades_permitidas;
@@ -524,16 +529,29 @@ const UserCreationModal = ({ onClose, onSave }) => {
                     </div>
 
                     {['Médico', 'Médico Autorizador'].includes(formData.role) && (
-                        <div>
-                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Categoria Médica</label>
-                            <select
-                                value={formData.categoria_medica}
-                                onChange={e => setFormData({ ...formData, categoria_medica: e.target.value })}
-                                className="w-full px-3 py-2.5 bg-indigo-500/200/10 border border-indigo-100 rounded-lg text-sm text-indigo-800 font-bold outline-none focus:border-indigo-500 transition-colors"
-                            >
-                                <option value="Normal">Normal</option>
-                                <option value="Top">Top</option>
-                            </select>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Especialidade Principal</label>
+                                <select
+                                    value={formData.especialidade}
+                                    onChange={e => setFormData({ ...formData, especialidade: e.target.value })}
+                                    className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500 transition-colors uppercase"
+                                >
+                                    <option value="">Selecione...</option>
+                                    {especialidades.map(e => <option key={e} value={e}>{e}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Categoria Médica</label>
+                                <select
+                                    value={formData.categoria_medica}
+                                    onChange={e => setFormData({ ...formData, categoria_medica: e.target.value })}
+                                    className="w-full px-3 py-2.5 bg-indigo-500/200/10 border border-indigo-100 rounded-lg text-sm text-indigo-800 font-bold outline-none focus:border-indigo-500 transition-colors"
+                                >
+                                    <option value="Normal">Normal</option>
+                                    <option value="Top">Top</option>
+                                </select>
+                            </div>
                         </div>
                     )}
 
@@ -632,6 +650,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
         sexo: user.sexo || '',
         cpf: user.cpf || '',
         telefone: user.telefone || '',
+        especialidade: user.especialidade || '',
         categoria_medica: user.categoria_medica || 'Normal',
         unidades_permitidas: user.unidades_permitidas || ['*'],
         modules_access: user.modules_access || AVAILABLE_MODULES.map(m => m.id),
@@ -639,10 +658,14 @@ const UserEditModal = ({ user, onClose, onSave }) => {
         categoria_agenda_id: user.categoria_agenda_id || ''
     });
     const [categoriasAgenda, setCategoriasAgenda] = useState([]);
+    const [especialidades, setEspecialidades] = useState([]);
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         supabase.from('agenda_categorias').select('*').order('nome').then(({data}) => setCategoriasAgenda(data || []));
+        supabase.from('settings').select('data').eq('id', 'general').maybeSingle().then(({data}) => {
+            if (data?.data?.especialidades) setEspecialidades(data.data.especialidades);
+        });
     }, []);
 
     const handleSave = async () => {
@@ -661,6 +684,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
             }
             if (!['Médico', 'Médico Autorizador'].includes(dataToSave.role)) {
                 dataToSave.categoria_medica = 'Normal';
+                dataToSave.especialidade = '';
             }
             const { error } = await supabase.from('users').update(dataToSave).eq('id', user.id);
             if (error) throw error;
@@ -755,18 +779,33 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                     </div>
 
                     {['Médico', 'Médico Autorizador'].includes(formData.role) && (
-                        <div>
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">
-                                Categoria Médica
-                            </label>
-                            <select
-                                value={formData.categoria_medica}
-                                onChange={(e) => setFormData({ ...formData, categoria_medica: e.target.value })}
-                                className="w-full px-4 py-3 bg-indigo-500/200/10 border border-indigo-100 rounded-xl text-sm text-indigo-800 font-bold outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all cursor-pointer"
-                            >
-                                <option value="Normal">Normal</option>
-                                <option value="Top">Top</option>
-                            </select>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">
+                                    Especialidade Principal
+                                </label>
+                                <select
+                                    value={formData.especialidade}
+                                    onChange={(e) => setFormData({ ...formData, especialidade: e.target.value })}
+                                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all cursor-pointer uppercase"
+                                >
+                                    <option value="">Selecione...</option>
+                                    {especialidades.map(e => <option key={e} value={e}>{e}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">
+                                    Categoria Médica
+                                </label>
+                                <select
+                                    value={formData.categoria_medica}
+                                    onChange={(e) => setFormData({ ...formData, categoria_medica: e.target.value })}
+                                    className="w-full px-4 py-3 bg-indigo-500/200/10 border border-indigo-100 rounded-xl text-sm text-indigo-800 font-bold outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all cursor-pointer"
+                                >
+                                    <option value="Normal">Normal</option>
+                                    <option value="Top">Top</option>
+                                </select>
+                            </div>
                         </div>
                     )}
 

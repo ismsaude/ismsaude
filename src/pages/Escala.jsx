@@ -550,6 +550,7 @@ const Escala = () => {
 
             // Replicar Escala Fixa para o Novo Mês
             const newAssignments = { ...assignments };
+            const rowsToUpsert = [];
             Object.entries(assignments).forEach(([key, value]) => {
                 if (key.startsWith('FIXED-')) {
                     if (keepWeekdays && validOccurrences) {
@@ -565,16 +566,45 @@ const Escala = () => {
                                 const targetWeekId = targetWeekIds[fwWeek - 1];
                                 const newKey = `${monthVal}-${targetWeekId}-${hospitalId}-${sectorIdx}-${dayIndex}`;
                                 newAssignments[newKey] = { ...value };
+                                rowsToUpsert.push({
+                                    assignment_id: newKey,
+                                    month_val: monthVal,
+                                    doctor_name: value.doctorName || '',
+                                    hospital_name: value.hospitalName || '',
+                                    sector_name: value.sectorName || '',
+                                    date: value.date || '',
+                                    financial_base: value.financial?.baseValue ? parseFloat(value.financial.baseValue) : 0,
+                                    financial_extra: value.financial?.extraValue ? parseFloat(value.financial.extraValue) : 0,
+                                    financial_obs: value.financial?.observations || '',
+                                    subtitle: value.subtitle || '',
+                                    appearance: value.appearance || {}
+                                });
                             }
                         }
                     } else {
                         const newKey = key.replace('FIXED-', `${monthVal}-`).replace('-fw', '-w');
                         newAssignments[newKey] = { ...value };
+                        rowsToUpsert.push({
+                            assignment_id: newKey,
+                            month_val: monthVal,
+                            doctor_name: value.doctorName || '',
+                            hospital_name: value.hospitalName || '',
+                            sector_name: value.sectorName || '',
+                            date: value.date || '',
+                            financial_base: value.financial?.baseValue ? parseFloat(value.financial.baseValue) : 0,
+                            financial_extra: value.financial?.extraValue ? parseFloat(value.financial.extraValue) : 0,
+                            financial_obs: value.financial?.observations || '',
+                            subtitle: value.subtitle || '',
+                            appearance: value.appearance || {}
+                        });
                     }
                 }
             });
             setAssignments(newAssignments);
-            saveEscalaUpdate({ months: updatedMonths, assignments: newAssignments });
+            if (rowsToUpsert.length > 0) {
+                supabase.from('escala_plantoes').upsert(rowsToUpsert).then();
+            }
+            saveEscalaUpdate({ months: updatedMonths });
         }
         setActiveMonth(monthVal);
     };
@@ -621,9 +651,10 @@ const Escala = () => {
         });
         if (hasChanges) {
             setAssignments(newAssignments);
+            supabase.from('escala_plantoes').delete().eq('month_val', id).then();
         }
         
-        saveEscalaUpdate({ months: updated, assignments: hasChanges ? newAssignments : assignments });
+        saveEscalaUpdate({ months: updated });
         
         logAction('escala_mes_removido', `Mês removido da escala: ${id}`);
         if (activeMonth === id && updated.length > 0) {
@@ -676,11 +707,30 @@ const Escala = () => {
             if (escData?.data?.financialRules) {
                 setFinancialRules(escData.data.financialRules);
             }
-            if (escData?.data?.assignments) {
-                setAssignments(escData.data.assignments);
-            }
             if (escData?.data?.months && escData.data.months.length > 0) {
                 setExistingMonths(escData.data.months);
+            }
+
+            // BUSCAR PLANTÕES DA NOVA TABELA RELACIONAL
+            const { data: plantoesData, error: plantoesError } = await supabase.from('escala_plantoes').select('*');
+            if (!plantoesError && plantoesData) {
+                const loadedAssignments = {};
+                plantoesData.forEach(p => {
+                    loadedAssignments[p.assignment_id] = {
+                        doctorName: p.doctor_name,
+                        hospitalName: p.hospital_name,
+                        sectorName: p.sector_name,
+                        date: p.date,
+                        financial: {
+                            baseValue: p.financial_base,
+                            extraValue: p.financial_extra,
+                            observations: p.financial_obs
+                        },
+                        subtitle: p.subtitle,
+                        appearance: p.appearance || { bold: false, color: 'default', flagged: false, verified: false }
+                    };
+                });
+                setAssignments(loadedAssignments);
             }
         } catch (error) {
             console.error("Erro ao buscar configs:", error);
@@ -1032,56 +1082,26 @@ const Escala = () => {
         }
     };
 
-    const saveAssignmentsToDB = async (updatedAssignments) => {
+    const saveSingleAssignmentToDB = async (slotId, assignment) => {
         try {
-            const { data: existingData } = await supabase.from('settings').select('data').eq('id', 'escala').maybeSingle();
-            const currentData = existingData?.data || {};
-            
-            const newData = {
-                ...currentData,
-                assignments: updatedAssignments
+            const monthStr = slotId.startsWith('FIXED-') ? 'FIXED' : slotId.substring(0, 7);
+            const row = {
+                assignment_id: slotId,
+                month_val: monthStr,
+                doctor_name: assignment.doctorName || '',
+                hospital_name: assignment.hospitalName || '',
+                sector_name: assignment.sectorName || '',
+                date: assignment.date || '',
+                financial_base: assignment.financial?.baseValue ? parseFloat(assignment.financial.baseValue) : 0,
+                financial_extra: assignment.financial?.extraValue ? parseFloat(assignment.financial.extraValue) : 0,
+                financial_obs: assignment.financial?.observations || '',
+                subtitle: assignment.subtitle || '',
+                appearance: assignment.appearance || {}
             };
-
-            const { error } = await supabase.from('settings').upsert({
-                id: 'escala',
-                data: newData
-            });
+            const { error } = await supabase.from('escala_plantoes').upsert(row);
             if (error) throw error;
-
-            // --- INÍCIO DA ROTINA DE BACKUP AUTOMÁTICO ---
-            const timestamp = new Date().toISOString();
-            const backupId = `escala_backup_${timestamp}`;
-            
-            // Pega o usuário logado para o backup
-            const { data: { session } } = await supabase.auth.getSession();
-            const userName = session?.user?.user_metadata?.name || session?.user?.email || 'Sistema';
-
-            // Salva o snapshot
-            await supabase.from('settings').upsert({
-                id: backupId,
-                data: {
-                    snapshot: newData,
-                    timestamp,
-                    savedBy: userName,
-                    type: 'escala_backup'
-                }
-            });
-
-            // Cleanup: Buscar todos os backups, ordenar e deletar os mais antigos (mantém 30)
-            const { data: backups } = await supabase
-                .from('settings')
-                .select('id')
-                .like('id', 'escala_backup_%')
-                .order('id', { ascending: false });
-
-            if (backups && backups.length > 30) {
-                const toDelete = backups.slice(30).map(b => b.id);
-                await supabase.from('settings').delete().in('id', toDelete);
-            }
-            // --- FIM DA ROTINA DE BACKUP ---
-
         } catch (error) {
-            console.error("Erro ao salvar plantões:", error);
+            console.error("Erro ao salvar plantão:", error);
             toast.error("Falha ao salvar o plantão! Verifique sua conexão e se possui permissão (adm_escala).");
         }
     };
@@ -1305,7 +1325,7 @@ const Escala = () => {
         const removed = newAssignments[slotId];
         delete newAssignments[slotId];
         setAssignments(newAssignments);
-        saveAssignmentsToDB(newAssignments);
+        supabase.from('escala_plantoes').delete().eq('assignment_id', slotId).then();
         const logMsg = `Plantão ${sector} (${day.date}) no ${hospital.name} removido - Médico: ${removed?.doctorName}`;
         logAction('escala_plantao_removido', logMsg);
     };
@@ -1313,6 +1333,7 @@ const Escala = () => {
     const handleCopyFixedWeekToOthers = (sourceWeekIndex) => {
         const newAssignments = { ...assignments };
         let count = 0;
+        const rowsToUpsert = [];
         
         const sourceWeek = activeWeeks[sourceWeekIndex];
 
@@ -1326,8 +1347,23 @@ const Escala = () => {
                         const targetKey = `FIXED-${targetWeek.id}-${hospital.id}-${sIdx}-${dIdx}`;
 
                         if (assignments[sourceKey] && !assignments[targetKey]) {
-                            newAssignments[targetKey] = { ...assignments[sourceKey] };
+                            const newAssig = { ...assignments[sourceKey] };
+                            newAssignments[targetKey] = newAssig;
                             count++;
+                            
+                            rowsToUpsert.push({
+                                assignment_id: targetKey,
+                                month_val: 'FIXED',
+                                doctor_name: newAssig.doctorName || '',
+                                hospital_name: newAssig.hospitalName || '',
+                                sector_name: newAssig.sectorName || '',
+                                date: newAssig.date || '',
+                                financial_base: newAssig.financial?.baseValue ? parseFloat(newAssig.financial.baseValue) : 0,
+                                financial_extra: newAssig.financial?.extraValue ? parseFloat(newAssig.financial.extraValue) : 0,
+                                financial_obs: newAssig.financial?.observations || '',
+                                subtitle: newAssig.subtitle || '',
+                                appearance: newAssig.appearance || {}
+                            });
                         }
                     });
                 });
@@ -1336,7 +1372,7 @@ const Escala = () => {
 
         if (count > 0) {
             setAssignments(newAssignments);
-            saveAssignmentsToDB(newAssignments);
+            supabase.from('escala_plantoes').upsert(rowsToUpsert).then();
             toast.success(`${count} plantões foram copiados para as outras semanas com sucesso!`);
             logAction('ESCALA', `Copiou a Semana ${sourceWeekIndex + 1} da Escala Fixa para as outras semanas (Todos os hospitais) - ${count} plantões copiados.`);
         } else {
@@ -2002,7 +2038,7 @@ const Escala = () => {
                                         };
                                         const updatedAssignments = { ...assignments, [activeSlot.id]: finalAssignment };
                                         setAssignments(updatedAssignments);
-                                        saveAssignmentsToDB(updatedAssignments);
+                                        saveSingleAssignmentToDB(activeSlot.id, finalAssignment);
                                         const details = [];
                                         if (draftAssignment.subtitle) details.push(`Legenda: "${draftAssignment.subtitle}"`);
                                         if (draftAssignment.appearance?.bold) details.push('Negrito');
