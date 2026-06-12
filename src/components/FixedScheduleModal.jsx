@@ -67,57 +67,77 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [], allRooms = [],
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [fixedRes, genRes] = await Promise.all([
-                    supabase.from('settings').select('data').eq('id', 'programacao_fixa').maybeSingle(),
-                    supabase.from('settings').select('data').eq('id', 'general').maybeSingle()
-                ]);
-
-                if (fixedRes.data && fixedRes.data.data) {
-                    const data = fixedRes.data.data;
-                    // Auto-migrate legacy format (no year-month wrapper)
-                    if (data[1] && (Array.isArray(data[1]["SALA 01"]) || Array.isArray(data[1]["SALA 02"]))) {
-                        const dDate = new Date();
-                        const curMonth = `${dDate.getFullYear()}-${String(dDate.getMonth() + 1).padStart(2, '0')}`;
-                        setGlobalData({ [curMonth]: data });
-                        setScheduleData(data);
-                        setSelectedMonth(curMonth);
-                    } else {
-                        setGlobalData(data);
-                        setScheduleData(data[selectedMonth] || {});
-                    }
-                } else {
-                    setGlobalData({});
-                    setScheduleData({});
-                }
-
+                // Buscar configurações gerais (especialidades, etc)
+                const genRes = await supabase.from('settings').select('data').eq('id', 'general').maybeSingle();
                 if (genRes.data && genRes.data.data) {
                     setSettingsData({
                         especialidades: genRes.data.data.especialidades || []
                     });
                 }
                 
+                // Buscar médicos
                 const { data: medicosData } = await supabase.from('users').select('*').in('role', ['Médico', 'Médico Autorizador']).eq('status', 'Ativo').order('name', { ascending: true });
                 if (medicosData) {
                     setMedicos(medicosData);
                 }
+
+                // Buscar Programação Fixa Relacional (apenas o mês selecionado: evita o teto de 1000 linhas da API e refetch desnecessário)
+                const { data: fixedRows, error: fixedError } = await supabase
+                    .from('cirurgias_programacao_fixa')
+                    .select('*')
+                    .eq('mes', selectedMonth);
+                if (fixedError) {
+                    console.error("Tabela cirurgias_programacao_fixa pode não existir ainda. Rode o script SQL.", fixedError);
+                    toast.error("Erro ao carregar programação fixa.");
+                    setScheduleData({});
+                    setGlobalData(prev => ({ ...prev, [selectedMonth]: {} }));
+                    return;
+                }
+
+                const monthData = {};
+                (fixedRows || []).forEach(row => {
+                    if (!monthData[row.semana]) monthData[row.semana] = {};
+                    if (!monthData[row.semana][row.sala]) monthData[row.semana][row.sala] = [];
+
+                    monthData[row.semana][row.sala].push({
+                        id: row.id,
+                        dayOfWeek: row.dia,
+                        periodo: row.periodo,
+                        startHour: row.time_start,
+                        endHour: row.time_end,
+                        especialidade: row.especialidade,
+                        medico: row.medico,
+                        procedimento: row.procedimento,
+                        telefone: row.telefone,
+                        color: row.color || 'blue',
+                        observacoes: row.observacoes || ''
+                    });
+                });
+
+                setGlobalData(prev => ({ ...prev, [selectedMonth]: monthData }));
+                setScheduleData(monthData);
             } catch (err) {
+                console.error(err);
                 toast.error("Erro ao carregar programação fixa.");
             } finally {
                 setLoading(false);
             }
         };
         fetchData();
-    }, [isOpen]);
+    }, [isOpen, selectedMonth]);
 
-    const persistToDatabase = async (dataToSave) => {
+    // Centraliza as gravações no banco: controla o indicador "Salvando..." e dá feedback de erro real
+    const runDbWrite = async (label, query) => {
         setSaving(true);
         try {
-            const { error } = await supabase.from('settings').upsert({ id: 'programacao_fixa', data: dataToSave });
-            if (error) throw error;
-            // toast.success("Salvo com sucesso!", { icon: "✅" }); -> não piscar toast o tempo todo pra n encher o saco
-        } catch (error) {
-            toast.error("Erro no auto-save da grade.");
-            console.error(error);
+            const { error } = await query;
+            if (error) {
+                console.error(`Erro ao salvar (${label}):`, error);
+                toast.error(`Erro ao salvar: ${label}`);
+            }
+        } catch (err) {
+            console.error(`Erro ao salvar (${label}):`, err);
+            toast.error(`Erro ao salvar: ${label}`);
         } finally {
             setSaving(false);
         }
@@ -159,19 +179,43 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [], allRooms = [],
         const nextMonthKey = `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
         
         const newMonthData = {};
+        const newRows = [];
+        
         Object.keys(scheduleData).forEach(week => {
             newMonthData[week] = {};
             Object.keys(scheduleData[week]).forEach(room => {
-                newMonthData[week][room] = scheduleData[week][room].map(b => ({
-                    ...b,
-                    id: Date.now() + Math.random().toString(36).substring(2, 9)
-                }));
+                newMonthData[week][room] = scheduleData[week][room].map(b => {
+                    const newId = crypto.randomUUID();
+                    newRows.push({
+                        id: newId,
+                        mes: nextMonthKey,
+                        semana: parseInt(week),
+                        sala: room,
+                        dia: b.dayOfWeek,
+                        periodo: b.periodo,
+                        time_start: b.startHour,
+                        time_end: b.endHour,
+                        especialidade: b.especialidade,
+                        medico: b.medico,
+                        procedimento: b.procedimento,
+                        telefone: b.telefone,
+                        color: b.color,
+                        observacoes: b.observacoes
+                    });
+                    return { ...b, id: newId };
+                });
             });
         });
 
+        // Substitui a grade do próximo mês no banco (apaga o que existir e insere a cópia) para não duplicar linhas
+        runDbWrite(`Replicar para ${nextMonthKey}`, (async () => {
+            const del = await supabase.from('cirurgias_programacao_fixa').delete().eq('mes', nextMonthKey);
+            if (del.error) return del;
+            return supabase.from('cirurgias_programacao_fixa').insert(newRows);
+        })());
+
         setGlobalData(prev => {
             const updated = { ...prev, [nextMonthKey]: newMonthData };
-            persistToDatabase(updated);
             return updated;
         });
         
@@ -188,9 +232,12 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [], allRooms = [],
             setGlobalData(prevGlobal => {
                 const updated = { ...prevGlobal };
                 delete updated[selectedMonth];
-                persistToDatabase(updated);
                 return updated;
             });
+            
+            // Apaga todos os blocos do mês diretamente no banco
+            runDbWrite("limpeza do mês", supabase.from('cirurgias_programacao_fixa').delete().eq('mes', selectedMonth));
+            
             toast.success("Mês limpo com sucesso!");
         }
     };
@@ -222,33 +269,50 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [], allRooms = [],
         if (!editingBlock.especialidade) return toast.error("A especialidade é obrigatória.");
 
         const { week, room, ...blockData } = editingBlock;
+        // Garante período preenchido (coluna pode ser NOT NULL e o formulário não edita esse campo)
+        if (!blockData.periodo) {
+            blockData.periodo = parseInt(blockData.startHour, 10) < 12 ? 'Manhã' : 'Tarde';
+        }
 
         setScheduleData(prev => {
             const newData = { ...prev };
             if (!newData[week]) newData[week] = {};
             if (!newData[week][room]) newData[week][room] = [];
-            
+
             const roomList = [...newData[week][room]];
             const existingIdx = roomList.findIndex(b => b.id === blockData.id);
-            
+
             if (existingIdx >= 0) {
                 roomList[existingIdx] = blockData;
             } else {
                 roomList.push(blockData);
             }
-            
+
             // Ordenar por horário de início
             roomList.sort((a, b) => a.startHour.localeCompare(b.startHour));
 
-            // Modify newData and sync to globalData
             newData[week][room] = roomList;
-            setGlobalData(prevGlobal => {
-                const updated = { ...prevGlobal, [selectedMonth]: newData };
-                persistToDatabase(updated);
-                return updated;
-            });
+            setGlobalData(prevGlobal => ({ ...prevGlobal, [selectedMonth]: newData }));
             return newData;
         });
+
+        // Persiste o bloco no banco (fora do updater de estado para não disparar setState aninhado)
+        runDbWrite("bloco", supabase.from('cirurgias_programacao_fixa').upsert({
+            id: blockData.id,
+            mes: selectedMonth,
+            semana: parseInt(week),
+            sala: room,
+            dia: blockData.dayOfWeek,
+            periodo: blockData.periodo,
+            time_start: blockData.startHour,
+            time_end: blockData.endHour,
+            especialidade: blockData.especialidade,
+            medico: blockData.medico,
+            procedimento: blockData.procedimento,
+            telefone: blockData.telefone,
+            color: blockData.color,
+            observacoes: blockData.observacoes
+        }));
 
         setShowEditModal(false);
         setEditingBlock(null);
@@ -259,42 +323,54 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [], allRooms = [],
         if (!editingBlock.especialidade) return toast.error("A especialidade é obrigatória.");
 
         const { week: currentWeek, room, ...blockData } = editingBlock;
+        if (!blockData.periodo) {
+            blockData.periodo = parseInt(blockData.startHour, 10) < 12 ? 'Manhã' : 'Tarde';
+        }
+
+        // Monta as linhas replicadas (uma por semana, exceto a atual) com IDs UUID válidos
+        const replicatedRows = [];
+        WEEKS.forEach(targetWeek => {
+            if (targetWeek === currentWeek) return;
+            replicatedRows.push({
+                id: crypto.randomUUID(),
+                mes: selectedMonth,
+                semana: parseInt(targetWeek),
+                sala: room,
+                dia: blockData.dayOfWeek,
+                periodo: blockData.periodo,
+                time_start: blockData.startHour,
+                time_end: blockData.endHour,
+                especialidade: blockData.especialidade,
+                medico: blockData.medico,
+                procedimento: blockData.procedimento,
+                telefone: blockData.telefone,
+                color: blockData.color,
+                observacoes: blockData.observacoes
+            });
+        });
+
+        runDbWrite("replicação", supabase.from('cirurgias_programacao_fixa').insert(replicatedRows));
 
         setScheduleData(prev => {
             const newData = { ...prev };
-            
-            WEEKS.forEach(targetWeek => {
-                // Ignore the current week because saveBlock handles it.
-                if (targetWeek === currentWeek) return;
-                
+            replicatedRows.forEach(repBlock => {
+                const targetWeek = repBlock.semana;
                 if (!newData[targetWeek]) newData[targetWeek] = {};
                 if (!newData[targetWeek][room]) newData[targetWeek][room] = [];
-                
+
                 const roomList = [...newData[targetWeek][room]];
-                
-                // We create a fresh new ID for the copies to avoid React key collisions
-                const replicatedBlock = {
-                    ...blockData,
-                    id: Date.now() + Math.random().toString(36).substring(2, 9)
-                };
-                
-                roomList.push(replicatedBlock);
+                roomList.push({ ...blockData, id: repBlock.id });
                 roomList.sort((a, b) => a.startHour.localeCompare(b.startHour));
-                
                 newData[targetWeek][room] = roomList;
             });
-            
-            setGlobalData(prevGlobal => {
-                const updated = { ...prevGlobal, [selectedMonth]: newData };
-                persistToDatabase(updated);
-                return updated;
-            });
+
+            setGlobalData(prevGlobal => ({ ...prevGlobal, [selectedMonth]: newData }));
             return newData;
         });
 
         toast.success("Replicado para as demais semanas!");
-        
-        // Finalize by saving the block to its own week and closing
+
+        // Finaliza salvando o bloco na própria semana e fechando o modal
         saveBlock({ preventDefault: () => {} });
     };
 
@@ -305,13 +381,12 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [], allRooms = [],
             if (newData[week] && newData[week][room]) {
                 newData[week][room] = newData[week][room].filter(b => b.id !== id);
             }
-            setGlobalData(prevGlobal => {
-                const updated = { ...prevGlobal, [selectedMonth]: newData };
-                persistToDatabase(updated);
-                return updated;
-            });
+            setGlobalData(prevGlobal => ({ ...prevGlobal, [selectedMonth]: newData }));
             return newData;
         });
+
+        runDbWrite("exclusão", supabase.from('cirurgias_programacao_fixa').delete().eq('id', id));
+
         setShowEditModal(false);
         setEditingBlock(null);
     };
@@ -612,10 +687,10 @@ export const FixedScheduleModal = ({ isOpen, onClose, rooms = [], allRooms = [],
 
                             <div>
                                 <label className="text-[11px] font-black uppercase tracking-widest text-blue-600 block mb-1">Médico Titular (Opcional)</label>
-                                {settingsData.cirurgioes.length > 0 ? (
+                                {medicos.length > 0 ? (
                                     <select value={editingBlock.medico} onChange={e => setEditingBlock({...editingBlock, medico: e.target.value})} className="w-full text-xs font-bold uppercase p-2 border border-blue-200 bg-blue-500/20 rounded-lg outline-none">
                                         <option value="">A DEFINIR / ROTATIVO...</option>
-                                        {settingsData.cirurgioes.map((doc, idx) => {
+                                        {medicos.map((doc, idx) => {
                                             const nomeDoc = typeof doc === 'object' ? doc.nome || doc.cirurgiao || doc.name : doc;
                                             const idDoc = typeof doc === 'object' ? doc.id || String(idx) : String(doc);
                                             return <option key={`doc-${idDoc}`} value={String(nomeDoc).toUpperCase()}>{String(nomeDoc).toUpperCase()}</option>

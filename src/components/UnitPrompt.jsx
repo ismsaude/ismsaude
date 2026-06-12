@@ -29,19 +29,19 @@ export default function UnitPrompt() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full mt-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 w-full mt-2">
                     {unidades && unidades.length > 0 ? (
                         unidades.map((unidade, idx) => (
                             <button
                                 key={idx}
                                 onClick={() => changeUnidade(unidade)}
-                                className="group relative overflow-hidden rounded-3xl bg-white/60 border-2 border-white/40 hover:border-indigo-200 shadow-sm hover:shadow-xl transition-all duration-300 p-4 md:p-6 flex flex-col items-center text-center hover:-translate-y-1"
+                                className="group relative overflow-hidden rounded-2xl bg-white/60 border border-white/50 hover:border-indigo-200 shadow-sm hover:shadow-lg transition-all duration-300 p-4 flex flex-col items-center text-center hover:-translate-y-1"
                             >
                                 <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                                <div className="w-12 h-12 md:w-16 md:h-16 bg-white/60 group-hover:bg-indigo-500/20 rounded-[1.2rem] flex items-center justify-center mb-3 md:mb-4 transition-colors">
-                                    <Building2 className="text-slate-500 group-hover:text-indigo-600 transition-colors" size={28} strokeWidth={1.5} />
+                                <div className="w-12 h-12 md:w-14 md:h-14 bg-white/70 group-hover:bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-3 transition-colors">
+                                    <Building2 className="text-slate-400 group-hover:text-indigo-600 transition-colors" size={24} strokeWidth={1.75} />
                                 </div>
-                                <h3 className="text-[11px] md:text-xs xl:text-sm font-bold text-slate-700 group-hover:text-indigo-800 transition-colors leading-tight">{unidade}</h3>
+                                <h3 className="text-[11px] md:text-xs font-bold text-slate-700 group-hover:text-indigo-800 transition-colors leading-tight line-clamp-2">{unidade}</h3>
                             </button>
                         ))
                     ) : (

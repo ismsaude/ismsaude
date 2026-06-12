@@ -30,6 +30,39 @@ const DEFAULT_SCROLL_HOUR = 6.5;
 const DAY_HEADER_H = 40;  // h-10
 const ROOM_HEADER_H = 24; // h-6
 
+// Função auxiliar para burlar o limite de 1000 linhas da API do Supabase
+const fetchPaginatedSurgeries = async () => {
+    let allData = [];
+    let from = 0;
+    const step = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+        const { data, error } = await supabase
+            .from('surgeries')
+            .select('*')
+            .neq('status', 'Cancelado')
+            .order('id', { ascending: true })
+            .range(from, from + step - 1);
+            
+        if (error || !data) {
+            console.error("Erro na paginação de cirurgias:", error);
+            return { data: null, error };
+        }
+        allData = [...allData, ...data];
+        if (data.length < step) hasMore = false;
+        else from += step;
+    }
+    return { data: allData, error: null };
+};
+
+// Converte o marcador [DURACAO:n] das observações de BLOQUEIO em um campo numérico .duracao (padrão 60)
+const processSurgeries = (list) => (list || []).map(s => (
+    s.status === 'BLOQUEIO' && s.observacoes && String(s.observacoes).includes('[DURACAO:')
+        ? { ...s, duracao: Number(String(s.observacoes).match(/\[DURACAO:(\d+)\]/)?.[1] || 60) }
+        : s
+));
+
 const WeeklyView = () => {
     const { hasPermission } = usePermission();
     const [surgeries, setSurgeries] = useState([]);
@@ -172,19 +205,9 @@ const WeeklyView = () => {
                 loadMotivos();
 
                 // cirurgias
-                const processSurgeries = (list) => {
-                    return (list || []).map(s => {
-                        if (s.status === 'BLOQUEIO' && s.observacoes && String(s.observacoes).includes('[DURACAO:')) {
-                            const match = String(s.observacoes).match(/\[DURACAO:(\d+)\]/);
-                            if (match && match[1]) return { ...s, duracao: Number(match[1]) };
-                        }
-                        return s;
-                    });
-                };
-
                 const loadSurgeries = async () => {
                     try {
-                        const { data, error } = await supabase.from('surgeries').select('*').limit(5000).neq('status', 'Cancelado');
+                        const { data, error } = await fetchPaginatedSurgeries();
                         if (error) throw error;
                         const processed = processSurgeries(data);
                         setAllSurgeriesMap(processed); // Salva TODAS as cirurgias brutas aqui
@@ -289,9 +312,8 @@ const WeeklyView = () => {
             setEditingSurgery(null);
 
             // Reload apenas da lista para refletir mapa imediatamente sem refresh
-            const { data: novasCirurgias } = await supabase.from('surgeries').select('*').limit(5000).neq('status', 'Cancelado');
+            const { data: novasCirurgias } = await fetchPaginatedSurgeries();
             if (novasCirurgias) {
-                const processSurgeries = (list) => (list || []).map(s => (s.status === 'BLOQUEIO' && s.observacoes && String(s.observacoes).includes('[DURACAO:') ? { ...s, duracao: Number(String(s.observacoes).match(/\[DURACAO:(\d+)\]/)?.[1] || 60) } : s));
                 const processed = processSurgeries(novasCirurgias);
                 setAllSurgeriesMap(processed);
                 setSurgeries(processed.filter(s => s.dataAgendado));
@@ -342,9 +364,8 @@ const WeeklyView = () => {
                 setIsQueueModalOpen(false);
                 setSelectedSlot(null);
 
-                const { data: novasCirurgias } = await supabase.from('surgeries').select('*').limit(5000).neq('status', 'Cancelado');
+                const { data: novasCirurgias } = await fetchPaginatedSurgeries();
                 if (novasCirurgias) {
-                    const processSurgeries = (list) => (list || []).map(s => (s.status === 'BLOQUEIO' && s.observacoes && String(s.observacoes).includes('[DURACAO:') ? { ...s, duracao: Number(String(s.observacoes).match(/\[DURACAO:(\d+)\]/)?.[1] || 60) } : s));
                     const processed = processSurgeries(novasCirurgias);
                     setAllSurgeriesMap(processed);
                     setSurgeries(processed.filter(s => s.dataAgendado));
@@ -374,10 +395,11 @@ const WeeklyView = () => {
             setSelectedSlot(null);
 
             // Recarrega as cirurgias no mapa silenciosamente
-            const { data } = await supabase.from('surgeries').select('*').limit(5000).neq('status', 'Cancelado');
+            const { data } = await fetchPaginatedSurgeries();
             if (data) {
-                setAllSurgeriesMap(data);
-                setSurgeries(data.filter(s => s.dataAgendado));
+                const processed = processSurgeries(data);
+                setAllSurgeriesMap(processed);
+                setSurgeries(processed.filter(s => s.dataAgendado));
             }
 
         } catch (error) {
@@ -1386,9 +1408,8 @@ const WeeklyView = () => {
                                                                                                             await logAction('Agenda Liberada', `Bloqueio (${procedimento}) removido na Sala ${surgery.sala} dia ${surgery.dataAgendado} às ${surgery.horario}`);
                                                                                                             toast.success('Bloqueio removido!', { id: toastId });
                                                                                                             setActivePopover(null);
-                                                                                                            const { data: novasCirurgias } = await supabase.from('surgeries').select('*').limit(5000).neq('status', 'Cancelado');
+                                                                                                            const { data: novasCirurgias } = await fetchPaginatedSurgeries();
                                                                                                             if (novasCirurgias) {
-                                                                                                                const processSurgeries = (list) => (list || []).map(s => (s.status === 'BLOQUEIO' && s.observacoes && String(s.observacoes).includes('[DURACAO:') ? { ...s, duracao: Number(String(s.observacoes).match(/\[DURACAO:(\d+)\]/)?.[1] || 60) } : s));
                                                                                                                 const processed = processSurgeries(novasCirurgias);
                                                                                                                 setAllSurgeriesMap(processed);
                                                                                                                 setSurgeries(processed.filter(s => s.dataAgendado));

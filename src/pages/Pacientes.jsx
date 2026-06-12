@@ -41,13 +41,26 @@ const Pacientes = () => {
     const fetchPacientes = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('pacientes')
-                .select('*')
-                .order('nome', { ascending: true });
+            // Paginação para burlar o limite da API (ex: 1000 linhas)
+            let allData = [];
+            let from = 0;
+            const step = 1000;
+            let hasMore = true;
 
-            if (error) throw error;
-            setPacientes(data || []);
+            while (hasMore) {
+                const { data, error } = await supabase
+                    .from('pacientes')
+                    .select('*')
+                    .order('nome', { ascending: true })
+                    .range(from, from + step - 1);
+
+                if (error || !data) throw error || new Error("Erro na busca paginada");
+                allData = [...allData, ...data];
+                if (data.length < step) hasMore = false;
+                else from += step;
+            }
+
+            setPacientes(allData);
         } catch (error) {
             console.error("Erro ao buscar pacientes no Supabase:", error);
             toast.error("Erro ao carregar lista de pacientes.");

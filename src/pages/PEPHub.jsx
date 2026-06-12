@@ -61,28 +61,28 @@ const PEPHub = () => {
             </div>
 
             {/* Main Content Area - Centralized Grid */}
-            <div className="relative z-10 flex-1 flex items-center justify-center mb-4 px-2 lg:px-8 w-full max-w-[1200px] mx-auto pb-20">
-                
-                <div className="w-full max-w-[800px] mx-auto grid grid-cols-2 sm:grid-cols-2 gap-4 xl:gap-12">
+            <div className="relative z-10 flex-1 flex items-center justify-center mb-4 px-2 w-full pb-8">
+
+                <div className="w-full max-w-[600px] grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
                     {modules.map((mod, idx) => (
-                        <div 
+                        <div
                             key={idx}
                             onClick={() => mod.path && navigate(mod.path)}
-                            className={`group relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] flex flex-col items-center justify-center text-center transition-all duration-500 cursor-pointer aspect-square lg:aspect-auto lg:h-72 xl:h-80 max-w-[340px] mx-auto w-full
-                                ${!mod.path 
-                                    ? 'bg-transparent border-2 border-dashed border-white/80 opacity-50 cursor-default hover:opacity-70 hover:border-slate-400' 
-                                    : (isLowEndDevice ? 'bg-white/95 border border-white/60 shadow-sm hover:shadow-md hover:-translate-y-1' : 'bg-white/60 backdrop-blur-md border border-white/40 shadow-xl hover:shadow-2xl hover:-translate-y-2 hover:bg-white/80')
+                            className={`group relative overflow-hidden rounded-[1.75rem] flex flex-col items-center justify-center text-center transition-all duration-500 cursor-pointer p-8 min-h-[210px]
+                                ${isLowEndDevice
+                                    ? 'bg-white/95 border border-white/60 shadow-sm hover:shadow-md hover:-translate-y-1'
+                                    : 'bg-white/60 backdrop-blur-md border border-white/40 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 hover:bg-white/80'
                                 }`}
                         >
                             {/* Brilho de Hover */}
-                            {mod.path && <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>}
+                            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
-                            <div className={`w-14 h-14 sm:w-20 sm:h-20 mb-3 sm:mb-6 rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center ${mod.iconBg} shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}>
-                                <mod.icon size={36} className={`${mod.iconColor} w-8 h-8 sm:w-10 sm:h-10`} strokeWidth={2.5} />
+                            <div className={`w-16 h-16 mb-4 rounded-[1.4rem] flex items-center justify-center ${mod.iconBg} shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}>
+                                <mod.icon size={30} className={mod.iconColor} strokeWidth={2.5} />
                             </div>
 
-                            <h3 className="text-sm sm:text-xl xl:text-2xl font-black text-slate-900 drop-shadow-none mb-1 sm:mb-2 leading-tight tracking-normal z-10">{mod.title}</h3>
-                            <p className="text-[9px] sm:text-xs xl:text-sm font-bold text-slate-500 px-2 sm:px-8 leading-snug z-10 uppercase tracking-widest flex items-start justify-center h-10">{mod.desc}</p>
+                            <h3 className="text-xl xl:text-2xl font-black text-slate-900 drop-shadow-none mb-1.5 leading-tight tracking-normal z-10">{mod.title}</h3>
+                            <p className="text-[10px] xl:text-xs font-bold text-slate-500 leading-snug z-10 uppercase tracking-widest">{mod.desc}</p>
                         </div>
                     ))}
                 </div>

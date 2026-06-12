@@ -192,6 +192,24 @@ const Internacao = () => {
 
     useEffect(() => {
         fetchMapa();
+
+        // Realtime para atualizar o painel de leitos automaticamente (com debounce para evitar refetch em massa)
+        let debounceTimer;
+        const debouncedFetch = () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => fetchMapa(), 400);
+        };
+
+        const channel = supabase
+            .channel('realtime_internacao')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'leitos' }, debouncedFetch)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'internacoes' }, debouncedFetch)
+            .subscribe();
+
+        return () => {
+            clearTimeout(debounceTimer);
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     const handleLeitoClick = (leito) => {

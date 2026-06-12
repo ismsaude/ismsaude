@@ -22,9 +22,24 @@ const ProcedureManager = () => {
     useEffect(() => {
         const fetchProcedures = async () => {
             try {
-                const { data, error } = await supabase.from('sigtap').select('*').order('nome', { ascending: true });
-                if (error) throw error;
-                setProcedures(data || []);
+                let allData = [];
+                let from = 0;
+                const step = 1000;
+                let hasMore = true;
+
+                while (hasMore) {
+                    const { data, error } = await supabase
+                        .from('sigtap')
+                        .select('*')
+                        .order('nome', { ascending: true })
+                        .range(from, from + step - 1);
+
+                    if (error || !data) throw error || new Error("Erro na busca de SIGTAP");
+                    allData = [...allData, ...data];
+                    if (data.length < step) hasMore = false;
+                    else from += step;
+                }
+                setProcedures(allData);
             } catch (error) {
                 console.error('Erro ao buscar procedimentos', error);
                 toast.error('Erro ao carregar os procedimentos');

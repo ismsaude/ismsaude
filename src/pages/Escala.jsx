@@ -80,9 +80,13 @@ const formatDoctorName = (fullName) => {
     const title = isFemale ? 'Dra.' : 'Dr.';
     
     if (parts.length === 1) return `${title} ${capitalize(parts[0])}`;
-    
-    // Pega primeiro e segundo nome
-    return `${title} ${capitalize(parts[0])} ${capitalize(parts[1])}`;
+
+    // Pega o primeiro sobrenome "real", ignorando preposições (de, do, da, dos, das, e) — só para exibição
+    const prepositions = new Set(['de', 'do', 'da', 'dos', 'das', 'e']);
+    const lastName = parts.slice(1).find(p => !prepositions.has(p));
+
+    if (!lastName) return `${title} ${capitalize(parts[0])}`;
+    return `${title} ${capitalize(parts[0])} ${capitalize(lastName)}`;
 };
 
 const Escala = () => {
@@ -755,6 +759,7 @@ const Escala = () => {
                     };
                 });
                 setAssignments(loadedAssignments);
+                toast.success(`Escala carregada: ${allPlantoes.length} plantões sincronizados.`);
             }
         } catch (error) {
             console.error("Erro ao buscar configs:", error);
